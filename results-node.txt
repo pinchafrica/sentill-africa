@@ -1,0 +1,28 @@
+[Sentill QA] Starting high-speed parallel audit of 24 core routes on http://localhost:3000...
+✅ [200] / - PASS
+✅ [307] /dashboard - PASS
+✅ [307] /dashboard/assets - PASS
+✅ [307] /dashboard/chamas - PASS
+✅ [307] /dashboard/analyze - PASS
+✅ [307] /dashboard/history - PASS
+✅ [307] /dashboard/settings - PASS
+✅ [307] /admin - PASS
+✅ [307] /admin/users - PASS
+✅ [307] /admin/finance - PASS
+✅ [307] /admin/approvals - PASS
+✅ [200] /markets - PASS
+✅ [200] /markets/nse - PASS
+✅ [200] /markets/mmfs - PASS
+✅ [200] /markets/bonds - PASS
+✅ [200] /tools/compare - PASS
+✅ [200] /tools/matrix - PASS
+✅ [200] /auth/login - PASS
+✅ [200] /auth/register - PASS
+✅ [200] /about - PASS
+❌ [404] /premium - FAIL
+✅ [200] /markets/mmfs/etca - PASS
+✅ [200] /markets/mmfs/sanlam - PASS
+✅ [200] /markets/nse/SCOM - PASS
+
+------------------------------------------------
+🔴 FOUND 1 BROKEN ROUTES.

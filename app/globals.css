@@ -1,0 +1,49 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-inter);
+  --font-heading: var(--font-outfit);
+}
+
+:root {
+  --background: #f8fafc; /* slate-50 */
+  --foreground: #0f172a; /* slate-900 */
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+.glass-card {
+  @apply bg-white border border-slate-200 shadow-xl shadow-slate-200/50;
+}
+
+.glass-nav {
+  @apply bg-white border-b border-slate-200 sticky top-0 z-40 shadow-md;
+}
+
+.premium-gradient {
+  background: radial-gradient(circle at 50% -20%, rgba(37, 99, 235, 0.08) 0%, transparent 80%);
+}
+
+.clip-path-whatsapp-tail {
+  clip-path: polygon(100% 0, 0 0, 100% 100%);
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 30s linear infinite;
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@layer base {
+  * {
+    @apply border-slate-200;
+  }
+}

@@ -1,0 +1,194 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String           @id @default(cuid())
+  name            String
+  email           String           @unique
+  password        String?          // hashed password (bcrypt in production)
+  isPremium       Boolean          @default(false)
+  premiumActivatedAt DateTime?     // When premium was granted
+  premiumExpiresAt   DateTime?     // When premium expires (null = never)
+  role            String           @default("USER") // USER, ADMIN
+  cashBalance     Float            @default(0)
+  totalXP         Int              @default(0)
+  currentStreak   Int              @default(0)
+  
+  portfolioAssets PortfolioAsset[]
+  payments        Payment[]
+  watchlists      Watchlist[]
+  achievements    UserAchievement[]
+  goals           UserGoal[]
+  beneficiaries   Beneficiary[]
+  documents       LegalDocument[]
+  alertPreferences AlertPreference?
+  
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+}
+
+model AlertPreference {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Channels
+  emailEnabled    Boolean  @default(true)
+  whatsappEnabled Boolean  @default(false)
+  whatsappNumber  String?
+  
+  // Frequency
+  frequency       String   @default("WEEKLY") // DAILY, WEEKLY, MONTHLY
+  
+  // Targets (Comma-separated slugs or "ALL")
+  portfolioAlerts String   @default("ALL")
+  
+  // Intelligence
+  aiOracleAlerts  Boolean  @default(true)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Provider {
+  id            String           @id @default(cuid())
+  name          String
+  slug          String           @unique
+  type          String           // MMF, SACCO, Bond, Equity, T-Bill, Pension
+  tier          Int              @default(1)    // 1 for Tier 1, 2 for Tier 2
+  isSacco       Boolean          @default(false)
+  currentYield  Float
+  aum           String           // e.g. "KES 50B"
+  paybill       String           @default("N/A")
+  isHalal       Boolean          @default(false)
+  riskLevel     String           // Low, Moderate, High
+  description   String
+  history3Year  String           @default("[]") // JSON array of monthly yields
+  
+  // Tax Alpha & Analytics
+  taxCategory   String           @default("WHT_15") // WHT_15, WHT_10, CGT_5
+  esgScore      Int              @default(80)    // 0-100
+  volatility    Float            @default(0.05)  // Annualized volatility
+  
+  // Contact Info
+  email         String?
+  phone         String?
+  website       String?
+  
+  // Metadata
+  managementFee Float?
+  inceptionDate String?
+  minimumInvest String?
+  liquidity     String?
+  regulatedBy   String          @default("CMA Kenya")
+
+  // Rich content
+  applySteps     String  @default("[]")
+  faqs           String  @default("[]")
+  officeLocations String @default("[]")
+  highlights     String  @default("[]")
+  taxNotes       String  @default("")
+  accountTypes   String  @default("[]")
+
+  assets        PortfolioAsset[]
+  watchlistedBy Watchlist[]
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+}
+
+model PortfolioAsset {
+  id             String   @id @default(cuid())
+  userId         String
+  providerId     String
+  principal      Float
+  projectedYield Float
+  loggedAt       DateTime @default(now())
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider       Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+}
+
+model Payment {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount          Float
+  currency        String   @default("KES")
+  method          String   // PAYSTACK, MPESA
+  reference       String   @unique
+  status          String   @default("PENDING") // PENDING, SUCCESS, FAILED
+  plan            String   // PRO_MONTHLY, PRO_ANNUAL
+  paystackRef     String?
+  mpesaRef        String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Watchlist {
+  id          String   @id @default(cuid())
+  userId      String
+  providerId  String?
+  stockSymbol String?  // For NSE Stocks that might not be in Provider table yet
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider    Provider? @relation(fields: [providerId], references: [id])
+  createdAt   DateTime @default(now())
+}
+
+model UserGoal {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String   // e.g. "Home Fund"
+  target      Float
+  deadline    DateTime
+  category    String   // RETIREMENT, HOME, EDUCATION
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+}
+
+model UserAchievement {
+  id            String   @id @default(cuid())
+  userId        String
+  achievementId String
+  unlockedAt    DateTime @default(now())
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Beneficiary {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  relation    String
+  allocation  Float    // Percentage
+  phone       String?
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model LegalDocument {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  type        String   // WILL, TRUST, IDENTITY
+  fileUrl     String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+}
+
+model AdminMetric {
+  id          String   @id @default(cuid())
+  key         String   @unique // api_calls, ai_tokens_used
+  value       Int      @default(0)
+  updatedAt   DateTime @updatedAt
+}
+
+model MarketRateCache {
+  id           String   @id @default(cuid())
+  symbol       String   @unique
+  price        Float
+  source       String   @default("gemini-cron")
+  lastSyncedAt DateTime @default(now())
+}

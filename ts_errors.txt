@@ -1,0 +1,109 @@
+﻿app/markets/commodities/page.tsx(111,21): error TS2304: Cannot find name 'Shield'.
+app/markets/commodities/page.tsx(123,31): error TS2304: Cannot find name 'Shield'.
+app/markets/mmfs/page.tsx(234,7): error TS2304: Cannot find name 'setIsAiLoading'.
+app/markets/mmfs/page.tsx(245,11): error TS2304: Cannot find name 'setAiError'.
+app/markets/mmfs/page.tsx(247,11): error TS2304: Cannot find name 'setAiError'.
+app/markets/mmfs/page.tsx(248,11): error TS2304: Cannot find name 'setAiInsights'.
+app/markets/mmfs/page.tsx(251,9): error TS2304: Cannot find name 'setAiError'.
+app/markets/mmfs/page.tsx(252,9): error TS2304: Cannot find name 'setAiInsights'.
+app/markets/mmfs/page.tsx(254,9): error TS2304: Cannot find name 'setIsAiLoading'.
+app/markets/mmfs/page.tsx(261,22): error TS2304: Cannot find name 'funds'.
+app/markets/mmfs/page.tsx(262,48): error TS2552: Cannot find name 'search'. Did you mean 'Search'?
+app/markets/mmfs/page.tsx(262,106): error TS2552: Cannot find name 'search'. Did you mean 'Search'?
+app/markets/mmfs/page.tsx(263,18): error TS2304: Cannot find name 'riskFilter'.
+app/markets/mmfs/page.tsx(263,53): error TS2304: Cannot find name 'riskFilter'.
+app/markets/mmfs/page.tsx(264,18): error TS2304: Cannot find name 'liquidityFilter'.
+app/markets/mmfs/page.tsx(264,63): error TS2304: Cannot find name 'liquidityFilter'.
+app/markets/mmfs/page.tsx(266,20): error TS2304: Cannot find name 'sortBy'.
+app/markets/mmfs/page.tsx(266,46): error TS2304: Cannot find name 'sortBy'.
+app/markets/mmfs/page.tsx(267,14): error TS2304: Cannot find name 'sortDir'.
+app/markets/mmfs/page.tsx(270,35): error TS2304: Cannot find name 'sortBy'.
+app/markets/mmfs/page.tsx(271,9): error TS2304: Cannot find name 'sortBy'.
+app/markets/mmfs/page.tsx(271,25): error TS2304: Cannot find name 'setSortDir'.
+app/markets/mmfs/page.tsx(271,36): error TS7006: Parameter 'd' implicitly has an 'any' type.
+app/markets/mmfs/page.tsx(272,12): error TS2304: Cannot find name 'setSortBy'.
+app/markets/mmfs/page.tsx(272,28): error TS2304: Cannot find name 'setSortDir'.
+app/markets/mmfs/page.tsx(275,20): error TS2304: Cannot find name 'funds'.
+app/markets/mmfs/page.tsx(275,34): error TS7006: Parameter 's' implicitly has an 'any' type.
+app/markets/mmfs/page.tsx(275,37): error TS7006: Parameter 'f' implicitly has an 'any' type.
+app/markets/mmfs/page.tsx(276,32): error TS2304: Cannot find name 'funds'.
+app/markets/mmfs/page.tsx(276,42): error TS7006: Parameter 'f' implicitly has an 'any' type.
+app/markets/mmfs/page.tsx(277,21): error TS2304: Cannot find name 'funds'.
+app/markets/mmfs/page.tsx(277,35): error TS7006: Parameter 's' implicitly has an 'any' type.
+app/markets/mmfs/page.tsx(277,38): error TS7006: Parameter 'f' implicitly has an 'any' type.
+app/markets/mmfs/page.tsx(277,64): error TS2304: Cannot find name 'funds'.
+app/markets/mmfs/page.tsx(280,23): error TS2304: Cannot find name 'taxPrincipal'.
+app/markets/mmfs/page.tsx(280,39): error TS2304: Cannot find name 'taxFund'.
+app/markets/mmfs/page.tsx(280,65): error TS2304: Cannot find name 'taxPeriod'.
+app/markets/mmfs/page.tsx(283,33): error TS2304: Cannot find name 'taxPrincipal'.
+app/markets/mmfs/page.tsx(283,55): error TS2304: Cannot find name 'taxPeriod'.
+app/markets/mmfs/page.tsx(287,15): error TS2304: Cannot find name 'taxFund'.
+app/markets/mmfs/page.tsx(288,21): error TS2304: Cannot find name 'taxPrincipal'.
+app/markets/mmfs/page.tsx(289,24): error TS2304: Cannot find name 'taxPrincipal'.
+app/markets/mmfs/page.tsx(297,44): error TS2304: Cannot find name 'sortBy'.
+app/markets/mmfs/page.tsx(298,5): error TS2304: Cannot find name 'sortBy'.
+app/markets/mmfs/page.tsx(299,9): error TS2304: Cannot find name 'sortDir'.
+app/markets/mmfs/page.tsx(310,107): error TS2304: Cannot find name 'isLive'.
+app/markets/mmfs/page.tsx(311,77): error TS2304: Cannot find name 'isLive'.
+app/markets/mmfs/page.tsx(313,42): error TS2304: Cannot find name 'isLive'.
+app/markets/mmfs/page.tsx(315,12): error TS2304: Cannot find name 'isLive'.
+app/markets/mmfs/page.tsx(329,50): error TS2304: Cannot find name 'funds'.
+app/markets/mmfs/page.tsx(336,48): error TS2304: Cannot find name 'funds'.
+app/markets/mmfs/page.tsx(367,33): error TS2304: Cannot find name 'funds'.
+app/markets/mmfs/page.tsx(374,22): error TS2304: Cannot find name 'funds'.
+app/markets/mmfs/page.tsx(488,26): error TS2304: Cannot find name 'search'.
+app/markets/mmfs/page.tsx(489,34): error TS2304: Cannot find name 'setSearch'.
+app/markets/mmfs/page.tsx(495,24): error TS2304: Cannot find name 'riskFilter'.
+app/markets/mmfs/page.tsx(496,32): error TS2304: Cannot find name 'setRiskFilter'.
+app/markets/mmfs/page.tsx(505,24): error TS2304: Cannot find name 'liquidityFilter'.
+app/markets/mmfs/page.tsx(506,32): error TS2304: Cannot find name 'setLiquidityFilter'.
+app/markets/mmfs/page.tsx(547,37): error TS2304: Cannot find name 'watchlist'.
+app/markets/mmfs/page.tsx(551,85): error TS2304: Cannot find name 'selectedFund'.
+app/markets/mmfs/page.tsx(552,38): error TS2304: Cannot find name 'setSelectedFund'.
+app/markets/mmfs/page.tsx(603,98): error TS2304: Cannot find name 'setWatchlist'.
+app/markets/mmfs/page.tsx(603,111): error TS7006: Parameter 'w' implicitly has an 'any' type.
+app/markets/mmfs/page.tsx(603,137): error TS7006: Parameter 'x' implicitly has an 'any' type.
+app/markets/mmfs/page.tsx(627,31): error TS2304: Cannot find name 'setAssetModalOpen'.
+app/markets/mmfs/page.tsx(651,138): error TS2304: Cannot find name 'selectedFund'.
+app/markets/mmfs/page.tsx(652,18): error TS2304: Cannot find name 'selectedFund'.
+app/markets/mmfs/page.tsx(655,78): error TS2304: Cannot find name 'selectedFund'.
+app/markets/mmfs/page.tsx(656,96): error TS2304: Cannot find name 'selectedFund'.
+app/markets/mmfs/page.tsx(656,127): error TS2304: Cannot find name 'selectedFund'.
+app/markets/mmfs/page.tsx(660,16): error TS2304: Cannot find name 'selectedFund'.
+app/markets/mmfs/page.tsx(668,99): error TS2304: Cannot find name 'selectedFund'.
+app/markets/mmfs/page.tsx(672,103): error TS2304: Cannot find name 'selectedFund'.
+app/markets/mmfs/page.tsx(679,46): error TS2304: Cannot find name 'selectedFund'.
+app/markets/mmfs/page.tsx(680,47): error TS2304: Cannot find name 'selectedFund'.
+app/markets/mmfs/page.tsx(681,47): error TS2304: Cannot find name 'selectedFund'.
+app/markets/mmfs/page.tsx(682,47): error TS2304: Cannot find name 'selectedFund'.
+app/markets/mmfs/page.tsx(683,47): error TS2304: Cannot find name 'selectedFund'.
+app/markets/mmfs/page.tsx(684,54): error TS2304: Cannot find name 'selectedFund'.
+app/markets/mmfs/page.tsx(685,38): error TS2304: Cannot find name 'selectedFund'.
+app/markets/mmfs/page.tsx(686,43): error TS2304: Cannot find name 'selectedFund'.
+app/markets/mmfs/page.tsx(687,43): error TS2304: Cannot find name 'selectedFund'.
+app/markets/mmfs/page.tsx(687,75): error TS2304: Cannot find name 'selectedFund'.
+app/markets/mmfs/page.tsx(688,38): error TS2304: Cannot find name 'selectedFund'.
+app/markets/mmfs/page.tsx(689,43): error TS2304: Cannot find name 'selectedFund'.
+app/markets/mmfs/page.tsx(690,43): error TS2304: Cannot find name 'selectedFund'.
+app/markets/mmfs/page.tsx(702,128): error TS2304: Cannot find name 'setShowTaxCalc'.
+app/markets/mmfs/page.tsx(702,143): error TS7006: Parameter 's' implicitly has an 'any' type.
+app/markets/mmfs/page.tsx(712,14): error TS2304: Cannot find name 'showTaxCalc'.
+app/markets/mmfs/page.tsx(715,12): error TS2304: Cannot find name 'showTaxCalc'.
+app/markets/mmfs/page.tsx(723,28): error TS2304: Cannot find name 'taxPrincipal'.
+app/markets/mmfs/page.tsx(724,36): error TS2304: Cannot find name 'setTaxPrincipal'.
+app/markets/mmfs/page.tsx(734,28): error TS2304: Cannot find name 'taxPeriod'.
+app/markets/mmfs/page.tsx(735,36): error TS2304: Cannot find name 'setTaxPeriod'.
+app/markets/mmfs/page.tsx(742,28): error TS2304: Cannot find name 'taxFund'.
+app/markets/mmfs/page.tsx(743,36): error TS2304: Cannot find name 'setTaxFund'.
+app/markets/mmfs/page.tsx(743,47): error TS2304: Cannot find name 'funds'.
+app/markets/mmfs/page.tsx(743,58): error TS7006: Parameter 'f' implicitly has an 'any' type.
+app/markets/mmfs/page.tsx(746,22): error TS2304: Cannot find name 'funds'.
+app/markets/mmfs/page.tsx(746,32): error TS7006: Parameter 'f' implicitly has an 'any' type.
+app/markets/mmfs/page.tsx(754,110): error TS2304: Cannot find name 'taxFund'.
+app/markets/mmfs/page.tsx(812,25): error TS2304: Cannot find name 'taxFund'.
+app/markets/mmfs/page.tsx(812,60): error TS2304: Cannot find name 'taxFund'.
+app/markets/mmfs/page.tsx(832,12): error TS2304: Cannot find name 'aiError'.
+app/markets/mmfs/page.tsx(845,17): error TS2304: Cannot find name 'isAiLoading'.
+app/markets/mmfs/page.tsx(852,21): error TS2304: Cannot find name 'aiInsights'.
+app/markets/pensions/page.tsx(372,24): error TS2304: Cannot find name 'RechartsTooltip'.
+app/markets/reits/page.tsx(303,23): error TS2304: Cannot find name 'Tooltip'.

@@ -1,0 +1,96 @@
+﻿
+ΓòöΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòù
+Γòæ              SENTIL TAB SYSTEM AUDIT REPORT                 Γòæ
+ΓòÜΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓò¥
+
+Γ¥î FAIL  app/academy/page.tsx
+   Tabs (0): []
+   Content (2): [courses, paths]
+   Initial state: "courses"
+   ΓÜá∩╕Å  CONTENT WITH NO TAB: courses, paths
+
+Γ£à PASS  app/admin/analytics/page.tsx
+   Tabs (0): []
+   Content (0): []
+   Initial state: "unknown"
+
+Γ¥î FAIL  app/dashboard/allocation/page.tsx
+   Tabs (0): []
+   Content (3): [allocation, dividends, calendar]
+   Initial state: "allocation"
+   ΓÜá∩╕Å  CONTENT WITH NO TAB: allocation, dividends, calendar
+
+Γ£à PASS  app/dashboard/chamas/page.tsx
+   Tabs (3): [assets, members, loans]
+   Content (3): [assets, members, loans]
+   Initial state: "assets"
+
+Γ¥î FAIL  app/dashboard/settings/page.tsx
+   Tabs (0): []
+   Content (4): [alerts, profile, security, billing]
+   Initial state: "unknown"
+   ΓÜá∩╕Å  CONTENT WITH NO TAB: alerts, profile, security, billing
+
+Γ¥î FAIL  app/diaspora/page.tsx
+   Tabs (0): []
+   Content (4): [remittance, bonds, realestate, tax]
+   Initial state: "remittance"
+   ΓÜá∩╕Å  CONTENT WITH NO TAB: remittance, bonds, realestate, tax
+
+Γ¥î FAIL  app/markets/bonds/page.tsx
+   Tabs (0): []
+   Content (4): [overview, calculator, howto, faq]
+   Initial state: "overview"
+   ΓÜá∩╕Å  CONTENT WITH NO TAB: overview, calculator, howto, faq
+
+Γ¥î FAIL  app/markets/eurobonds/page.tsx
+   Tabs (0): []
+   Content (4): [overview, spreads, fx, guide]
+   Initial state: "overview"
+   ΓÜá∩╕Å  CONTENT WITH NO TAB: overview, spreads, fx, guide
+
+Γ¥î FAIL  app/markets/mmfs/[id]/page.tsx
+   Tabs (1): [tax]
+   Content (4): [overview, portfolio, tax, faq]
+   Initial state: "overview"
+   ΓÜá∩╕Å  CONTENT WITH NO TAB: overview, portfolio, faq
+
+Γ¥î FAIL  app/markets/nse/page.tsx
+   Tabs (0): []
+   Content (1): [all]
+   Initial state: "all"
+   ΓÜá∩╕Å  CONTENT WITH NO TAB: all
+
+Γ¥î FAIL  app/markets/nse/[symbol]/page.tsx
+   Tabs (0): []
+   Content (4): [overview, financials, news, peers]
+   Initial state: "overview"
+   ΓÜá∩╕Å  CONTENT WITH NO TAB: overview, financials, news, peers
+
+Γ¥î FAIL  app/markets/special/[id]/page.tsx
+   Tabs (1): [contact]
+   Content (4): [overview, portfolio, contact, faq]
+   Initial state: "overview"
+   ΓÜá∩╕Å  CONTENT WITH NO TAB: overview, portfolio, faq
+
+Γ¥î FAIL  app/markets/treasuries/page.tsx
+   Tabs (0): []
+   Content (4): [overview, calculator, auctions, compare]
+   Initial state: "overview"
+   ΓÜá∩╕Å  CONTENT WITH NO TAB: overview, calculator, auctions, compare
+
+ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü
+TOTAL: 13 files | PASS: 2 | FAIL: 11
+
+Failed files:
+ ΓÇó app/academy/page.tsx
+ ΓÇó app/dashboard/allocation/page.tsx
+ ΓÇó app/dashboard/settings/page.tsx
+ ΓÇó app/diaspora/page.tsx
+ ΓÇó app/markets/bonds/page.tsx
+ ΓÇó app/markets/eurobonds/page.tsx
+ ΓÇó app/markets/mmfs/[id]/page.tsx
+ ΓÇó app/markets/nse/page.tsx
+ ΓÇó app/markets/nse/[symbol]/page.tsx
+ ΓÇó app/markets/special/[id]/page.tsx
+ ΓÇó app/markets/treasuries/page.tsx

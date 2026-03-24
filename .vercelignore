@@ -1,0 +1,26 @@
+# Vercel Ignore
+node_modules
+.next
+.git
+.vercel
+sentil-deploy.zip
+src.zip
+*.zip
+*.log
+dev.db
+dev.db-shm
+dev.db-wal
+prisma/dev.db
+build_error.log
+build_output.txt
+full_build_log.txt
+last_lint.txt
+lint_errors.txt
+lint_final.txt
+prisma_out.txt
+validate_out.txt
+vercel_build.log
+vercel_build_utf8.log
+push_error.log
+vercel_deploy.log
+vercel_deploy_v2.log

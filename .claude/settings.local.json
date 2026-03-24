@@ -1,0 +1,42 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p \"c:/Users/USER/Downloads/Sentil/app/markets/nse/[symbol]\")",
+      "Bash(mkdir -p \"c:/Users/USER/Downloads/Sentil/app/markets/mmfs/[id]\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/)",
+      "Bash(curl -s -o /dev/null -w \"NSE stock page: %{http_code}\\\\n\" http://localhost:3000/markets/nse/SCOM)",
+      "Bash(curl -s -o /dev/null -w \"MMF fund page: %{http_code}\\\\n\" http://localhost:3000/markets/mmfs/etca)",
+      "Bash(curl -s -o /dev/null -w \"Compare page: %{http_code}\\\\n\" http://localhost:3000/tools/compare)",
+      "Bash(curl -s -o /dev/null -w \"Tax calc: %{http_code}\\\\n\" http://localhost:3000/tools/tax-calculator)",
+      "Bash(curl -s -o /dev/null -w \"Matrix: %{http_code}\\\\n\" http://localhost:3000/tools/matrix)",
+      "Bash(curl -s -o /dev/null -w \"MMF index: %{http_code}\\\\n\" http://localhost:3000/markets/mmfs)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/markets/providers)",
+      "Bash(curl -s -o /dev/null -w \" %{http_code}\" http://localhost:3000/markets/bonds)",
+      "Bash(curl -s -o /dev/null -w \" %{http_code}\" http://localhost:3000/markets/nse)",
+      "Bash(npx tsc:*)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/markets/nse)",
+      "WebFetch(domain:www.nse.co.ke)",
+      "WebFetch(domain:stockskenya.com)",
+      "WebFetch(domain:www.african-markets.com)",
+      "WebFetch(domain:www.stockskenya.com)",
+      "WebFetch(domain:www.investing.com)",
+      "WebFetch(domain:www.reuters.com)",
+      "WebFetch(domain:ke.investing.com)",
+      "WebFetch(domain:finance.yahoo.com)",
+      "WebFetch(domain:www.bloomberg.com)",
+      "WebFetch(domain:www.tradingeconomics.com)",
+      "WebFetch(domain:www.standardmedia.co.ke)",
+      "Read(//c/Users/USER/.claude/projects/c--Users-USER-Downloads-Sentil/c26d57a1-2e5b-4bf9-97a5-f6cfbff1cf05/tool-results/**)",
+      "Bash(node -e \":*)",
+      "WebFetch(domain:www.businessdailyafrica.com)",
+      "WebFetch(domain:www.theeastafrican.co.ke)",
+      "WebFetch(domain:www.nation.africa)",
+      "WebFetch(domain:nse.co.ke)",
+      "WebFetch(domain:www.google.com)",
+      "WebFetch(domain:stanbic.co.ke)",
+      "WebFetch(domain:www.absa.co.ke)",
+      "WebFetch(domain:afx.kwayisi.org)",
+      "WebFetch(domain:icicibank.co.ke)"
+    ]
+  }
+}

@@ -1,0 +1,13 @@
+C:\Users\USER\Downloads\Sentil\app\academy\page.tsx
+C:\Users\USER\Downloads\Sentil\app\admin\analytics\page.tsx
+C:\Users\USER\Downloads\Sentil\app\dashboard\allocation\page.tsx
+C:\Users\USER\Downloads\Sentil\app\dashboard\chamas\page.tsx
+C:\Users\USER\Downloads\Sentil\app\dashboard\settings\page.tsx
+C:\Users\USER\Downloads\Sentil\app\diaspora\page.tsx
+C:\Users\USER\Downloads\Sentil\app\markets\bonds\page.tsx
+C:\Users\USER\Downloads\Sentil\app\markets\eurobonds\page.tsx
+C:\Users\USER\Downloads\Sentil\app\markets\mmfs\[id]\page.tsx
+C:\Users\USER\Downloads\Sentil\app\markets\nse\page.tsx
+C:\Users\USER\Downloads\Sentil\app\markets\nse\[symbol]\page.tsx
+C:\Users\USER\Downloads\Sentil\app\markets\special\[id]\page.tsx
+C:\Users\USER\Downloads\Sentil\app\markets\treasuries\page.tsx
