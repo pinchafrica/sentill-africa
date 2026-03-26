@@ -1,16 +1,19 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-const API_KEY = process.env.GEMINI_API_KEY || "AIzaSyCgl-RH5wfiB67Tg0oQlZJu0fzLJ_1UQbI";
+const API_KEY = process.env.GEMINI_API_KEY;
 
-// Forced Authoritative Context
+// Dynamic Context Instruction
 const USER_MARKET_CONTEXT = `
-  Context (March 19, 2026):
-  - SCOM (Safaricom) real-time rate MUST be exactly 30.60
-  - EQTY (Equity Group) real-time rate MUST be exactly 77.00
-  - ETCA (Etica Wealth MMF) MUST be exactly 17.55%
-  - LOFT (Lofty-Corban MMF) MUST be exactly 17.50%
-  - SANU (Sanlam USD MMF) MUST be exactly 6.20%
+  Instruction: Get the latest known market rates for the following Kenyan assets as of today (${new Date().toLocaleDateString('en-KE', { year: 'numeric', month: 'long', day: 'numeric' })}).
+  Focus on:
+  - SCOM (Safaricom PLC) share price
+  - EQTY (Equity Group) share price
+  - ETCA (Etica Wealth MMF) 7-day effective yield
+  - LOFT (Lofty-Corban MMF) 7-day effective yield
+  - SANU (Sanlam USD MMF) 7-day effective yield
+  - CICM (CIC Money Market Fund) 7-day effective yield
+  - BRIT (Britam MMF) 7-day effective yield
 `;
 
 export async function GET(req: Request) {

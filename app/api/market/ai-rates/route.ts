@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-const API_KEY = process.env.GEMINI_API_KEY || "AIzaSyCgl-RH5wfiB67Tg0oQlZJu0fzLJ_1UQbI";
+const API_KEY = process.env.GEMINI_API_KEY;
 
 // Recent Market Report provided by User (March 16, 2026)
 const USER_MARKET_CONTEXT = `

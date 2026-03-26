@@ -551,7 +551,7 @@ function QuickQuizModal({ onClose }: { onClose: () => void }) {
 }
 
 // ─── COURSE DETAIL MODAL ─────────────────────────────────────────────────────
-function CourseModal({ course, onClose }: { course: typeof COURSES[0]; onClose: () => void }) {
+function CourseModal({ course, onClose, setSelectedLesson }: { course: typeof COURSES[0]; onClose: () => void; setSelectedLesson: (val: any) => void }) {
   const [openModule, setOpenModule] = useState(0);
   const totalLessons = course.modules.reduce((a, m) => a + m.lessons.length, 0);
   const doneLessons = course.modules.reduce((a, m) => a + m.lessons.filter(l => l.done).length, 0);
@@ -636,7 +636,11 @@ function CourseModal({ course, onClose }: { course: typeof COURSES[0]; onClose: 
                     >
                       <div className="divide-y divide-slate-100">
                         {mod.lessons.map((les, li) => (
-                          <div key={li} className={`flex items-center gap-3 px-5 py-3.5 ${les.done ? "opacity-60" : ""}`}>
+                          <button
+                            key={li}
+                            onClick={() => setSelectedLesson({ course, module: mod, lesson: les })}
+                            className={`w-full flex items-center gap-3 px-5 py-3.5 hover:bg-slate-50 transition-colors text-left ${les.done ? "opacity-60" : ""}`}
+                          >
                             {les.done ? (
                               <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" />
                             ) : (
@@ -645,7 +649,7 @@ function CourseModal({ course, onClose }: { course: typeof COURSES[0]; onClose: 
                             <LessonTypeIcon type={les.type} />
                             <span className="text-sm text-slate-700 flex-1">{les.title}</span>
                             <span className="text-[10px] text-slate-400 font-bold">{les.duration}</span>
-                          </div>
+                          </button>
                         ))}
                       </div>
                     </motion.div>
@@ -669,6 +673,7 @@ export default function AcademyPage() {
   const [selectedLevel, setSelectedLevel] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCourse, setSelectedCourse] = useState<typeof COURSES[0] | null>(null);
+  const [selectedLesson, setSelectedLesson] = useState<{course: any, module: any, lesson: any} | null>(null);
   const [showQuiz, setShowQuiz] = useState(false);
 
   useEffect(() => {
@@ -1128,7 +1133,108 @@ export default function AcademyPage() {
 
       {/* Modals */}
       {showQuiz && <QuickQuizModal onClose={() => setShowQuiz(false)} />}
-      {selectedCourse && <CourseModal course={selectedCourse} onClose={() => setSelectedCourse(null)} />}
+      {selectedCourse && <CourseModal course={selectedCourse} onClose={() => setSelectedCourse(null)} setSelectedLesson={setSelectedLesson} />}
+      {selectedLesson && (
+        <LessonPlayerModal
+          course={selectedLesson.course}
+          module={selectedLesson.module}
+          lesson={selectedLesson.lesson}
+          onClose={() => setSelectedLesson(null)}
+        />
+      )}
+    </div>
+  );
+}
+
+// ─── LESSON PLAYER MODAL ───────────────────────────────────────────────────
+function LessonPlayerModal({ course, module: mod, lesson, onClose }: { course: any; module: any; lesson: any; onClose: () => void }) {
+  const [isCompleted, setIsCompleted] = useState(lesson.done);
+
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/90 backdrop-blur-xl p-0 sm:p-4">
+      <motion.div
+        initial={{ y: 50, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        className="bg-white w-full max-w-5xl h-full sm:h-auto sm:max-h-[90vh] sm:rounded-[3rem] shadow-2xl overflow-hidden flex flex-col"
+      >
+        {/* Top Header */}
+        <div className="px-8 py-6 border-b border-slate-100 flex items-center justify-between shrink-0">
+          <div className="min-w-0">
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 truncate">
+              {course.title} · {mod.title}
+            </p>
+            <h2 className="text-base font-black text-slate-900 truncate">{lesson.title}</h2>
+          </div>
+          <button onClick={onClose} className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center hover:bg-slate-200 transition-colors shrink-0 ml-4">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Content Area */}
+        <div className="flex-1 overflow-auto bg-slate-50">
+          {lesson.type === "video" ? (
+             <div className="aspect-video bg-slate-900 flex items-center justify-center relative group">
+                {/* Real video would go here, currently a premium placeholder */}
+                <div className="text-center">
+                  <div className="w-20 h-20 rounded-full bg-white/10 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                     <Play className="w-8 h-8 text-white fill-current" />
+                  </div>
+                  <p className="text-white font-black uppercase tracking-widest text-[10px]">Lecture Preview - Premium Quality</p>
+                </div>
+                {/* UI Overlay */}
+                <div className="absolute inset-x-0 bottom-0 p-6 bg-gradient-to-t from-black/60 to-transparent flex items-center justify-between">
+                   <div className="flex items-center gap-4">
+                      <button className="text-white"><Play className="w-5 h-5 fill-current" /></button>
+                      <div className="w-48 h-1.5 bg-white/20 rounded-full overflow-hidden">
+                         <div className="h-full bg-indigo-500 w-1/3" />
+                      </div>
+                      <span className="text-[10px] font-bold text-white">04:20 / {lesson.duration}</span>
+                   </div>
+                </div>
+             </div>
+          ) : (
+            <div className="max-w-3xl mx-auto px-8 py-12">
+               <div className="prose prose-slate max-w-none">
+                  {lesson.type === "quiz" ? (
+                     <div className="text-center py-12 bg-white rounded-3xl border border-slate-200 p-10 shadow-sm">
+                        <HelpCircle className="w-12 h-12 text-violet-600 mx-auto mb-4" />
+                        <h3 className="text-xl font-black text-slate-900 mb-2">Module Quiz</h3>
+                        <p className="text-slate-500 text-sm mb-8">Test your knowledge on {mod.title.toLowerCase()}. Success requires ≥80% score.</p>
+                        <button className="px-8 py-3 bg-violet-600 text-white rounded-xl font-black uppercase tracking-widest text-xs hover:bg-violet-500 transition-colors">
+                           Start Quiz Now
+                        </button>
+                     </div>
+                  ) : (
+                    <div className="bg-white rounded-3xl p-10 shadow-sm border border-slate-100">
+                       <h3 className="text-2xl font-black text-slate-900 mb-6">{lesson.title}</h3>
+                       <div className="space-y-4 text-slate-700 font-medium leading-relaxed">
+                          <p>In this comprehensive lesson, we deep dive into the specific mechanics of {mod.title.toLowerCase()} within the Kenyan market framework.</p>
+                          <div className="h-px bg-slate-100 my-8" />
+                          <p>• Key Takeaway 1: Consistent contribution is the engine of wealth.</p>
+                          <p>• Key Takeaway 2: Understanding regulatory changes (NSE/CMA) is critical for strategic timing.</p>
+                          <p>• Key Takeaway 3: Tax efficiency (IFBs) can boost net returns by up to 15% annually.</p>
+                       </div>
+                    </div>
+                  )}
+               </div>
+            </div>
+          )}
+        </div>
+
+        {/* Footer / Controls */}
+        <div className="px-8 py-6 border-t border-slate-100 bg-white flex items-center justify-between shrink-0">
+           <button onClick={onClose} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-900">
+              <ChevronDown className="w-4 h-4 rotate-90" /> Previous Lesson
+           </button>
+           <button
+              onClick={() => { setIsCompleted(!isCompleted); toast.success(isCompleted ? "Unmarked as done" : "Leeson completed! ✓"); }}
+              className={`flex items-center gap-2 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${isCompleted ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-slate-900 text-white hover:bg-emerald-600"}`}
+           >
+              {isCompleted ? <CheckCircle className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+              {isCompleted ? "Completed" : "Complete & Next"}
+           </button>
+        </div>
+      </motion.div>
     </div>
   );
 }

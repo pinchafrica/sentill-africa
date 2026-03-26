@@ -1,18 +1,34 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Landmark, TrendingUp, ArrowRightLeft, Zap, Phone } from "lucide-react";
 
-const TICKER_DATA = [
-  { label: "IFB1/2024 Yield", value: "18.46%", change: "+0.15%", up: true, icon: Landmark },
-  { label: "91-Day T-Bill", value: "15.85%", change: "-0.02%", up: false, icon: Zap },
-  { label: "KES/USD Spot", value: "129.50", change: "+0.12%", up: true, icon: ArrowRightLeft },
-  { label: "NSE-20 Share Index", value: "1,745.20", change: "+0.45%", up: true, icon: TrendingUp },
-  { label: "MMF Average Yield", value: "15.92%", change: "+0.03%", up: true, icon: TrendingUp },
-];
-
 export default function SovereignTicker() {
+  const [tickerData, setTickerData] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetch("/api/market/nse").then(r => r.json()).then(data => {
+      if (data.stocks) {
+        const mapped = data.stocks.slice(0, 10).map((s: any) => ({
+          label: s.symbol,
+          value: s.price.toString(),
+          change: s.percent + "%",
+          up: s.change >= 0,
+          icon: s.symbol === 'SCOM' ? Zap : Landmark
+        }));
+        setTickerData(mapped);
+      }
+    }).catch(() => {});
+  }, []);
+
+  const dataToDisplay = tickerData.length > 0 ? tickerData : [
+    { label: "IFB1/2024 Yield", value: "18.46%", change: "+0.15%", up: true, icon: Landmark },
+    { label: "91-Day T-Bill", value: "15.85%", change: "-0.02%", up: false, icon: Zap },
+    { label: "KES/USD Spot", value: "129.50", change: "+0.12%", up: true, icon: ArrowRightLeft },
+    { label: "NSE-20 Share Index", value: "1,745.20", change: "+0.45%", up: true, icon: TrendingUp },
+    { label: "MMF Average Yield", value: "15.92%", change: "+0.03%", up: true, icon: TrendingUp },
+  ];
   return (
     <div className="fixed top-0 left-0 w-full z-[100] h-9 bg-slate-950/80 backdrop-blur-md border-b border-white/5 flex items-center overflow-hidden">
       {/* Left: phone */}
@@ -30,7 +46,7 @@ export default function SovereignTicker() {
           transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
           className="flex items-center gap-12 px-4 h-full whitespace-nowrap absolute"
         >
-          {[...TICKER_DATA, ...TICKER_DATA].map((item, i) => (
+          {[...dataToDisplay, ...dataToDisplay].map((item, i) => (
             <div key={i} className="flex items-center gap-3">
                <div className="flex items-center gap-1.5">
                   <item.icon className="w-3 h-3 text-blue-500" />

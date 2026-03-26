@@ -196,11 +196,11 @@ const menuData = {
       {
         title: "Analysis Engines",
         items: [
+          { title: "Intelligence Hub", desc: "🏆 Live Market Leaderboards & AI Picks", href: "/dashboard/advisor", icon: Sparkles, color: "text-blue-600" },
           { title: "Comparison Engine", desc: "Side-by-side Institutional Alpha", href: "/tools/compare", icon: Zap, color: "text-amber-400" },
           { title: "Tax Alpha Optimizer", desc: "WHT Efficiency Strategy Tool", href: "/dashboard/analyze", icon: Landmark, color: "text-slate-400" },
           { title: "Portfolio Analyzer", desc: "AI Allocation Benchmarking", href: "/dashboard/analyze", icon: PieChart, color: "text-blue-500" },
           { title: "Yield Forecaster", desc: "10-Year Compounding Models", href: "/dashboard/analyze", icon: LineChart, color: "text-indigo-400" },
-          { title: "Live Market Yields", desc: "Real-time Institutional Spreads", href: "/markets/yields", icon: Activity, color: "text-emerald-500" }
         ]
       },
       {

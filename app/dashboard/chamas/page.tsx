@@ -1,322 +1,225 @@
 "use client";
 
 import { useState } from "react";
-import { Users, Plus, TrendingUp, ShieldCheck, Building2, Landmark, PieChart, Activity, Clock, CheckCircle2, Zap, BrainCircuit, ArrowRight, Calculator, HandCoins } from "lucide-react";
+import { 
+  Users, UserPlus, TrendingUp, Shield, BarChart3, 
+  Plus, MessageSquare, Target, Wallet, ArrowRight,
+  TrendingDown, Activity, Clock, PieChart, Sparkles, ChevronRight, CheckCircle, XCircle
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
-const CHAMA_ASSETS = [
-  { id: "CA-01", name: "Sanlam KES MMF", type: "Money Market", allocation: "35%", value: "KES 4,970,000", yield_1yr: "16.1%", status: "Active" },
-  { id: "CA-02", name: "IFB1/2023/17", type: "Sovereign Bond", allocation: "45%", value: "KES 6,390,000", yield_1yr: "17.9%", status: "Locked" },
-  { id: "CA-03", name: "Acorn D-REIT", type: "Real Estate", allocation: "20%", value: "KES 2,840,000", yield_1yr: "9.2%", status: "Active" },
+const CHAMAS = [
+  { id: 1, name: "The Visionary Titans", balance: 5490200, members: 12, yield: 18.2, loans: 2, completion: 78, color: "bg-blue-600", category: "Wealth Creation" },
+  { id: 2, name: "Apex Equity Group", balance: 12500000, members: 8, yield: 22.4, loans: 0, completion: 92, color: "bg-violet-600", category: "Aggressive Equity" },
+  { id: 3, name: "Family Legacy Fund", balance: 1200000, members: 4, yield: 15.6, loans: 1, completion: 45, color: "bg-emerald-600", category: "Social Capital" },
 ];
 
 const MEMBERS = [
-  { name: "John N.", role: "Treasurer", contribution: "KES 4,500,000", share: "31.7%" },
-  { name: "David K.", role: "Chairperson", contribution: "KES 3,200,000", share: "22.5%" },
-  { name: "Sarah O.", role: "Member", contribution: "KES 3,000,000", share: "21.1%" },
-  { name: "Grace M.", role: "Member", contribution: "KES 2,000,000", share: "14.1%" },
-  { name: "Peter W.", role: "Member", contribution: "KES 1,500,000", share: "10.6%" },
+  { name: "Johnstone Mutua", role: "Chairman", contribution: 650000, status: "PAID" },
+  { name: "Sarah Wambui", role: "Treasurer", contribution: 580000, status: "PAID" },
+  { name: "Edward Mule", role: "Secretary", contribution: 420000, status: "PENDING" },
+  { name: "Grace Njeri", role: "Member", contribution: 380000, status: "PAID" },
+  { name: "David Okomo", role: "Member", contribution: 310000, status: "PAID" },
 ];
 
-export default function DashboardChamaPage() {
-  const [activeTab, setActiveTab] = useState<"assets" | "members" | "loans">("assets");
+export default function ChamaHubPage() {
+  const [activeChama, setActiveChama] = useState(CHAMAS[0]);
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
-      
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div>
-           <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-black uppercase tracking-widest mb-3 border border-emerald-100">
-              <Users className="w-3 h-3" /> Prestige Wealth Group
-           </div>
-           <h1 className="text-3xl font-black text-slate-900 tracking-tight">Group Intelligence</h1>
-           <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mt-1">
-             Aggregated Net Asset Value & Member Equity
-           </p>
+    <div className="min-h-screen bg-slate-50/50 pt-32 pb-20 px-4 md:px-10">
+      <div className="max-w-7xl mx-auto space-y-8">
+        
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50 border border-blue-100 text-blue-600 text-[10px] font-black uppercase tracking-widest mb-4">
+              <Users className="w-3.5 h-3.5" /> Institutional Group Banking
+            </div>
+            <h1 className="text-4xl font-black text-slate-900 tracking-tighter uppercase leading-none">Chama Hub</h1>
+            <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mt-2">Manage your investment groups with institutional collective power.</p>
+          </div>
+          <button className="px-6 py-4 bg-slate-900 text-white rounded-3xl text-xs font-black uppercase tracking-widest hover:bg-blue-600 transition-all shadow-xl flex items-center gap-2">
+            <Plus className="w-4 h-4" /> Create New Chama
+          </button>
         </div>
-        <div className="flex items-center gap-3">
-           <button className="px-5 py-3 bg-white border border-slate-200 text-slate-700 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all shadow-sm flex items-center gap-2">
-             <ShieldCheck className="w-4 h-4" /> Manage Access
-           </button>
-           <button className="px-5 py-3 bg-slate-950 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-xl flex items-center gap-2">
-             <Plus className="w-4 h-4" /> Log Group Asset
-           </button>
+
+        <div className="grid lg:grid-cols-12 gap-8">
+          
+          {/* Sidebar: My Chamas */}
+          <div className="lg:col-span-4 space-y-4">
+            <h3 className="text-[10px] font-black uppercase text-slate-400 tracking-widest px-2">Your Active Groups</h3>
+            <div className="space-y-3">
+              {CHAMAS.map(chama => (
+                <button
+                  key={chama.id}
+                  onClick={() => setActiveChama(chama)}
+                  className={`w-full p-6 rounded-[2rem] border transition-all text-left flex items-center gap-4 ${activeChama.id === chama.id ? "bg-white border-blue-200 shadow-xl ring-4 ring-blue-500/5 translate-x-1" : "bg-white/50 border-slate-200 hover:bg-white"}`}
+                >
+                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-white font-black text-sm ${chama.color}`}>
+                    {chama.name.charAt(0)}
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-[11px] font-black text-slate-900 uppercase tracking-wide">{chama.name}</p>
+                    <p className="text-[10px] text-slate-400 font-bold uppercase mt-0.5">{chama.members} Members · KES {chama.balance.toLocaleString()}</p>
+                  </div>
+                  <ChevronRight className={`w-4 h-4 ${activeChama.id === chama.id ? "text-blue-500" : "text-slate-300"}`} />
+                </button>
+              ))}
+            </div>
+
+            {/* AI Insight for Chamas */}
+            <div className="bg-slate-900 text-white rounded-[2rem] p-6 shadow-2xl relative overflow-hidden group">
+              <div className="absolute -top-10 -right-10 w-32 h-32 bg-blue-500/20 rounded-full blur-2xl group-hover:bg-blue-500/40 transition-all" />
+              <Sparkles className="absolute top-4 right-4 w-5 h-5 text-blue-400" />
+              <p className="text-[10px] font-black uppercase text-blue-400 tracking-widest mb-3">Chama Intelligence</p>
+              <p className="text-xs font-medium text-slate-300 leading-relaxed mb-4">
+                "Based on your group saving velocity, you'll hit your KES 5M milestone in 8 months. Moving idle cash to Etica MMF can boost yield by 3.5%."
+              </p>
+              <button className="w-full py-3 bg-white/10 hover:bg-white/20 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+                Run Simulation
+              </button>
+            </div>
+          </div>
+
+          {/* Main Content Area */}
+          <div className="lg:col-span-8 space-y-8">
+            
+            {/* Active Chama Performance */}
+            <div className="bg-white border border-slate-200 rounded-[3rem] p-8 shadow-sm">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
+                <div className="flex items-center gap-4">
+                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-white font-black text-lg ${activeChama.color}`}>
+                    {activeChama.name.charAt(0)}
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight">{activeChama.name}</h2>
+                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Collective Group Fund · {activeChama.category}</p>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <button className="px-6 py-3 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-blue-600 transition-all active:scale-95 shadow-lg">
+                    <Wallet className="w-4 h-4" /> Group Deposit
+                  </button>
+                  <button className="p-3 bg-slate-100 hover:bg-slate-200 rounded-2xl transition-all">
+                    <MessageSquare className="w-5 h-5 text-slate-700" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+                {[
+                  { label: "Group Net Worth", value: "KES " + activeChama.balance.toLocaleString(), icon: Wallet, color: "text-blue-600" },
+                  { label: "Annual Yield", value: activeChama.yield + "%", icon: TrendingUp, color: "text-emerald-600" },
+                  { label: "Active Loans", value: activeChama.loans, icon: Activity, color: "text-rose-600" },
+                  { label: "Milestone", value: activeChama.completion + "%", icon: Target, color: "text-amber-600" },
+                ].map((stat, i) => (
+                  <div key={i} className="p-5 bg-slate-50/50 rounded-2xl border border-slate-100 group hover:border-blue-200 transition-all">
+                    <stat.icon className={`w-5 h-5 ${stat.color} mb-3 group-hover:scale-110 transition-transform`} />
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">{stat.label}</p>
+                    <p className="text-base font-black text-slate-900">{stat.value}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Members List */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between px-2">
+                  <h3 className="text-[10px] font-black uppercase text-slate-900 tracking-widest">Active Members ({activeChama.members})</h3>
+                  <button className="text-[10px] font-black uppercase text-blue-600 hover:text-blue-800">Manage Members</button>
+                </div>
+                <div className="bg-slate-50 rounded-[2rem] overflow-hidden border border-slate-100">
+                  <table className="w-full text-left">
+                    <thead className="bg-white border-b border-slate-100">
+                      <tr>
+                        <th className="px-6 py-4 text-[9px] font-black text-slate-400 uppercase tracking-widest">Member</th>
+                        <th className="px-6 py-4 text-[9px] font-black text-slate-400 uppercase tracking-widest">Position</th>
+                        <th className="px-6 py-4 text-[9px] font-black text-slate-400 uppercase tracking-widest text-right">Contribution</th>
+                        <th className="px-6 py-4 text-[9px] font-black text-slate-400 uppercase tracking-widest text-center">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 px-2">
+                      {MEMBERS.map((member, i) => (
+                        <tr key={i} className="hover:bg-white transition-colors">
+                          <td className="px-6 py-5">
+                            <div className="flex items-center gap-3">
+                              <div className="w-9 h-9 rounded-full bg-slate-200 border-2 border-white shadow-sm flex items-center justify-center text-[10px] font-black text-slate-600">
+                                {member.name.split(" ").map(n => n[0]).join("")}
+                              </div>
+                              <span className="text-[11px] font-black text-slate-900 uppercase tracking-wide">{member.name}</span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-5">
+                             <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{member.role}</span>
+                          </td>
+                          <td className="px-6 py-5 text-right">
+                             <span className="text-[11px] font-black text-slate-900">KES {member.contribution.toLocaleString()}</span>
+                          </td>
+                          <td className="px-6 py-5 text-center">
+                             <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest ${member.status === 'PAID' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-rose-50 text-rose-600 border border-rose-100'}`}>
+                                {member.status === 'PAID' ? <CheckCircle className="w-2.5 h-2.5" /> : <Clock className="w-2.5 h-2.5" />}
+                                {member.status}
+                             </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom Grid: Allocation + Decisions */}
+            <div className="grid md:grid-cols-2 gap-6 pb-12">
+               <div className="bg-white border border-slate-200 rounded-[2.5rem] p-8 shadow-sm">
+                  <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest mb-1">Group Allocation</h3>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase mb-6 tracking-widest">Collective Asset Diversification</p>
+                  
+                  <div className="space-y-5">
+                    {[
+                      { l: "MMF (Liquidity)", v: 45, c: "bg-blue-600" },
+                      { l: "Treasury Bonds", v: 35, c: "bg-indigo-600" },
+                      { l: "NSE Equities", v: 20, c: "bg-violet-600" }
+                    ].map(st => (
+                      <div key={st.l}>
+                        <div className="flex justify-between text-[10px] font-black uppercase tracking-widest mb-2 text-slate-700">
+                          <span>{st.l}</span>
+                          <span>{st.v}%</span>
+                        </div>
+                        <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden shadow-inner">
+                          <div className={`h-full ${st.c} transition-all duration-1000`} style={{ width: `${st.v}%` }} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+               </div>
+
+               <div className="bg-slate-900 rounded-[2.5rem] p-8 text-white relative overflow-hidden group border border-slate-800">
+                  <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-br from-blue-600/10 to-transparent pointer-events-none" />
+                  <h3 className="text-sm font-black uppercase tracking-widest mb-1">Group Decisions</h3>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase mb-8 tracking-widest">Active Investment Proposals</p>
+
+                  <div className="bg-white/5 border border-white/10 rounded-2xl p-6 mb-6">
+                    <p className="text-[9px] font-black uppercase text-blue-400 tracking-[0.2em] mb-3">Vote #105 · 48h Left</p>
+                    <p className="text-[11px] font-black text-slate-100 leading-relaxed mb-6 capitalize leading-[1.6]">Adjust group strategy: Increase Equity exposure by 5% targeting Safaricom.</p>
+                    <div className="flex items-center justify-between text-[9px] font-black uppercase tracking-widest mb-2">
+                       <span className="text-emerald-400">Yes (75%)</span>
+                       <span className="text-rose-400">No (25%)</span>
+                    </div>
+                    <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden flex">
+                       <div className="h-full bg-emerald-500 w-[75%]" />
+                       <div className="h-full bg-rose-500 w-[25%]" />
+                    </div>
+                  </div>
+                  <button className="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-blue-900/40">
+                    Cast Group Vote
+                  </button>
+               </div>
+            </div>
+
+          </div>
+
         </div>
-      </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-         <div className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl -mr-16 -mt-16 transition-all group-hover:scale-150" />
-            <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 relative z-10">Total Group NAV</h3>
-            <p className="text-4xl font-black text-slate-900 tracking-tighter relative z-10">KES 14.2M</p>
-            <div className="flex items-center gap-2 mt-4 relative z-10">
-               <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md flex items-center gap-1 uppercase tracking-widest">
-                 <TrendingUp className="w-3 h-3" /> +14.2% YTD
-               </span>
-               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Across 3 Assets</span>
-            </div>
-         </div>
-         
-         <div className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm relative overflow-hidden">
-            <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Active Members</h3>
-            <div className="flex items-end gap-3">
-               <p className="text-4xl font-black text-slate-900 tracking-tighter">5</p>
-               <div className="flex -space-x-3 pb-1">
-                  {[1,2,3,4,5].map(i => (
-                     <div key={i} className="w-8 h-8 rounded-full bg-slate-100 border-2 border-white flex items-center justify-center text-[10px] font-bold text-slate-500">
-                        {MEMBERS[i-1].name[0]}
-                     </div>
-                  ))}
-               </div>
-            </div>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-4 flex items-center gap-1">
-               <ShieldCheck className="w-3 h-3 text-emerald-500" /> Fully Kyc Verified
-            </p>
-         </div>
-
-         <div className="bg-slate-950 text-white p-6 rounded-[2rem] border border-slate-800 shadow-xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl -mr-16 -mt-16" />
-            <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 relative z-10">Next Scheduled Dividend</h3>
-            <p className="text-2xl font-black tracking-tight text-white relative z-10">KES 412,000</p>
-            <div className="flex items-center justify-between mt-4 relative z-10">
-               <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest flex items-center gap-1">
-                 <Landmark className="w-3 h-3 text-blue-400" /> IFB1/2023/17
-               </span>
-               <span className="text-[10px] font-black text-blue-400 bg-blue-500/10 px-2 py-1 rounded-md uppercase tracking-widest">
-                 In 14 Days
-               </span>
-            </div>
-         </div>
-      </div>
-
-      {/* Sentill AI Insights (Group Level) */}
-      <div className="border border-indigo-100 bg-indigo-50/50 rounded-[2.5rem] p-8 lg:p-10 relative overflow-hidden group">
-         <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/10 blur-[80px] rounded-full -mr-20 -mt-20 pointer-events-none transition-all duration-700 group-hover:scale-110" />
-         <div className="flex flex-col md:flex-row gap-8 relative z-10 items-start">
-            <div className="w-16 h-16 rounded-[1.5rem] bg-indigo-100 text-indigo-600 flex items-center justify-center shrink-0 border border-indigo-200 shadow-lg shadow-indigo-500/20">
-               <Zap className="w-8 h-8 animate-pulse" />
-            </div>
-            <div className="flex-1 space-y-4">
-               <div>
-                 <h3 className="text-xl font-black text-indigo-950 uppercase tracking-tight flex items-center gap-2">
-                   Sentill AI Group Oracle
-                   <span className="bg-indigo-600 text-white text-[9px] px-2 py-0.5 rounded-full uppercase tracking-widest animate-pulse">Live Analysis</span>
-                 </h3>
-                 <p className="text-[11px] font-bold text-indigo-600/60 uppercase tracking-widest mt-1">
-                   Algorithmic Treasury Optimization for Prestige Wealth Group
-                 </p>
-               </div>
-               <div className="grid md:grid-cols-2 gap-4">
-                  <div className="bg-white p-5 rounded-2xl border border-indigo-100 shadow-sm">
-                     <div className="flex justify-between items-start mb-2">
-                        <span className="text-[9px] font-black uppercase tracking-widest text-emerald-600 bg-emerald-50 px-2 py-1 rounded">High Probability</span>
-                     </div>
-                     <h4 className="text-sm font-black text-slate-900 leading-tight mb-2">Reallocate 15% to Upcoming IFB</h4>
-                     <p className="text-xs font-medium text-slate-500 leading-relaxed mb-4">
-                        Moving KES 2.1M from Money Market (16.1%) to the new Infrastructure Bond (est. 18.5% tax-free) will increase group net annual yield by KES 62,000.
-                     </p>
-                     <button className="text-[10px] font-black text-indigo-600 hover:text-indigo-700 uppercase tracking-widest flex items-center gap-1 transition-colors">
-                        Simulate Move <ArrowRight className="w-3 h-3" />
-                     </button>
-                  </div>
-                  <div className="bg-white p-5 rounded-2xl border border-indigo-100 shadow-sm filter grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all cursor-not-allowed">
-                     <div className="absolute inset-0 bg-white/40 flex items-center justify-center backdrop-blur-[2px] z-10 rounded-2xl group-hover:hidden transition-all text-[10px] font-black text-indigo-900 uppercase tracking-widest">
-                        <BrainCircuit className="w-3 h-3 mr-2" /> Upgrade to View
-                     </div>
-                     <div className="flex justify-between items-start mb-2">
-                        <span className="text-[9px] font-black uppercase tracking-widest text-amber-600 bg-amber-50 px-2 py-1 rounded">Risk Alert</span>
-                     </div>
-                     <h4 className="text-sm font-black text-slate-900 leading-tight mb-2">D-REIT Liquidity Warning</h4>
-                     <p className="text-xs font-medium text-[transparent] bg-slate-200 rounded animate-pulse leading-relaxed mb-4">
-                        This text is blurred out because you need to upgrade to sentill pro to unlock deeper ai insights for your group portfolio dynamics and stress tests.
-                     </p>
-                  </div>
-               </div>
-            </div>
-         </div>
-      </div>
-
-      {/* Tabs Layout */}
-      <div className="bg-white border border-slate-200 rounded-[2.5rem] p-4 shadow-sm">
-         <div className="flex items-center gap-2 border-b border-slate-100 pb-4 mb-6">
-            <button 
-               onClick={() => setActiveTab('assets')}
-               className={`px-6 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${
-                 activeTab === 'assets' ? 'bg-slate-950 text-white shadow-md' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
-               }`}
-            >
-               Group Portfolio
-            </button>
-            <button 
-               onClick={() => setActiveTab('members')}
-               className={`px-6 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${
-                 activeTab === 'members' ? 'bg-slate-950 text-white shadow-md' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
-               }`}
-            >
-               Member Equity
-            </button>
-            <button 
-               onClick={() => setActiveTab('loans')}
-               className={`px-6 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${
-                 activeTab === 'loans' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
-               }`}
-            >
-               Treasury & Loans
-            </button>
-         </div>
-
-         {activeTab === 'loans' && (
-            <div className="p-6">
-               <div className="flex flex-col md:flex-row gap-8">
-                  <div className="flex-1 space-y-6">
-                     <div>
-                        <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight">AI Loan Underwriting</h3>
-                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Request loans instantly backed by your equity multiplier.</p>
-                     </div>
-                     <div className="bg-slate-50 border border-slate-200 rounded-3xl p-6">
-                        <div className="flex justify-between items-center mb-6 border-b border-slate-200 pb-4">
-                           <span className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Your Borrowing Power (3x Equity)</span>
-                           <span className="text-xl font-black text-indigo-600">KES 13,500,000</span>
-                        </div>
-                        <div className="space-y-4">
-                           <div>
-                              <label className="text-[10px] font-black uppercase text-slate-400 block mb-2">Requested Amount</label>
-                              <div className="relative">
-                                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">KES</span>
-                                 <input type="number" placeholder="0.00" className="w-full bg-white border border-slate-200 rounded-xl py-3 pl-12 pr-4 font-black text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all" />
-                              </div>
-                           </div>
-                           <button className="w-full py-4 bg-indigo-600 text-white rounded-xl text-[11px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-indigo-700 transition-all shadow-md">
-                              <Calculator className="w-4 h-4" /> Run AI Loan Simulation
-                           </button>
-                        </div>
-                     </div>
-                  </div>
-                  <div className="w-full md:w-80 flex-shrink-0">
-                     <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
-                        <h4 className="text-[10px] font-black text-slate-900 uppercase tracking-widest mb-4">Active Liabilities</h4>
-                        <div className="space-y-4">
-                           <div className="border border-amber-200 bg-amber-50 rounded-2xl p-4">
-                              <div className="flex items-start justify-between">
-                                 <div>
-                                    <p className="text-[11px] font-black text-slate-900 uppercase">Emergency Loan</p>
-                                    <p className="text-[9px] font-bold text-amber-600 uppercase mt-0.5">Due in 14 days</p>
-                                 </div>
-                                 <HandCoins className="w-4 h-4 text-amber-500" />
-                              </div>
-                              <p className="text-lg font-black text-slate-900 mt-2">KES 250,000</p>
-                           </div>
-                        </div>
-                     </div>
-                  </div>
-               </div>
-            </div>
-         )}
-
-         {activeTab === 'assets' && (
-            <div className="overflow-x-auto">
-               <table className="w-full text-left border-collapse whitespace-nowrap">
-                  <thead>
-                     <tr className="border-b border-slate-100">
-                        <th className="py-4 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Asset Name</th>
-                        <th className="py-4 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Class</th>
-                        <th className="py-4 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Principal Value</th>
-                        <th className="py-4 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Group Weight</th>
-                        <th className="py-4 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Yield p.a.</th>
-                     </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-50">
-                     {CHAMA_ASSETS.map((asset, i) => (
-                        <tr key={i} className="hover:bg-slate-50/50 transition-colors group">
-                           <td className="py-4 px-4">
-                              <div className="flex items-center gap-3">
-                                 <div className="w-8 h-8 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center">
-                                    {asset.type === 'Money Market' ? <Activity className="w-4 h-4 text-emerald-600" /> : 
-                                     asset.type === 'Sovereign Bond' ? <Landmark className="w-4 h-4 text-blue-600" /> :
-                                     <Building2 className="w-4 h-4 text-amber-600" />}
-                                 </div>
-                                 <div>
-                                    <p className="font-bold text-slate-900 group-hover:text-emerald-600 transition-colors cursor-pointer text-sm">{asset.name}</p>
-                                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{asset.id}</p>
-                                 </div>
-                              </div>
-                           </td>
-                           <td className="py-4 px-4">
-                              <span className="text-[10px] font-black border border-slate-200 bg-slate-50 text-slate-600 px-2 py-1 rounded uppercase tracking-widest">
-                                 {asset.type}
-                              </span>
-                           </td>
-                           <td className="py-4 px-4 font-black text-slate-900 text-sm">
-                              {asset.value}
-                           </td>
-                           <td className="py-4 px-4">
-                              <div className="flex items-center gap-2">
-                                 <span className="text-[11px] font-bold text-slate-600">{asset.allocation}</span>
-                                 <div className="w-16 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                                    <div className="h-full bg-emerald-500 rounded-full" style={{ width: asset.allocation }} />
-                                 </div>
-                              </div>
-                           </td>
-                           <td className="py-4 px-4 text-right">
-                              <span className="text-sm font-black text-emerald-600">{asset.yield_1yr}</span>
-                           </td>
-                        </tr>
-                     ))}
-                  </tbody>
-               </table>
-            </div>
-         )}
-
-         {activeTab === 'members' && (
-            <div className="overflow-x-auto">
-               <table className="w-full text-left border-collapse whitespace-nowrap">
-                  <thead>
-                     <tr className="border-b border-slate-100">
-                        <th className="py-4 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Member Name</th>
-                        <th className="py-4 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Governance Role</th>
-                        <th className="py-4 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Contribution</th>
-                        <th className="py-4 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Equity Share</th>
-                        <th className="py-4 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Status</th>
-                     </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-50">
-                     {MEMBERS.map((member, i) => (
-                        <tr key={i} className="hover:bg-slate-50/50 transition-colors">
-                           <td className="py-4 px-4">
-                              <div className="flex items-center gap-3">
-                                 <div className="w-8 h-8 rounded-full bg-slate-100 text-slate-600 font-black text-xs border border-slate-200 flex items-center justify-center">
-                                    {member.name[0]}
-                                 </div>
-                                 <p className="font-bold text-slate-900 text-sm">{member.name}</p>
-                              </div>
-                           </td>
-                           <td className="py-4 px-4">
-                              <span className={`text-[9px] font-black px-2 py-1 rounded-md uppercase tracking-widest ${
-                                member.role === 'Treasurer' || member.role === 'Chairperson' ? 'bg-indigo-50 text-indigo-600 border border-indigo-100' : 'bg-slate-50 text-slate-500 border border-slate-200'
-                              }`}>
-                                 {member.role}
-                              </span>
-                           </td>
-                           <td className="py-4 px-4 font-black text-slate-900 text-sm">
-                              {member.contribution}
-                           </td>
-                           <td className="py-4 px-4">
-                              <span className="text-[11px] font-black text-blue-600 bg-blue-50 px-2 py-1 rounded-md border border-blue-100 uppercase tracking-widest">
-                                 {member.share}
-                              </span>
-                           </td>
-                           <td className="py-4 px-4 text-right">
-                              <span className="text-[10px] font-bold text-emerald-600 flex items-center justify-end gap-1 uppercase tracking-widest">
-                                 <CheckCircle2 className="w-3 h-3" /> Fully Vested
-                              </span>
-                           </td>
-                        </tr>
-                     ))}
-                  </tbody>
-               </table>
-            </div>
-         )}
       </div>
     </div>
   );

@@ -1,160 +1,75 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import useSWR from "swr";
-
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
-
-interface TickerItem {
-  label: string;
-  value: string;
-  change?: string;
-  up?: boolean;
-}
-
-const STATIC_ITEMS: TickerItem[] = [
-  { label: "USD/KES", value: "129.50", up: false },
-  { label: "CBK RATE", value: "10.00%" },
-  { label: "NSE 20", value: "1,842", change: "+0.4%", up: true },
-  { label: "IFB1/2024", value: "18.46%", up: true },
-  { label: "91-DAY T-BILL", value: "15.97%", up: false },
-  { label: "ETICA MMF", value: "16.50%", up: true },
-  { label: "KE CPI", value: "3.5%", up: false },
-  { label: "SCOM", value: "18.90", change: "+0.53%", up: true },
-  { label: "EQTY", value: "43.25", change: "+1.17%", up: true },
-  { label: "KCB", value: "28.10", change: "-0.35%", up: false },
-  { label: "EABL", value: "132.50", change: "+0.76%", up: true },
-  { label: "COOP", value: "14.20", change: "+0.71%", up: true },
-  { label: "ABSA", value: "15.65", change: "+1.62%", up: true },
-  { label: "NCBA", value: "48.50", change: "+0.52%", up: true },
-  { label: "BAT", value: "410.00", change: "-0.60%", up: false },
-];
+import { TrendingUp, TrendingDown, Activity, Sparkles, Zap } from "lucide-react";
 
 export default function LiveTicker() {
-  const { data: nseData } = useSWR("/api/market/nse", fetcher, {
-    refreshInterval: 60_000,
-    revalidateOnFocus: false,
-  });
-  const { data: fxData } = useSWR("/api/market/exchange-rate", fetcher, {
-    refreshInterval: 300_000,
-    revalidateOnFocus: false,
-  });
+  const [rates, setRates] = useState<any[]>([]);
 
-  const isLive = nseData?.source?.type === "yahoo" || nseData?.stocks?.[0]?.source === "gemini-forced";
-
-  const items: TickerItem[] = useMemo(() => {
-    const result: TickerItem[] = [];
-
-    // USD/KES
-    const kes = fxData?.rates?.KES;
-    result.push({
-      label: "USD/KES",
-      value: kes ? kes.toFixed(2) : "129.50",
-      up: false,
-    });
-
-    result.push({ label: "CBK RATE", value: "10.00%" });
-    result.push({ label: "NSE 20", value: "1,842", change: "+0.4%", up: true });
-    result.push({ label: "IFB1/2024", value: "18.46%", up: true });
-    result.push({ label: "91-DAY T-BILL", value: "15.97%", up: false });
-    result.push({ label: "ETICA MMF", value: "16.50%", up: true });
-    result.push({ label: "ACORN I-REIT", value: "KES 21.60", change: "+0.8%", up: true });
-    result.push({ label: "MAVUNO GOLD ETF", value: "KES 145.20", change: "+2.1%", up: true });
-    result.push({ label: "HESABIKA PE", value: "18.5%", up: true });
-    result.push({ label: "KE CPI", value: "3.5%", up: false });
-
-    // Top 8 NSE stocks from API
-    if (nseData?.stocks?.length) {
-      const top8 = nseData.stocks.slice(0, 8);
-      for (const s of top8) {
-        result.push({
-          label: s.symbol.replace(".NR", ""),
-          value: `KES ${s.price?.toFixed(2) ?? "—"}`,
-          change: s.percent != null
-            ? `${s.percent >= 0 ? "+" : ""}${s.percent.toFixed(2)}%`
-            : undefined,
-          up: (s.percent ?? 0) >= 0,
-        });
+  useEffect(() => {
+    fetch("/api/market/nse").then(r => r.json()).then(data => {
+      if (data.stocks) {
+        setRates(data.stocks.map((s: any) => ({
+          symbol: s.symbol,
+          price: s.price,
+          change: s.change,
+          percent: s.percent,
+          isUp: s.change >= 0
+        })));
       }
-    } else {
-      // Static fallback stocks
-      for (const item of STATIC_ITEMS.slice(7)) {
-        result.push(item);
-      }
-    }
+    }).catch(() => {});
+  }, []);
 
-    return result;
-  }, [nseData, fxData]);
-
-  // Duplicate for seamless loop
-  const doubled = [...items, ...items];
+  const tickerItems = rates.length > 0 ? rates : [
+    { symbol: "SCOM", price: 30.60, change: 0.15, percent: 0.49, isUp: true },
+    { symbol: "EQTY", price: 77.00, change: -0.50, percent: -0.64, isUp: false },
+    { symbol: "KCB", price: 42.15, change: 0.85, percent: 2.06, isUp: true },
+    { symbol: "EABL", price: 145.50, change: -1.25, percent: -0.85, isUp: false },
+    { symbol: "ETICA", price: "17.55%", change: 0.05, percent: 0.28, isUp: true },
+    { symbol: "LOFTY", price: "17.50%", change: 0.10, percent: 0.57, isUp: true },
+  ];
 
   return (
-    <div className="fixed top-0 left-0 right-0 h-[40px] z-[60] bg-white/90 backdrop-blur-md border-b border-slate-200/60 overflow-hidden flex items-center shadow-sm">
-      {/* Live indicator */}
-      <div className="absolute left-3 z-10 flex items-center gap-1.5 bg-white/90 pr-3 py-1 rounded-r-md">
-        <span className="relative flex h-2 w-2">
-          <span
-            className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
-              isLive ? "bg-emerald-500" : "bg-slate-400"
-            }`}
-          />
-          <span
-            className={`relative inline-flex rounded-full h-2 w-2 ${
-              isLive ? "bg-emerald-600" : "bg-slate-500"
-            }`}
-          />
-        </span>
-        <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">
-          {isLive ? "Market Active" : "Closing Data"}
-        </span>
-        {isLive && (
-          <div className="ml-1 flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-50 border border-blue-200">
-            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-blue-600"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-            <span className="text-[7px] font-black uppercase tracking-widest text-blue-600">AI Verified</span>
-          </div>
-        )}
+    <div className="fixed top-0 left-0 right-0 h-[40px] bg-slate-950 z-[100] flex items-center overflow-hidden border-b border-slate-800">
+      <div className="bg-blue-600 h-full px-4 flex items-center gap-2 shrink-0 relative z-20 shadow-[10px_0_20px_rgba(0,0,0,0.5)]">
+        <Sparkles className="w-3.5 h-3.5 text-white animate-pulse" />
+        <span className="text-[10px] font-black text-white uppercase tracking-widest whitespace-nowrap">Live AI Terminal</span>
       </div>
-
-      {/* Scrolling ticker */}
-      <div className="pl-32 overflow-hidden w-full">
-        <motion.div
-          className="flex gap-10 whitespace-nowrap items-center"
-          animate={{ x: [0, -50 * items.length * 8] }}
-          transition={{
-            duration: items.length * 5,
-            ease: "linear",
-            repeat: Infinity,
-          }}
+      
+      <div className="flex-1 relative overflow-hidden h-full flex items-center">
+        <motion.div 
+          animate={{ x: ["0%", "-50%"] }}
+          transition={{ repeat: Infinity, duration: 30, ease: "linear" }}
+          className="flex items-center gap-12 whitespace-nowrap px-12"
         >
-          {doubled.map((item, i) => (
-            <span key={i} className="inline-flex items-center gap-2 text-[10px] font-bold">
-              <span className="text-slate-400 uppercase tracking-widest">{item.label}</span>
-              <span
-                className={
-                  item.up === true
-                    ? "text-emerald-600"
-                    : item.up === false && item.change
-                    ? "text-rose-600"
-                    : "text-slate-900"
-                }
-              >
-                {item.value}
+          {/* Double the list for infinite seamless scroll */}
+          {[...tickerItems, ...tickerItems].map((item, i) => (
+            <div key={i} className="flex items-center gap-3 group cursor-default">
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest group-hover:text-white transition-colors">
+                {item.symbol}
               </span>
-              {item.change && (
-                <span
-                  className={`text-[9px] font-black ${
-                    item.up ? "text-emerald-600" : "text-rose-600"
-                  }`}
-                >
-                  {item.up ? "▲" : "▼"} {item.change.replace(/[+-]/, '')}
-                </span>
-              )}
-              <span className="text-slate-200 ml-4 font-black">|</span>
-            </span>
+              <span className="text-[11px] font-black text-white">
+                {typeof item.price === 'number' ? item.price.toFixed(2) : item.price}
+              </span>
+              <div className={`flex items-center gap-1 text-[9px] font-black px-1.5 py-0.5 rounded ${item.isUp ? 'text-emerald-400 bg-emerald-400/10' : 'text-rose-400 bg-rose-400/10'}`}>
+                {item.isUp ? <TrendingUp className="w-2.5 h-2.5" /> : <TrendingDown className="w-2.5 h-2.5" />}
+                {item.percent}%
+              </div>
+            </div>
           ))}
         </motion.div>
+      </div>
+
+      <div className="hidden md:flex items-center gap-4 px-6 h-full bg-slate-950 border-l border-slate-800 relative z-20">
+         <div className="flex items-center gap-2">
+            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Market Open</span>
+         </div>
+         <div className="h-4 w-px bg-slate-800" />
+         <span className="text-[9px] font-black text-blue-500 uppercase tracking-widest flex items-center gap-1">
+            <Zap className="w-3 h-3" /> High Yield Alert
+         </span>
       </div>
     </div>
   );

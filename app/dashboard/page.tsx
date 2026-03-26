@@ -224,6 +224,31 @@ function DashboardInner() {
                <BrainCircuit className="w-5 h-5 text-blue-600" /> Ask AI
             </Link>
          </div>
+
+         {/* Portfolio IQ Segment */}
+         <div className="mt-8 pt-8 border-t border-white/10 grid grid-cols-3 gap-4">
+            <div>
+               <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Diversification</p>
+               <div className="flex items-center gap-2">
+                  <span className="text-sm font-black text-emerald-400">82/100</span>
+                  <div className="flex-1 h-1 bg-white/10 rounded-full overflow-hidden">
+                     <div className="h-full bg-emerald-500 w-[82%]" />
+                  </div>
+               </div>
+            </div>
+            <div>
+               <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Liquidity Index</p>
+               <div className="flex items-center gap-2">
+                  <span className="text-sm font-black text-blue-400">High</span>
+               </div>
+            </div>
+            <div>
+               <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Portfolio IQ</p>
+               <div className="flex items-center gap-2">
+                   <span className="text-sm font-black text-purple-400">Advanced</span>
+               </div>
+            </div>
+         </div>
       </div>
 
       {/* ─── CHARTS (Performance & Allocation) ───────────────────── */}

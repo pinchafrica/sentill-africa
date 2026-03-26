@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { SignJWT } from "jose";
+import { sendEmail, buildWelcomeEmail } from "@/lib/email";
 
 const secret = process.env.JWT_SECRET;
 if (!secret) {
@@ -61,6 +62,13 @@ export async function POST(req: Request) {
       maxAge: 60 * 60 * 24, // 1 day
       path: "/",
     });
+
+    // Send welcome email (non-blocking, won't fail the response)
+    sendEmail({
+      to: user.email,
+      subject: "🚀 Welcome to Sentill Africa — Your WealthTech Journey Begins!",
+      html: buildWelcomeEmail(firstName.trim()),
+    }).catch(err => console.warn("[Email] Welcome email failed:", err));
 
     return response;
 

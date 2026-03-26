@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-const API_KEY = process.env.GEMINI_API_KEY || "AIzaSyCgl-RH5wfiB67Tg0oQlZJu0fzLJ_1UQbI";
+const API_KEY = process.env.GEMINI_API_KEY;
 
 const CORTEX_SYSTEM_PROMPT = `You are "Sentil Assistant", a helpful, easy-to-understand AI financial guide embedded within the "Sentill Africa" WealthTech platform. 
 Your primary goal is to provide clear, accurate, and simple insights into the Kenyan financial markets (NSE, Treasury Bonds, SACCOs, and Money Market Funds) using simple layman's terms.

@@ -221,8 +221,7 @@ function AnimatedNum({ value, decimals = 1, prefix = "", suffix = "" }: { value:
 // ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
 
 export default function MMFPage() {
-  const [isAssetModalOpen, setIsAssetModalOpen] = useState(false);
-  const [prefilledAsset, setPrefilledAsset] = useState<string | undefined>(undefined);
+  const { isAssetModalOpen, setAssetModalOpen, prefilledAsset, setPrefilledAsset } = useAIStore();
 
   // Missing States
   const [search, setSearch] = useState("");
@@ -245,7 +244,7 @@ export default function MMFPage() {
 
   const handleOpenAssetModal = (assetId?: string) => {
     setPrefilledAsset(assetId);
-    setIsAssetModalOpen(true);
+    setAssetModalOpen(true);
   };
 
   useEffect(() => {

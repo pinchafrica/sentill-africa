@@ -105,8 +105,21 @@ export async function POST(req: Request) {
         principal: parseFloat(amount),
         projectedYield: projectedYield,
       },
-      include: { provider: true }
+      include: { 
+        provider: true,
+        user: true // Need user name and email
+      }
     });
+
+    // Send asset logged email (non-blocking)
+    if (newAsset.user?.email) {
+      const { sendEmail, buildAssetLoggedEmail } = await import("@/lib/email");
+      sendEmail({
+        to: newAsset.user.email,
+        subject: `✅ Asset Logged: ${provider.name}`,
+        html: buildAssetLoggedEmail(newAsset.user.name || "Investor", provider.name, parseFloat(amount)),
+      }).catch(err => console.warn("[Email] Asset logged email failed:", err));
+    }
 
     return NextResponse.json(newAsset);
 
