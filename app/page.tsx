@@ -18,6 +18,7 @@ import PremiumModal from "@/components/PremiumModal";
 import LiveTicker from "@/components/LiveTicker";
 import SocialSentimentPulse from "@/components/SocialSentimentPulse";
 import TaxAlphaOptimizer from "@/components/TaxAlphaOptimizer";
+import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { useAIStore } from "@/lib/store";
 import useSWR from "swr";
 import { CheckCircle } from "lucide-react";
@@ -1399,6 +1400,9 @@ export default function HomePage() {
         isOpen={isPremiumModalOpen} 
         onClose={() => setPremiumModalOpen(false)} 
       />
+      
+      {/* PWA Install Prompt (Native App feel) */}
+      <PWAInstallPrompt />
     </div>
   );
 }
