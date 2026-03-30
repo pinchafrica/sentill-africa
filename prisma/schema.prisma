@@ -8,29 +8,37 @@ datasource db {
 }
 
 model User {
-  id              String           @id @default(cuid())
-  name            String
-  email           String           @unique
-  password        String?          // hashed password (bcrypt in production)
-  isPremium       Boolean          @default(false)
-  premiumActivatedAt DateTime?     // When premium was granted
-  premiumExpiresAt   DateTime?     // When premium expires (null = never)
-  role            String           @default("USER") // USER, ADMIN
-  cashBalance     Float            @default(0)
-  totalXP         Int              @default(0)
-  currentStreak   Int              @default(0)
-  
-  portfolioAssets PortfolioAsset[]
-  payments        Payment[]
-  watchlists      Watchlist[]
-  achievements    UserAchievement[]
-  goals           UserGoal[]
-  beneficiaries   Beneficiary[]
-  documents       LegalDocument[]
-  alertPreferences AlertPreference?
-  
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
+  id                 String           @id @default(cuid())
+  name               String
+  email              String           @unique
+  password           String?          // hashed password (bcrypt in production)
+  isPremium          Boolean          @default(false)
+  premiumActivatedAt DateTime?        // When premium was granted
+  premiumExpiresAt   DateTime?        // When premium expires (null = never)
+  role               String           @default("USER") // USER, ADMIN
+  cashBalance        Float            @default(0)
+  totalXP            Int              @default(0)
+  currentStreak      Int              @default(0)
+
+  // WhatsApp integration
+  whatsappId         String?          @unique  // WhatsApp phone number e.g. 254712345678
+  whatsappVerified   Boolean          @default(false)
+  otpCode            String?          // Current OTP (hashed)
+  otpExpiry          DateTime?        // OTP expiration timestamp
+
+  portfolioAssets    PortfolioAsset[]
+  payments           Payment[]
+  watchlists         Watchlist[]
+  achievements       UserAchievement[]
+  goals              UserGoal[]
+  beneficiaries      Beneficiary[]
+  documents          LegalDocument[]
+  alertPreferences   AlertPreference?
+  whatsappSessions   WhatsAppSession[]
+  whatsappLogs       WhatsAppLog[]
+
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
 }
 
 model AlertPreference {
@@ -191,4 +199,30 @@ model MarketRateCache {
   price        Float
   source       String   @default("gemini-cron")
   lastSyncedAt DateTime @default(now())
+}
+
+// WhatsApp conversation state (multi-step flows)
+model WhatsAppSession {
+  id          String   @id @default(cuid())
+  waId        String   @unique  // WhatsApp phone number
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  state       String   @default("IDLE")  // IDLE, REGISTER_NAME, REGISTER_EMAIL, REGISTER_OTP, LOGIN_OTP, PAY_CONFIRM
+  context     String   @default("{}")   // JSON blob for multi-step state
+  lastSeen    DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// All inbound + outbound WhatsApp messages
+model WhatsAppLog {
+  id          String   @id @default(cuid())
+  waId        String
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  direction   String   // INBOUND, OUTBOUND
+  message     String   // Text content
+  msgType     String   @default("text")  // text, interactive, template
+  status      String   @default("SENT")  // SENT, DELIVERED, READ, FAILED
+  createdAt   DateTime @default(now())
 }

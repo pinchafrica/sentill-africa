@@ -6,7 +6,7 @@ import { useState, useEffect } from "react";
 import { 
   PieChart, BrainCircuit, Briefcase, LineChart, LayoutGrid, AlertTriangle, 
   Map, History, Users, Bell, Shield, MessageSquare, Activity, Menu, X, Compass, Landmark,
-  LogOut, ChevronRight, GraduationCap
+  LogOut, ChevronRight, GraduationCap, Smartphone
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -81,6 +81,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       items: [
         { name: "Log History", href: "/dashboard/history", icon: History },
         { name: "Alert Hub", href: "/dashboard/alerts", icon: Bell },
+        { name: "WhatsApp Hub", href: "/dashboard/whatsapp", icon: Smartphone, badge: "NEW" },
         { name: "Chama Hub", href: "/resources/chamas", icon: Users, external: true },
         { name: "Sentill Academy", href: "/academy", icon: GraduationCap, badge: "FREE" },
       ]

@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronDown, Menu, X, Lock, FileText, ChevronRight, User, Phone, LogOut, ArrowRight, Activity, ShieldCheck, Mail, Building2, Landmark, Briefcase, Users, LayoutDashboard, Globe, Zap, Cpu, LineChart, Calculator, MapPin, Database, Server, Smartphone, Layout, ArrowUpRight, Scale, PieChart, TrendingUp, Handshake, BrainCircuit, MessageSquare, Plus, CheckCircle, Flame, Target, Star, ShieldAlert, BadgeCheck, Bell, Sparkles, Rocket, Info, UserPlus, Leaf } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 
 const menuData = {
   bonds: {
@@ -382,6 +383,9 @@ export default function Navbar() {
           {/* Right Pillar: Action Buttons */}
           <div className="flex items-center justify-end gap-3 text-right">
 
+            {/* PWA Install App Button - Always visible */}
+            <PWAInstallPrompt variant="button" />
+
             {/* Notification Bell */}
             <div className="relative group/bell">
               <button className="hidden sm:flex items-center justify-center w-[38px] h-[38px] rounded-full bg-slate-50 hover:bg-slate-100 text-slate-600 transition-colors relative border border-slate-200 shadow-sm">
@@ -513,6 +517,19 @@ export default function Navbar() {
                   </div>
                 ))}
                 <div className="border-t border-slate-100 pt-4 mt-4 space-y-2">
+                  {/* Mobile PWA Install Button */}
+                  <button
+                    id="mobile-pwa-install-btn"
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      const btn = document.getElementById('pwa-install-btn') as HTMLButtonElement | null;
+                      if (btn) btn.click();
+                    }}
+                    className="flex items-center justify-center gap-2 w-full py-3.5 bg-emerald-600 text-white text-[11px] font-black rounded-2xl uppercase tracking-widest hover:bg-emerald-500 transition-all shadow-xl"
+                  >
+                    <Smartphone className="w-4 h-4" /> Install App
+                  </button>
+
                   {!isLoggedIn ? (
                     <>
                       <Link

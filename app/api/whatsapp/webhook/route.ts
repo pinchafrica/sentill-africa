@@ -1,0 +1,90 @@
+/**
+ * app/api/whatsapp/webhook/route.ts
+ * Meta WhatsApp Cloud API webhook handler.
+ * GET  → Verification challenge (required by Meta)
+ * POST → Incoming messages router
+ */
+
+import { NextRequest, NextResponse } from "next/server";
+import { verifyWebhookSignature } from "@/lib/whatsapp";
+import { processIncomingMessage } from "@/lib/whatsapp-bot";
+
+// ── GET: Meta webhook verification ───────────────────────────────────────────
+
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+
+  const mode = searchParams.get("hub.mode");
+  const token = searchParams.get("hub.verify_token");
+  const challenge = searchParams.get("hub.challenge");
+
+  const verifyToken = process.env.WHATSAPP_VERIFY_TOKEN ?? "sentil_webhook_2026";
+
+  if (mode === "subscribe" && token === verifyToken) {
+    console.log("[WhatsApp] Webhook verified ✅");
+    return new NextResponse(challenge, { status: 200 });
+  }
+
+  return new NextResponse("Forbidden", { status: 403 });
+}
+
+// ── POST: Incoming message handler ───────────────────────────────────────────
+
+export async function POST(req: NextRequest) {
+  try {
+    const rawBody = await req.text();
+
+    // Verify signature in production
+    if (process.env.NODE_ENV === "production") {
+      const sig = req.headers.get("x-hub-signature-256");
+      if (!verifyWebhookSignature(rawBody, sig)) {
+        console.error("[WhatsApp] Invalid webhook signature");
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
+    }
+
+    const body = JSON.parse(rawBody);
+
+    // Traverse the Meta webhook payload structure
+    const entry = body?.entry?.[0];
+    const changes = entry?.changes?.[0];
+    const value = changes?.value;
+
+    // Handle status updates (delivered, read, etc.) — just ack
+    if (value?.statuses) {
+      return NextResponse.json({ status: "ok" });
+    }
+
+    const messages = value?.messages;
+    if (!messages?.length) {
+      return NextResponse.json({ status: "ok" });
+    }
+
+    for (const msg of messages) {
+      const waId: string = msg.from;
+      let text: string | undefined;
+      let buttonPayload: string | undefined;
+
+      if (msg.type === "text") {
+        text = msg.text?.body;
+      } else if (msg.type === "interactive") {
+        // Button reply
+        buttonPayload =
+          msg.interactive?.button_reply?.id ??
+          msg.interactive?.list_reply?.id;
+        text = msg.interactive?.button_reply?.title ??
+          msg.interactive?.list_reply?.title;
+      }
+
+      // Fire and don't await (webhook must respond within 15s)
+      processIncomingMessage(waId, text, buttonPayload).catch((err) => {
+        console.error("[WhatsApp] processIncomingMessage error:", err);
+      });
+    }
+
+    return NextResponse.json({ status: "ok" });
+  } catch (err) {
+    console.error("[WhatsApp] Webhook error:", err);
+    return NextResponse.json({ error: "Internal error" }, { status: 500 });
+  }
+}

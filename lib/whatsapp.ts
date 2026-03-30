@@ -1,0 +1,214 @@
+/**
+ * lib/whatsapp.ts
+ * Meta WhatsApp Business Cloud API client for Sentil.
+ * Handles sending messages, verifying webhook signatures and logging.
+ */
+
+import crypto from "crypto";
+import { prisma } from "./prisma";
+
+const WA_API_BASE = "https://graph.facebook.com/v19.0";
+
+function getPhoneNumberId(): string {
+  const id = process.env.WHATSAPP_PHONE_NUMBER_ID;
+  if (!id) throw new Error("WHATSAPP_PHONE_NUMBER_ID not set");
+  return id;
+}
+
+function getAccessToken(): string {
+  const token = process.env.WHATSAPP_ACCESS_TOKEN;
+  if (!token) throw new Error("WHATSAPP_ACCESS_TOKEN not set");
+  return token;
+}
+
+// ── Core sender ────────────────────────────────────────────────────────────────
+
+export async function sendWhatsAppMessage(
+  to: string,
+  text: string,
+  userId?: string
+): Promise<void> {
+  const phoneNumberId = getPhoneNumberId();
+  const token = getAccessToken();
+
+  const body = {
+    messaging_product: "whatsapp",
+    recipient_type: "individual",
+    to,
+    type: "text",
+    text: { preview_url: false, body: text },
+  };
+
+  const res = await fetch(`${WA_API_BASE}/${phoneNumberId}/messages`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!res.ok) {
+    const err = await res.text();
+    console.error("[WhatsApp] Send failed:", err);
+  }
+
+  // Log outbound
+  await prisma.whatsAppLog.create({
+    data: {
+      waId: to,
+      userId: userId ?? null,
+      direction: "OUTBOUND",
+      message: text,
+      msgType: "text",
+      status: res.ok ? "SENT" : "FAILED",
+    },
+  });
+}
+
+// ── Interactive buttons ────────────────────────────────────────────────────────
+
+export async function sendInteractiveButtons(
+  to: string,
+  bodyText: string,
+  buttons: { id: string; title: string }[],
+  userId?: string
+): Promise<void> {
+  const phoneNumberId = getPhoneNumberId();
+  const token = getAccessToken();
+
+  const payload = {
+    messaging_product: "whatsapp",
+    recipient_type: "individual",
+    to,
+    type: "interactive",
+    interactive: {
+      type: "button",
+      body: { text: bodyText },
+      action: {
+        buttons: buttons.map((b) => ({
+          type: "reply",
+          reply: { id: b.id, title: b.title },
+        })),
+      },
+    },
+  };
+
+  const res = await fetch(`${WA_API_BASE}/${phoneNumberId}/messages`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const err = await res.text();
+    console.error("[WhatsApp] Interactive send failed:", err);
+  }
+
+  await prisma.whatsAppLog.create({
+    data: {
+      waId: to,
+      userId: userId ?? null,
+      direction: "OUTBOUND",
+      message: bodyText,
+      msgType: "interactive",
+      status: res.ok ? "SENT" : "FAILED",
+    },
+  });
+}
+
+// ── Template sender ────────────────────────────────────────────────────────────
+
+export async function sendWhatsAppTemplate(
+  to: string,
+  templateName: string,
+  languageCode: string,
+  components: object[],
+  userId?: string
+): Promise<void> {
+  const phoneNumberId = getPhoneNumberId();
+  const token = getAccessToken();
+
+  const payload = {
+    messaging_product: "whatsapp",
+    to,
+    type: "template",
+    template: {
+      name: templateName,
+      language: { code: languageCode },
+      components,
+    },
+  };
+
+  const res = await fetch(`${WA_API_BASE}/${phoneNumberId}/messages`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const err = await res.text();
+    console.error("[WhatsApp] Template send failed:", err);
+  }
+
+  await prisma.whatsAppLog.create({
+    data: {
+      waId: to,
+      userId: userId ?? null,
+      direction: "OUTBOUND",
+      message: `[template:${templateName}]`,
+      msgType: "template",
+      status: res.ok ? "SENT" : "FAILED",
+    },
+  });
+}
+
+// ── Webhook signature validation ───────────────────────────────────────────────
+
+export function verifyWebhookSignature(
+  rawBody: string,
+  signatureHeader: string | null
+): boolean {
+  const appSecret = process.env.WHATSAPP_APP_SECRET;
+  if (!appSecret) {
+    console.warn("[WhatsApp] WHATSAPP_APP_SECRET not set — skipping verification");
+    return true;
+  }
+  if (!signatureHeader) return false;
+
+  const expectedSig = crypto
+    .createHmac("sha256", appSecret)
+    .update(rawBody)
+    .digest("hex");
+
+  const received = signatureHeader.replace("sha256=", "");
+  return crypto.timingSafeEqual(
+    Buffer.from(expectedSig, "hex"),
+    Buffer.from(received, "hex")
+  );
+}
+
+// ── OTP utilities ─────────────────────────────────────────────────────────────
+
+export function generateOTP(): string {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+export function formatKES(amount: number): string {
+  return `KES ${amount.toLocaleString("en-KE", { minimumFractionDigits: 2 })}`;
+}
+
+// ── Normalize phone number ────────────────────────────────────────────────────
+
+export function normalizePhone(phone: string): string {
+  const digits = phone.replace(/\D/g, "");
+  if (digits.startsWith("0")) return "254" + digits.slice(1);
+  if (digits.startsWith("7") || digits.startsWith("1")) return "254" + digits;
+  return digits;
+}

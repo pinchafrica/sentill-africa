@@ -1,0 +1,69 @@
+
+=== REGISTERED USERS (11 total) ===
+
+[1] Alex Kamnyoni
+    Email     : kanyonikahwai@gmail.com
+    Role      : USER
+    Premium   : false
+    Joined    : 2026-03-23T11:33:30.425Z
+
+[2] Robinson Muiagi
+    Email     : pinch.africa@gmail.com
+    Role      : USER
+    Premium   : false
+    Joined    : 2026-03-23T06:55:47.210Z
+
+[3] Winnie Kuria
+    Email     : winniekarura@gmail.com
+    Role      : USER
+    Premium   : false
+    Joined    : 2026-03-20T04:23:33.102Z
+
+[4] Robison Mwaniki
+    Email     : bestwebkenya@gmail.com
+    Role      : USER
+    Premium   : true
+    Joined    : 2026-03-19T13:06:47.400Z
+
+[5] Nairobi Tech Chama
+    Email     : finance.chama@gmail.com
+    Role      : USER
+    Premium   : true
+    Joined    : 2026-03-19T07:26:24.915Z
+
+[6] Alice Mutua
+    Email     : a.mutua@corporate.co.ke
+    Role      : USER
+    Premium   : false
+    Joined    : 2026-03-19T07:26:24.692Z
+
+[7] Peter Mwangi
+    Email     : mwangi.investments@outlook.com
+    Role      : USER
+    Premium   : true
+    Joined    : 2026-03-19T07:26:24.463Z
+
+[8] James Ochieng
+    Email     : j.ochieng88@yahoo.com
+    Role      : USER
+    Premium   : false
+    Joined    : 2026-03-19T07:26:24.240Z
+
+[9] Sarah Macharia
+    Email     : sarah.mk@gmail.com
+    Role      : USER
+    Premium   : true
+    Joined    : 2026-03-19T07:26:23.794Z
+
+[10] System Admin
+    Email     : admin@sentill.africa
+    Role      : ADMIN
+    Premium   : true
+    Joined    : 2026-03-19T07:06:57.223Z
+
+[11] edwin mule
+    Email     : edwinmule@gmail.com
+    Role      : ADMIN
+    Premium   : true
+    Joined    : 2026-03-18T15:04:59.034Z
+
