@@ -1,19 +1,13 @@
 /**
  * lib/whatsapp-bot.ts
- * Core conversation router for Sentil WhatsApp Bot.
+ * Sentil Africa — WhatsApp Investment Hub Bot
  *
- * IMPORTANT: Sentil Africa is a WEALTH INTELLIGENCE HUB — we do NOT hold money.
- * Payments via WhatsApp are for:
- *   1. New subscription (PRO_MONTHLY or PRO_ANNUAL)
- *   2. Subscription renewal (re-subscribing before or after expiry)
- *
- * Subscription plans:
- *   PRO_MONTHLY  → KES 499 / month
- *   PRO_ANNUAL   → KES 4,990 / year (save 2 months)
- *
- * Payment flow uses Paystack (M-Pesa via mobile_money channel).
- * We send user a checkout link — they pay directly to Paystack.
- * No money is ever held by Sentil.
+ * Features:
+ *  • Investment browser (MMF/T-Bill/SACCO/Bond/NSE) with interactive buttons
+ *  • Asset logging via WhatsApp chat
+ *  • Gemini AI for any investment question
+ *  • Paystack Subscribe/Renew with direct checkout links
+ *  • Registration, Login (OTP), Portfolio, Goals, Watchlist
  */
 
 import { prisma } from "./prisma";
@@ -24,19 +18,30 @@ import {
   formatKES,
   normalizePhone,
 } from "./whatsapp";
+import { askGeminiBot, generateInvestmentSummary } from "./whatsapp-gemini";
 import bcrypt from "bcryptjs";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Subscription Plans
+// Plans
 // ─────────────────────────────────────────────────────────────────────────────
 
 const PLANS = {
-  TRIAL_7_DAYS: { label: "7-Day Trial",  amount: 100,  days: 7,   description: "Full Pro access for 7 days — try before you commit!" },
-  PRO_MONTHLY:  { label: "Pro Monthly",  amount: 499,  days: 30,  description: "Full Pro access for 1 month" },
-  PRO_ANNUAL:   { label: "Pro Annual",   amount: 4990, days: 365, description: "Full Pro access for 12 months — save 2 months!" },
+  TRIAL_7_DAYS: { label: "7-Day Trial",  amount: 100,  days: 7,   description: "Full Pro for 7 days!" },
+  PRO_MONTHLY:  { label: "Pro Monthly",  amount: 499,  days: 30,  description: "Full Pro for 1 month" },
+  PRO_ANNUAL:   { label: "Pro Annual",   amount: 4990, days: 365, description: "Full Pro for 12 months — save 2 months!" },
 } as const;
 
 type PlanKey = keyof typeof PLANS;
+
+// Investment category labels
+const INVEST_CATEGORIES: Record<string, string> = {
+  MONEY_MARKET: "💰 Money Market Funds",
+  "T-Bill":     "📈 Treasury Bills",
+  Bond:         "🏛 Government Bonds",
+  SACCO:        "🤝 SACCOs",
+  Equity:       "📊 NSE Stocks",
+  Pension:      "🧓 Pension Funds",
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -47,6 +52,15 @@ interface SessionContext {
   email?: string;
   otp?: string;
   plan?: PlanKey;
+  // Investment browser
+  category?: string;
+  providerId?: string;
+  providerName?: string;
+  providerYield?: number;
+  // Asset logging
+  logProviderId?: string;
+  logProviderName?: string;
+  logAmount?: number;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -86,7 +100,7 @@ async function logInbound(waId: string, message: string, userId?: string) {
       waId,
       userId: userId ?? null,
       direction: "INBOUND",
-      message,
+      message: message.slice(0, 500),
       msgType: "text",
       status: "DELIVERED",
     },
@@ -94,7 +108,7 @@ async function logInbound(waId: string, message: string, userId?: string) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Main entry point — called by webhook
+// Main entry — called by webhook
 // ─────────────────────────────────────────────────────────────────────────────
 
 export async function processIncomingMessage(
@@ -103,23 +117,32 @@ export async function processIncomingMessage(
   buttonPayload?: string
 ) {
   const input = (buttonPayload ?? rawBody ?? "").trim().toUpperCase();
+  const rawInput = (rawBody ?? "").trim();
   const session = await getOrCreateSession(waId);
   const ctx: SessionContext = JSON.parse(session.context || "{}");
 
-  await logInbound(waId, input, session.userId ?? undefined);
+  await logInbound(waId, rawInput || input, session.userId ?? undefined);
 
-  // ── Route by session state first ──────────────────────────────────────────
+  // ── Route by session state ────────────────────────────────────────────────
   switch (session.state) {
     case "REGISTER_NAME":
-      return handleRegisterName(waId, rawBody ?? "", ctx);
+      return handleRegisterName(waId, rawInput, ctx);
     case "REGISTER_EMAIL":
-      return handleRegisterEmail(waId, rawBody ?? "", ctx);
+      return handleRegisterEmail(waId, rawInput, ctx);
     case "REGISTER_OTP":
       return handleRegisterOTP(waId, input, ctx);
     case "LOGIN_OTP":
       return handleLoginOTP(waId, input, ctx);
     case "SUB_CONFIRM":
       return handleSubConfirm(waId, input, ctx, session.userId ?? undefined);
+    case "BROWSE_PROVIDERS":
+      return handleBrowseProviderAction(waId, buttonPayload ?? input, ctx, session.userId ?? undefined);
+    case "LOG_ASSET_PROVIDER":
+      return handleLogAssetProvider(waId, buttonPayload ?? input, ctx, session.userId ?? undefined);
+    case "LOG_ASSET_AMOUNT":
+      return handleLogAssetAmount(waId, rawInput, ctx, session.userId ?? undefined);
+    case "LOG_ASSET_CONFIRM":
+      return handleLogAssetConfirm(waId, input, ctx, session.userId ?? undefined);
   }
 
   // ── IDLE — route by keyword ───────────────────────────────────────────────
@@ -129,66 +152,489 @@ export async function processIncomingMessage(
 
   if (input === "REGISTER" || input === "1") {
     if (session.userId) {
-      return sendWhatsAppMessage(waId, "✅ You already have an account! Send *MENU* to see your options.");
+      return sendWhatsAppMessage(waId, "✅ You already have an account! Send *MENU* for options.");
     }
     await updateSession(waId, "REGISTER_NAME", {});
     return sendWhatsAppMessage(
       waId,
-      "🎉 Welcome to *Sentil Africa!*\n\n" +
-      "Kenya's #1 wealth intelligence hub.\n\n" +
-      "Let's create your *free account*.\n\nFirst, what is your *full name*?"
+      `🎉 Welcome to *Sentil Africa!*\n\n` +
+      `Kenya's #1 wealth intelligence hub.\n\n` +
+      `Let's create your *free account*.\n\nFirst, what is your *full name*?`
     );
   }
 
   if (input === "LOGIN" || input === "2") {
     if (session.userId) {
-      return sendWhatsAppMessage(waId, "✅ You are already logged in! Send *MENU* to see your options.");
+      return sendWhatsAppMessage(waId, "✅ Already logged in! Send *MENU* for options.");
     }
     return handleLoginRequest(waId);
   }
 
   if (!session.userId) {
-    return sendWhatsAppMessage(
+    return sendInteractiveButtons(
       waId,
-      "👋 Welcome to *Sentil Africa*!\n\n" +
-      "I don't recognize this number yet.\n\n" +
-      "📝 Send *REGISTER* to create a free account\n" +
-      "🔐 Send *LOGIN* to link your existing account"
+      `👋 *Welcome to Sentil Africa!*\n\n` +
+      `🌍 Kenya's premier wealth intelligence hub.\n\n` +
+      `📊 Compare MMFs, T-Bills, Bonds, SACCOs\n` +
+      `🧠 AI-powered investment insights\n` +
+      `📱 Manage everything via WhatsApp\n\n` +
+      `Get started:`,
+      [
+        { id: "REGISTER", title: "🆕 Create Account" },
+        { id: "LOGIN",    title: "🔐 Login" },
+      ]
     );
   }
 
   // ── Authenticated commands ────────────────────────────────────────────────
-  if (input === "PORTFOLIO" || input === "P") return handlePortfolio(waId, session.userId);
-  if (input === "MARKETS"   || input === "M") return handleMarkets(waId);
-  if (input === "GOALS"     || input === "G") return handleGoals(waId, session.userId);
-  if (input === "WATCHLIST" || input === "W") return handleWatchlist(waId, session.userId);
-  if (input === "STATUS"    || input === "S") return handleSubscriptionStatus(waId, session.userId);
-  if (input === "HELP"      || input === "H") return sendHelp(waId);
+  const userId = session.userId!;
 
-  // ── Subscription commands ─────────────────────────────────────────────────
+  if (input === "PORTFOLIO" || input === "P") return handlePortfolio(waId, userId);
+  if (input === "MARKETS"   || input === "M") return handleMarkets(waId);
+  if (input === "GOALS"     || input === "G") return handleGoals(waId, userId);
+  if (input === "WATCHLIST" || input === "W") return handleWatchlist(waId, userId);
+  if (input === "STATUS"    || input === "S") return handleSubscriptionStatus(waId, userId);
+  if (input === "HELP"      || input === "H") return sendHelp(waId);
+  if (input === "LOGOUT")                     return handleLogout(waId);
+
+  // Investment browser
+  if (["INVEST", "BROWSE", "I", "INVESTMENTS"].includes(input)) {
+    return sendInvestmentCategories(waId, userId);
+  }
+
+  // Asset logging
+  if (["LOG", "ADD", "LOG ASSET", "ADD ASSET"].includes(input)) {
+    return startLogAsset(waId, ctx, userId);
+  }
+
+  // Subscription
   if (["SUBSCRIBE", "RENEW", "UPGRADE", "PRO", "PAY", "TRIAL"].includes(input)) {
-    return sendSubscriptionPlans(waId, session.userId);
+    return sendSubscriptionPlans(waId, userId);
   }
   if (input === "TRIAL_7_DAYS" || input === "TRIAL7" || input === "100") {
-    return handleSelectPlan(waId, "TRIAL_7_DAYS", ctx, session.userId);
+    return handleSelectPlan(waId, "TRIAL_7_DAYS", ctx, userId);
   }
   if (input === "PRO_MONTHLY" || input === "MONTHLY" || input === "499") {
-    return handleSelectPlan(waId, "PRO_MONTHLY", ctx, session.userId);
+    return handleSelectPlan(waId, "PRO_MONTHLY", ctx, userId);
   }
   if (input === "PRO_ANNUAL" || input === "ANNUAL" || input === "4990") {
-    return handleSelectPlan(waId, "PRO_ANNUAL", ctx, session.userId);
+    return handleSelectPlan(waId, "PRO_ANNUAL", ctx, userId);
   }
 
-  if (input === "LOGOUT") {
-    await updateSession(waId, "IDLE", {});
-    await prisma.whatsAppSession.update({ where: { waId }, data: { userId: null } });
-    return sendWhatsAppMessage(waId, "👋 You have been logged out. Send *LOGIN* to reconnect.");
+  // ASK command — explicit Gemini question
+  if (input.startsWith("ASK ") || rawInput.toLowerCase().startsWith("ask ")) {
+    const question = rawInput.replace(/^ask\s+/i, "").trim();
+    if (question.length < 3) {
+      return sendWhatsAppMessage(waId, "Please type your question after ASK. Example:\n*ASK what is the best MMF for KES 50,000?*");
+    }
+    return handleGeminiQuestion(waId, question, userId);
+  }
+
+  // Smart fallback — route to Gemini for anything investment-related
+  const investKeywords = ["what", "which", "how", "best", "compare", "rate", "invest", "return", "yield", "risk", "mmf", "tbill", "sacco", "explain", "difference", "recommend"];
+  const looksLikeQuestion = investKeywords.some((kw) => rawInput.toLowerCase().includes(kw)) || rawInput.includes("?");
+
+  if (looksLikeQuestion && rawInput.length > 8) {
+    return handleGeminiQuestion(waId, rawInput, userId);
   }
 
   return sendWhatsAppMessage(
     waId,
-    "❓ I don't understand that command. Send *MENU* to see all options."
+    `❓ I didn't get that. Send *MENU* to see all options, or ask me a question!\n\n` +
+    `Example: _ASK what is the best investment for KES 10,000?_`
   );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Gemini AI handler
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function handleGeminiQuestion(waId: string, question: string, userId: string) {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { name: true, isPremium: true },
+  });
+
+  await sendWhatsAppMessage(waId, "🤔 Thinking...");
+
+  const answer = await askGeminiBot(question, {
+    name: user?.name ?? "Investor",
+    userId,
+    isPremium: user?.isPremium ?? false,
+  });
+
+  return sendWhatsAppMessage(waId, `🧠 *Oracle Says:*\n\n${answer}`);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Investment Browser
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function sendInvestmentCategories(waId: string, userId: string) {
+  // Get available types from DB
+  const types = await prisma.provider.groupBy({
+    by: ["type"],
+    _count: { id: true },
+    orderBy: { type: "asc" },
+  });
+
+  const typeButtons = types
+    .slice(0, 3)
+    .map((t) => ({
+      id: `CAT_${t.type.toUpperCase().replace(/[^A-Z0-9]/g, "_")}`,
+      title: INVEST_CATEGORIES[t.type] ?? `📊 ${t.type}`,
+    }));
+
+  await sendInteractiveButtons(
+    waId,
+    `🏦 *Sentil Investment Hub*\n\n` +
+    `Browse and compare investment options across all categories.\n\n` +
+    `📊 Tap a category to see live rates & options:\n` +
+    `_(Tap any category to explore)_`,
+    typeButtons.length > 0
+      ? typeButtons
+      : [
+          { id: "CAT_MONEY_MARKET", title: "💰 Money Market Funds" },
+          { id: "CAT_T-BILL",      title: "📈 Treasury Bills" },
+          { id: "CAT_SACCO",       title: "🤝 SACCOs" },
+        ]
+  );
+
+  // Also send more categories as text
+  if (types.length > 3) {
+    const moreTypes = types.slice(3).map((t) => `• *${INVEST_CATEGORIES[t.type] ?? t.type}* — reply _${t.type.toUpperCase()}_`).join("\n");
+    return sendWhatsAppMessage(
+      waId,
+      `📌 *More categories:*\n${moreTypes}\n\n` +
+      `Or ask me directly:\n_ASK best investment for KES 100,000?_`
+    );
+  }
+}
+
+async function handleBrowseCategoryInput(waId: string, input: string, userId: string, ctx: SessionContext) {
+  // Detect CAT_ prefix from button payload
+  const catMatch = input.match(/^CAT_(.+)$/);
+  if (!catMatch) return sendInvestmentCategories(waId, userId);
+
+  const rawType = catMatch[1].replace(/_/g, " ").replace("MONEY MARKET", "MONEY_MARKET");
+  // Map common aliases
+  const typeMap: Record<string, string> = {
+    "MONEY_MARKET": "MONEY_MARKET",
+    "T BILL": "T-Bill",
+    "T-BILL": "T-Bill",
+    "SACCO": "SACCO",
+    "BOND": "Bond",
+    "EQUITY": "Equity",
+    "PENSION": "Pension",
+  };
+  const dbType = typeMap[rawType] ?? rawType;
+  return sendProviderList(waId, dbType, userId, ctx);
+}
+
+async function sendProviderList(waId: string, providerType: string, userId: string, ctx: SessionContext) {
+  const providers = await prisma.provider.findMany({
+    where: { type: providerType },
+    orderBy: { currentYield: "desc" },
+    take: 8,
+    select: {
+      id: true, name: true, currentYield: true, riskLevel: true,
+      minimumInvest: true, aum: true,
+    },
+  });
+
+  if (!providers.length) {
+    return sendWhatsAppMessage(
+      waId,
+      `📋 No providers found for *${providerType}*.\n\nSend *INVEST* to browse all categories.`
+    );
+  }
+
+  const categoryLabel = INVEST_CATEGORIES[providerType] ?? providerType;
+
+  let msg = `${categoryLabel}\n`;
+  msg += `━━━━━━━━━━━━━━━━\n`;
+  providers.forEach((p, i) => {
+    msg += `*${i + 1}. ${p.name}*\n`;
+    msg += `   📈 Yield: *${p.currentYield.toFixed(2)}% p.a.*\n`;
+    msg += `   ⚡ Risk: ${p.riskLevel}\n`;
+    if (p.minimumInvest) msg += `   💵 Min: ${p.minimumInvest}\n`;
+    msg += `\n`;
+  });
+  msg += `━━━━━━━━━━━━━━━━\n`;
+  msg += `Reply with a *number* (1-${providers.length}) to get details & AI summary.\n\n`;
+  msg += `Or:\n• *LOG* — add an investment\n• *INVEST* — browse other categories\n• *ASK which ${providerType} is best for me?*`;
+
+  await updateSession(waId, "BROWSE_PROVIDERS", {
+    ...ctx,
+    category: providerType,
+  }, userId);
+
+  return sendWhatsAppMessage(waId, msg);
+}
+
+async function handleBrowseProviderAction(waId: string, input: string, ctx: SessionContext, userId?: string) {
+  // Could be a number selection or a CAT_ button or LOG_ action
+  if (input.startsWith("CAT_")) {
+    return handleBrowseCategoryInput(waId, input, userId!, ctx);
+  }
+
+  if (input === "INVEST" || input === "BACK") {
+    await updateSession(waId, "IDLE", {}, userId);
+    return sendInvestmentCategories(waId, userId!);
+  }
+
+  if (input === "LOG" || input === "ADD") {
+    await updateSession(waId, "IDLE", {}, userId);
+    return startLogAsset(waId, ctx, userId!);
+  }
+
+  // Number selection — show provider detail
+  const num = parseInt(input, 10);
+  if (!isNaN(num) && ctx.category) {
+    const providers = await prisma.provider.findMany({
+      where: { type: ctx.category },
+      orderBy: { currentYield: "desc" },
+      take: 8,
+    });
+    const selected = providers[num - 1];
+    if (selected) {
+      await updateSession(waId, "BROWSE_PROVIDERS", {
+        ...ctx,
+        providerId: selected.id,
+        providerName: selected.name,
+        providerYield: selected.currentYield,
+      }, userId);
+
+      // Get AI summary
+      await sendWhatsAppMessage(waId, "🤔 Getting AI summary...");
+      const aiSummary = await generateInvestmentSummary(
+        selected.name, selected.type, selected.currentYield,
+        selected.riskLevel, selected.minimumInvest ?? null
+      );
+
+      const msg =
+        `🏦 *${selected.name}*\n` +
+        `━━━━━━━━━━━━━━━━\n` +
+        `📈 Yield: *${selected.currentYield.toFixed(2)}% p.a.*\n` +
+        `⚡ Risk: ${selected.riskLevel}\n` +
+        `🏛 AUM: ${selected.aum}\n` +
+        (selected.minimumInvest ? `💵 Minimum: ${selected.minimumInvest}\n` : ``) +
+        `━━━━━━━━━━━━━━━━\n` +
+        `🧠 *Oracle Says:*\n${aiSummary}\n\n` +
+        `━━━━━━━━━━━━━━━━\n` +
+        `What would you like to do?\n` +
+        `• Reply *LOG* to track this investment\n` +
+        `• Reply *WATCH* to add to watchlist\n` +
+        `• Reply *BACK* to see all ${ctx.category} funds\n` +
+        `• Reply *ASK* + your question about this fund`;
+
+      return sendWhatsAppMessage(waId, msg);
+    }
+  }
+
+  // WATCH command in browse mode
+  if ((input === "WATCH" || input === "WATCHLIST") && ctx.providerId) {
+    try {
+      await prisma.watchlist.upsert({
+        where: { id: `${userId}_${ctx.providerId}`, } as never,
+        create: { userId: userId!, providerId: ctx.providerId },
+        update: {},
+      }).catch(async () => {
+        // upsert may fail on non-unique id, just try create
+        const exists = await prisma.watchlist.findFirst({
+          where: { userId: userId!, providerId: ctx.providerId! },
+        });
+        if (!exists) {
+          await prisma.watchlist.create({
+            data: { userId: userId!, providerId: ctx.providerId! },
+          });
+        }
+      });
+      await updateSession(waId, "IDLE", {}, userId);
+      return sendWhatsAppMessage(
+        waId,
+        `👁 *${ctx.providerName ?? "Provider"}* added to your Watchlist!\n\n` +
+        `Send *WATCHLIST* anytime to view saved providers.\nSend *MENU* for more options.`
+      );
+    } catch {
+      return sendWhatsAppMessage(waId, "❌ Could not add to watchlist. Try again.");
+    }
+  }
+
+  // Fallback
+  await updateSession(waId, "IDLE", {}, userId);
+  return sendWhatsAppMessage(
+    waId,
+    `Send a number to select a provider, or:\n` +
+    `• *INVEST* — browse categories\n• *MENU* — main menu`
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Asset Logging
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function startLogAsset(waId: string, ctx: SessionContext, userId: string) {
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user?.isPremium) {
+    return sendWhatsAppMessage(
+      waId,
+      `📊 *Log Investment*\n\n` +
+      `Asset tracking is a *Pro feature*.\n\n` +
+      `⚡ Send *SUBSCRIBE* to start your 7-day trial (KES 100) or go Pro.`
+    );
+  }
+
+  const providers = await prisma.provider.findMany({
+    orderBy: [{ type: "asc" }, { currentYield: "desc" }],
+    take: 6,
+    select: { id: true, name: true, type: true, currentYield: true },
+  });
+
+  let msg = `📊 *Log Investment*\n\n`;
+  msg += `Which provider are you investing with?\n\n`;
+  providers.forEach((p, i) => {
+    msg += `*${i + 1}.* ${p.name} (${p.currentYield.toFixed(1)}%)\n`;
+  });
+  msg += `\nReply with a *number* or type the provider *name*.\n(Or *CANCEL* to quit)`;
+
+  await updateSession(waId, "LOG_ASSET_PROVIDER", {
+    ...ctx,
+    // Store provider list temporarily
+  }, userId);
+
+  return sendWhatsAppMessage(waId, msg);
+}
+
+async function handleLogAssetProvider(waId: string, input: string, ctx: SessionContext, userId?: string) {
+  if (input === "CANCEL" || input === "MENU") {
+    await updateSession(waId, "IDLE", {}, userId);
+    return sendWhatsAppMessage(waId, "❌ Cancelled. Send *MENU* for options.");
+  }
+
+  // Try numeric selection
+  const providers = await prisma.provider.findMany({
+    orderBy: [{ type: "asc" }, { currentYield: "desc" }],
+    take: 6,
+    select: { id: true, name: true, currentYield: true },
+  });
+
+  let selected = null;
+  const num = parseInt(input, 10);
+  if (!isNaN(num) && num >= 1 && num <= providers.length) {
+    selected = providers[num - 1];
+  } else {
+    // Try name match
+    selected = await prisma.provider.findFirst({
+      where: { name: { contains: input, mode: "insensitive" } },
+      select: { id: true, name: true, currentYield: true },
+    });
+  }
+
+  if (!selected) {
+    return sendWhatsAppMessage(
+      waId,
+      `❌ Provider not found. Reply with a number (1-${providers.length}) or the provider name.\nSend *CANCEL* to quit.`
+    );
+  }
+
+  await updateSession(waId, "LOG_ASSET_AMOUNT", {
+    ...ctx,
+    logProviderId: selected.id,
+    logProviderName: selected.name,
+    logProviderYield: selected.currentYield,
+  } as SessionContext & { logProviderYield: number }, userId);
+
+  return sendWhatsAppMessage(
+    waId,
+    `✅ *${selected.name}* (${selected.currentYield.toFixed(1)}% p.a.)\n\n` +
+    `How much have you invested? (in KES)\n\n` +
+    `Example: *50000*\n_(Send *CANCEL* to quit)_`
+  );
+}
+
+async function handleLogAssetAmount(waId: string, rawInput: string, ctx: SessionContext, userId?: string) {
+  if (rawInput.toUpperCase() === "CANCEL") {
+    await updateSession(waId, "IDLE", {}, userId);
+    return sendWhatsAppMessage(waId, "❌ Cancelled.");
+  }
+
+  const amount = parseFloat(rawInput.replace(/[^0-9.]/g, ""));
+  if (isNaN(amount) || amount < 100) {
+    return sendWhatsAppMessage(waId, "❌ Please enter a valid amount in KES (minimum 100).\nExample: *50000*");
+  }
+
+  // Fetch provider yield for projection
+  const provider = await prisma.provider.findUnique({
+    where: { id: ctx.logProviderId },
+    select: { currentYield: true },
+  });
+  const yieldRate = provider?.currentYield ?? 13;
+  const annualReturn = (amount * yieldRate) / 100;
+
+  await updateSession(waId, "LOG_ASSET_CONFIRM", {
+    ...ctx,
+    logAmount: amount,
+  }, userId);
+
+  return sendWhatsAppMessage(
+    waId,
+    `📊 *Confirm Investment Log*\n\n` +
+    `🏦 Provider: *${ctx.logProviderName}*\n` +
+    `💰 Amount: *${formatKES(amount)}*\n` +
+    `📈 Yield: *${yieldRate.toFixed(1)}% p.a.*\n` +
+    `🎯 Est. Annual Return: *${formatKES(annualReturn)}*\n\n` +
+    `_This records your investment info — your money stays with ${ctx.logProviderName}._\n\n` +
+    `Reply *YES* to confirm or *NO* to cancel.`
+  );
+}
+
+async function handleLogAssetConfirm(waId: string, input: string, ctx: SessionContext, userId?: string) {
+  if (input === "NO" || input === "CANCEL") {
+    await updateSession(waId, "IDLE", {}, userId);
+    return sendWhatsAppMessage(waId, "❌ Cancelled. Send *MENU* for options.");
+  }
+
+  if (input !== "YES") {
+    return sendWhatsAppMessage(waId, "Please reply *YES* to confirm or *NO* to cancel.");
+  }
+
+  if (!userId || !ctx.logProviderId || !ctx.logAmount) {
+    await updateSession(waId, "IDLE", {}, userId);
+    return sendWhatsAppMessage(waId, "❌ Session error. Please start again with *LOG*.");
+  }
+
+  const provider = await prisma.provider.findUnique({
+    where: { id: ctx.logProviderId },
+    select: { currentYield: true },
+  });
+
+  try {
+    await prisma.portfolioAsset.create({
+      data: {
+        userId,
+        providerId: ctx.logProviderId,
+        principal: ctx.logAmount,
+        projectedYield: provider?.currentYield ?? 13,
+      },
+    });
+
+    await updateSession(waId, "IDLE", {}, userId);
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://sentill.africa";
+
+    return sendWhatsAppMessage(
+      waId,
+      `✅ *Investment logged!*\n\n` +
+      `🏦 ${ctx.logProviderName}\n` +
+      `💰 ${formatKES(ctx.logAmount)}\n\n` +
+      `View your full portfolio:\n${appUrl}/dashboard/assets\n\n` +
+      `Send *PORTFOLIO* to see all tracked assets, or *LOG* to add another.`
+    );
+  } catch (err) {
+    console.error("[Bot] Log asset error:", err);
+    await updateSession(waId, "IDLE", {}, userId);
+    return sendWhatsAppMessage(waId, "❌ Failed to save. Please try again with *LOG*.");
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -202,14 +648,14 @@ async function handleRegisterName(waId: string, name: string, ctx: SessionContex
   await updateSession(waId, "REGISTER_EMAIL", { ...ctx, name });
   return sendWhatsAppMessage(
     waId,
-    `Great, *${name}*! 👋\n\nNow enter your *email address* to complete registration:`
+    `Great, *${name}*! 👋\n\nNow enter your *email address*:`
   );
 }
 
 async function handleRegisterEmail(waId: string, email: string, ctx: SessionContext) {
   const emailLower = email.toLowerCase().trim();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailLower)) {
-    return sendWhatsAppMessage(waId, "❌ That doesn't look like a valid email. Please try again:");
+    return sendWhatsAppMessage(waId, "❌ Invalid email. Please try again:");
   }
 
   const existing = await prisma.user.findUnique({ where: { email: emailLower } });
@@ -217,7 +663,7 @@ async function handleRegisterEmail(waId: string, email: string, ctx: SessionCont
     await updateSession(waId, "IDLE", {});
     return sendWhatsAppMessage(
       waId,
-      `⚠️ An account with *${emailLower}* already exists.\n\nSend *LOGIN* to link your WhatsApp to that account.`
+      `⚠️ An account with *${emailLower}* already exists.\n\nSend *LOGIN* to link your WhatsApp.`
     );
   }
 
@@ -226,19 +672,19 @@ async function handleRegisterEmail(waId: string, email: string, ctx: SessionCont
   await updateSession(waId, "REGISTER_OTP", { ...ctx, email: emailLower, otp: hashedOtp });
   return sendWhatsAppMessage(
     waId,
-    `📲 Your verification code:\n\n🔐 *${otp}*\n\n_(valid for 10 minutes)_\n\nEnter the code to verify your account:`
+    `📲 Your verification code:\n\n🔐 *${otp}*\n\n_(valid for 10 minutes)_\n\nEnter the code to verify:`
   );
 }
 
 async function handleRegisterOTP(waId: string, inputOtp: string, ctx: SessionContext) {
   if (!ctx.otp || !ctx.name || !ctx.email) {
     await updateSession(waId, "IDLE", {});
-    return sendWhatsAppMessage(waId, "❌ Session expired. Please send *REGISTER* to start again.");
+    return sendWhatsAppMessage(waId, "❌ Session expired. Send *REGISTER* to start again.");
   }
 
   const valid = await bcrypt.compare(inputOtp, ctx.otp);
   if (!valid) {
-    return sendWhatsAppMessage(waId, "❌ Invalid OTP. Please check the code and try again:");
+    return sendWhatsAppMessage(waId, "❌ Invalid OTP. Try again:");
   }
 
   const normalizedPhone = normalizePhone(waId);
@@ -252,33 +698,28 @@ async function handleRegisterOTP(waId: string, inputOtp: string, ctx: SessionCon
     },
   });
 
-  // Auto-enable WhatsApp daily notifications for all WA registrations
+  // Auto-enable daily notifications
   await prisma.alertPreference.upsert({
     where: { userId: user.id },
-    create: {
-      userId: user.id,
-      whatsappEnabled: true,
-      whatsappNumber: normalizedPhone,
-      frequency: "DAILY",
-    },
-    update: {
-      whatsappEnabled: true,
-      whatsappNumber: normalizedPhone,
-      frequency: "DAILY",
-    },
+    create: { userId: user.id, whatsappEnabled: true, whatsappNumber: normalizedPhone, frequency: "DAILY" },
+    update: { whatsappEnabled: true, whatsappNumber: normalizedPhone, frequency: "DAILY" },
   });
 
   await updateSession(waId, "IDLE", {}, user.id);
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://sentil.africa";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://sentill.africa";
   return sendWhatsAppMessage(
     waId,
-    `✅ *Welcome to Sentil Africa, ${ctx.name}!*\n\n` +
-    `Your free account is ready. 🎉\n\n` +
-    `📊 *Free features:* Market rates, provider comparisons & daily briefings\n\n` +
-    `⚡ *Upgrade to Pro* for portfolio tracking, AI Oracle & goal planning.\n\n` +
-    `🌐 Dashboard: ${appUrl}/dashboard\n\n` +
-    `Send *SUBSCRIBE* to upgrade, or *MENU* to explore.`
+    `✅ *Welcome to Sentil Africa, ${ctx.name}!* 🎉\n\n` +
+    `Your account is ready!\n\n` +
+    `📊 *What you can do via WhatsApp:*\n` +
+    `• *MARKETS* — live MMF/T-Bill rates\n` +
+    `• *INVEST* — browse all investment options\n` +
+    `• *ASK* — ask AI any investment question\n` +
+    `• *STATUS* — your subscription details\n\n` +
+    `🔔 You're enrolled for *daily AI briefs* at 7AM EAT!\n\n` +
+    `⚡ Upgrade to Pro: *SUBSCRIBE*\n` +
+    `🌐 Dashboard: ${appUrl}/dashboard`
   );
 }
 
@@ -293,7 +734,7 @@ async function handleLoginRequest(waId: string) {
   if (!user) {
     return sendWhatsAppMessage(
       waId,
-      "❌ No account linked to this number.\n\nSend *REGISTER* to create your free account."
+      "❌ No account linked to this number.\n\nSend *REGISTER* to create a free account."
     );
   }
 
@@ -320,7 +761,7 @@ async function handleLoginOTP(waId: string, inputOtp: string, ctx: SessionContex
 
   if (!user?.otpCode || !user.otpExpiry) {
     await updateSession(waId, "IDLE", {});
-    return sendWhatsAppMessage(waId, "❌ Session expired. Please send *LOGIN* to try again.");
+    return sendWhatsAppMessage(waId, "❌ Session expired. Send *LOGIN* to try again.");
   }
 
   if (new Date() > user.otpExpiry) {
@@ -338,24 +779,15 @@ async function handleLoginOTP(waId: string, inputOtp: string, ctx: SessionContex
     data: { otpCode: null, otpExpiry: null, whatsappVerified: true },
   });
 
-  // Auto-enable WA notifications for ALL users who log in via WhatsApp
+  // Auto-enable WA notifications
   await prisma.alertPreference.upsert({
     where: { userId: user.id },
-    create: {
-      userId: user.id,
-      whatsappEnabled: true,
-      whatsappNumber: normalizePhone(waId),
-      frequency: "DAILY",
-    },
-    update: {
-      whatsappEnabled: true,
-      whatsappNumber: normalizePhone(waId),
-    },
+    create: { userId: user.id, whatsappEnabled: true, whatsappNumber: normalizePhone(waId), frequency: "DAILY" },
+    update: { whatsappEnabled: true, whatsappNumber: normalizePhone(waId) },
   });
 
   await updateSession(waId, "IDLE", {}, user.id);
 
-  // Show subscription status on login
   const subStatus = user.isPremium ? `⚡ *Pro Active*` : `🔓 *Free Plan*`;
   const expiry = user.premiumExpiresAt
     ? ` (expires ${new Date(user.premiumExpiresAt).toLocaleDateString("en-KE")})`
@@ -365,8 +797,12 @@ async function handleLoginOTP(waId: string, inputOtp: string, ctx: SessionContex
     waId,
     `✅ *Logged in!* Welcome back, *${user.name.split(" ")[0]}* 👋\n\n` +
     `${subStatus}${expiry}\n\n` +
-    `🔔 *Daily AI briefs are ON* — you'll get market intel at 7AM EAT.\n\n` +
-    `Send *MENU* to see your options.`
+    `🔔 *Daily AI briefs are ON* — market intel at 7AM EAT.\n\n` +
+    `💡 *Quick commands:*\n` +
+    `• *INVEST* — browse investment options\n` +
+    `• *MARKETS* — live rates\n` +
+    `• *ASK* — ask AI anything\n` +
+    `• *MENU* — all options`
   );
 }
 
@@ -377,14 +813,11 @@ async function handleLoginOTP(waId: string, inputOtp: string, ctx: SessionContex
 async function handlePortfolio(waId: string, userId: string) {
   const user = await prisma.user.findUnique({ where: { id: userId } });
 
-  // Portfolio tracking is a Pro feature
   if (!user?.isPremium) {
     return sendWhatsAppMessage(
       waId,
-      `📊 *Portfolio Tracker*\n\n` +
-      `This is a *Pro feature*.\n\n` +
-      `⚡ Upgrade to track your investments, log assets, and get AI-powered portfolio insights.\n\n` +
-      `Send *SUBSCRIBE* to see plans — starting at *KES 499/month*.`
+      `📊 *Portfolio Tracker*\n\nThis is a *Pro feature*.\n\n` +
+      `⚡ Send *SUBSCRIBE* to upgrade — starting at *KES 100 for 7 days*.`
     );
   }
 
@@ -396,12 +829,12 @@ async function handlePortfolio(waId: string, userId: string) {
   });
 
   if (!assets.length) {
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://sentil.africa";
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://sentill.africa";
     return sendWhatsAppMessage(
       waId,
-      `📊 *Your Portfolio*\n\n` +
-      `No assets logged yet.\n\n` +
-      `🌐 Add your investments via the dashboard:\n${appUrl}/dashboard/assets`
+      `📊 *Your Portfolio*\n\nNo assets logged yet.\n\n` +
+      `• Send *LOG* to add an investment\n` +
+      `• Or visit: ${appUrl}/dashboard/assets`
     );
   }
 
@@ -415,9 +848,9 @@ async function handlePortfolio(waId: string, userId: string) {
   });
   msg += `──────────────────\n`;
   msg += `📦 *Total Tracked:* ${formatKES(total)}\n`;
-  msg += `📈 *Projected Annual Return:* ${formatKES(projected)}\n\n`;
-  msg += `_Sentil tracks your data — money stays in your accounts._\n\n`;
-  msg += `Send *MARKETS* for live rates or *GOALS* for progress.`;
+  msg += `📈 *Projected Annual:* ${formatKES(projected)}\n\n`;
+  msg += `_ℹ️ Your money stays with your providers._\n\n`;
+  msg += `• *LOG* — add investment\n• *MARKETS* — live rates\n• *GOALS* — your targets`;
 
   return sendWhatsAppMessage(waId, msg);
 }
@@ -436,9 +869,9 @@ async function handleMarkets(waId: string) {
   } else {
     msg += `• 91-Day T-Bill: 15.78%\n• CIC MMF: 13.40%\n• Sanlam MMF: 13.10%\n• Zimele MMF: 13.05%\n`;
   }
-  msg += `\n_Last updated: ${new Date().toLocaleDateString("en-KE", { day: "numeric", month: "short", year: "numeric" })}_\n\n`;
-  msg += `_ℹ️ Sentil provides information only — invest directly through your chosen provider._\n\n`;
-  msg += `Send *PORTFOLIO* to track your holdings or *SUBSCRIBE* to unlock Pro insights.`;
+  msg += `\n_Updated: ${new Date().toLocaleDateString("en-KE", { day: "numeric", month: "short" })}_\n`;
+  msg += `_ℹ️ Rates for information only._\n\n`;
+  msg += `• *INVEST* — browse providers\n• *ASK* which fund is best for me?`;
 
   return sendWhatsAppMessage(waId, msg);
 }
@@ -449,20 +882,18 @@ async function handleGoals(waId: string, userId: string) {
   if (!user?.isPremium) {
     return sendWhatsAppMessage(
       waId,
-      `🎯 *Financial Goals*\n\n` +
-      `Goal planning is a *Pro feature*.\n\n` +
-      `⚡ Send *SUBSCRIBE* to unlock goal setting, portfolio tracking & AI recommendations.`
+      `🎯 *Financial Goals*\n\nGoal planning is a *Pro feature*.\n\n` +
+      `Send *SUBSCRIBE* to unlock.`
     );
   }
 
   const goals = await prisma.userGoal.findMany({ where: { userId } });
 
   if (!goals.length) {
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://sentil.africa";
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://sentill.africa";
     return sendWhatsAppMessage(
       waId,
-      `🎯 *Your Goals*\n\nNo goals set yet.\n\n` +
-      `Set your first goal on the dashboard:\n${appUrl}/dashboard`
+      `🎯 *Your Goals*\n\nNo goals set yet.\n\nSet your first goal:\n${appUrl}/dashboard`
     );
   }
 
@@ -471,7 +902,7 @@ async function handleGoals(waId: string, userId: string) {
     const deadline = new Date(g.deadline).toLocaleDateString("en-KE");
     msg += `• *${g.name}* (${g.category})\n  Target: ${formatKES(g.target)} by ${deadline}\n\n`;
   });
-  msg += `Send *PORTFOLIO* to review your tracked investments.`;
+  msg += `Send *PORTFOLIO* to review your investments.`;
 
   return sendWhatsAppMessage(waId, msg);
 }
@@ -483,11 +914,10 @@ async function handleWatchlist(waId: string, userId: string) {
   });
 
   if (!items.length) {
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://sentil.africa";
     return sendWhatsAppMessage(
       waId,
       `👀 *Your Watchlist*\n\nNothing saved yet.\n\n` +
-      `Browse providers on the platform:\n${appUrl}/dashboard`
+      `• *INVEST* — browse providers to add\n• Or send *WATCH* after viewing a provider`
     );
   }
 
@@ -499,7 +929,7 @@ async function handleWatchlist(waId: string, userId: string) {
       msg += `• *${item.stockSymbol}* (NSE)\n`;
     }
   });
-  msg += `\n_ℹ️ These are information snapshots — invest directly with each provider._\n\nSend *MARKETS* for current rates.`;
+  msg += `\n_ℹ️ Information snapshots — invest directly with each provider._\n\nSend *MARKETS* for live rates.`;
 
   return sendWhatsAppMessage(waId, msg);
 }
@@ -508,7 +938,7 @@ async function handleSubscriptionStatus(waId: string, userId: string) {
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) return;
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://sentil.africa";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://sentill.africa";
 
   if (user.isPremium) {
     const expires = user.premiumExpiresAt
@@ -526,9 +956,7 @@ async function handleSubscriptionStatus(waId: string, userId: string) {
       `✅ Portfolio Tracker\n✅ AI Oracle\n✅ Goal Planning\n✅ Daily Intelligence\n\n`;
 
     if (isExpiringSoon) {
-      msg +=
-        `⚠️ *Expiring soon!* Renew now to keep uninterrupted access.\n\n` +
-        `Send *RENEW* to choose a plan.`;
+      msg += `⚠️ *Expiring soon!* Send *RENEW* to keep access.`;
     } else {
       msg += `🌐 ${appUrl}/dashboard`;
     }
@@ -536,22 +964,30 @@ async function handleSubscriptionStatus(waId: string, userId: string) {
     return sendWhatsAppMessage(waId, msg);
   }
 
-  // Free user
   return sendWhatsAppMessage(
     waId,
     `🔓 *Sentil Free Plan*\n\n` +
     `👤 ${user.name}\n\n` +
-    `✅ Live market rates\n✅ Provider comparisons\n✅ Daily WhatsApp briefing\n` +
+    `✅ Live market rates\n✅ Investment browser\n✅ AI Q&A\n✅ Daily WhatsApp brief\n` +
     `❌ Portfolio tracker\n❌ AI Oracle\n❌ Goal planning\n\n` +
     `⚡ *Upgrade to Pro:*\n` +
+    `• Trial (7 days) — *KES 100*\n` +
     `• Monthly — *KES 499/month*\n` +
-    `• Annual — *KES 4,990/year* (save 2 months!)\n\n` +
-    `Send *SUBSCRIBE* to upgrade or *RENEW* to reactivate.`
+    `• Annual — *KES 4,990/year*\n\n` +
+    `Send *SUBSCRIBE* to upgrade.`
   );
 }
 
+async function handleLogout(waId: string) {
+  await prisma.whatsAppSession.update({
+    where: { waId },
+    data: { userId: null, state: "IDLE", context: "{}" },
+  });
+  return sendWhatsAppMessage(waId, "👋 Logged out. Send *LOGIN* to reconnect.");
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
-// Subscription flow — plans menu and confirmation
+// Subscription flow
 // ─────────────────────────────────────────────────────────────────────────────
 
 async function sendSubscriptionPlans(waId: string, userId?: string) {
@@ -563,7 +999,6 @@ async function sendSubscriptionPlans(waId: string, userId?: string) {
   const isRenewal = user?.isPremium ?? false;
   const action = isRenewal ? "Renew" : "Upgrade to";
 
-  // Check if user has ever had a trial (prevent double-trial)
   const hadTrial = await prisma.payment.findFirst({
     where: { userId, plan: "TRIAL_7_DAYS", status: "SUCCESS" },
   });
@@ -571,18 +1006,17 @@ async function sendSubscriptionPlans(waId: string, userId?: string) {
   await sendInteractiveButtons(
     waId,
     `⚡ *${action} Sentil Pro*\n\n` +
-    `Sentil is a *wealth intelligence hub* — we help you make smarter investment decisions.\n\n` +
-    (!hadTrial
-      ? `🆓 *7-Day Trial*\n   KES 100 — try everything free for a week!\n\n`
-      : "") +
-    `📱 *Monthly Plan*\n   KES 499/month — full Pro access\n\n` +
-    `📅 *Annual Plan*\n   KES 4,990/year — save 2 months!\n\n` +
-    `Choose your plan:`,
+    `Unlock full intelligence:\n` +
+    `📊 Portfolio tracking\n🧠 AI Oracle deep insights\n🎯 Goal planning\n\n` +
+    (!hadTrial ? `🆓 *Trial:* KES 100 / 7 days\n` : ``) +
+    `📱 *Monthly:* KES 499/month\n` +
+    `📅 *Annual:* KES 4,990/year _(save 2 months!)_\n\n` +
+    `Choose a plan:`,
     [
-      ...(hadTrial ? [] : [{ id: "TRIAL_7_DAYS", title: "🆓 Trial — KES 100 / 7 days" }]),
+      ...(hadTrial ? [] : [{ id: "TRIAL_7_DAYS", title: "🆓 Trial — KES 100" }]),
       { id: "PRO_MONTHLY", title: "📱 Monthly — KES 499" },
       { id: "PRO_ANNUAL",  title: "📅 Annual — KES 4,990" },
-    ].slice(0, 3), // Meta limit: 3 buttons max
+    ].slice(0, 3),
     userId
   );
 }
@@ -594,15 +1028,13 @@ async function handleSelectPlan(
   userId?: string
 ) {
   if (!userId) {
-    return sendWhatsAppMessage(waId, "🔒 Please *LOGIN* first before subscribing.");
+    return sendWhatsAppMessage(waId, "🔒 Please *LOGIN* first.");
   }
 
   const planInfo = PLANS[plan];
-
   await updateSession(waId, "SUB_CONFIRM", { ...ctx, plan }, userId);
 
   const isTrial = plan === "TRIAL_7_DAYS";
-
   return sendWhatsAppMessage(
     waId,
     `${isTrial ? "🆓" : "⚡"} *Confirm ${isTrial ? "Trial" : "Subscription"}*\n\n` +
@@ -624,16 +1056,16 @@ async function handleSubConfirm(
 ) {
   if (input === "NO" || input === "CANCEL") {
     await updateSession(waId, "IDLE", {}, userId);
-    return sendWhatsAppMessage(waId, "❌ Subscription cancelled. Send *MENU* for options.");
+    return sendWhatsAppMessage(waId, "❌ Cancelled. Send *MENU* for options.");
   }
 
   if (input !== "YES") {
-    return sendWhatsAppMessage(waId, "Please reply *YES* to confirm or *NO* to cancel.");
+    return sendWhatsAppMessage(waId, "Reply *YES* to confirm or *NO* to cancel.");
   }
 
   if (!userId) {
     await updateSession(waId, "IDLE", {});
-    return sendWhatsAppMessage(waId, "❌ You must be logged in. Send *LOGIN* first.");
+    return sendWhatsAppMessage(waId, "❌ Must be logged in. Send *LOGIN* first.");
   }
 
   const plan = (ctx.plan ?? "PRO_MONTHLY") as PlanKey;
@@ -642,12 +1074,11 @@ async function handleSubConfirm(
 
   if (!user) {
     await updateSession(waId, "IDLE", {});
-    return sendWhatsAppMessage(waId, "❌ Account not found. Please try again.");
+    return sendWhatsAppMessage(waId, "❌ Account not found. Try again.");
   }
 
   try {
-    // Initialize Paystack checkout (existing mpesa/paystack route)
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://sentil.africa";
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://sentill.africa";
     const paystackRes = await fetch(`${appUrl}/api/payment/mpesa`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -656,7 +1087,7 @@ async function handleSubConfirm(
         amount: planInfo.amount,
         plan,
         email: user.email,
-        mpesaCode: "WA-CHECKOUT", // triggers Paystack init flow
+        mpesaCode: "WA-CHECKOUT",
       }),
     });
 
@@ -670,29 +1101,29 @@ async function handleSubConfirm(
         `✅ *Your Secure Payment Link*\n\n` +
         `Plan: *${planInfo.label}* — ${formatKES(planInfo.amount)}\n\n` +
         `🔗 ${paystackData.authorization_url}\n\n` +
-        `👆 Tap the link above to pay via *M-Pesa or Card* on the Paystack secure page.\n\n` +
-        `_Your premium access will activate automatically after payment._\n\n` +
-        `⚠️ Link expires in 30 minutes. Send *SUBSCRIBE* to get a new one if needed.`
+        `👆 Tap the link to pay via *M-Pesa or Card* on Paystack.\n\n` +
+        `_Your Pro access activates automatically after payment._\n\n` +
+        `⚠️ Link expires in 30 minutes. Send *SUBSCRIBE* for a new one.`
       );
     } else {
-      throw new Error(paystackData.error ?? "Checkout initialization failed");
+      throw new Error(paystackData.error ?? "Checkout failed");
     }
   } catch (err) {
-    console.error("[WhatsApp Sub Confirm]", err);
+    console.error("[Bot Sub Confirm]", err);
     await updateSession(waId, "IDLE", {}, userId);
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://sentil.africa";
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://sentill.africa";
     return sendWhatsAppMessage(
       waId,
       `❌ Failed to generate payment link.\n\n` +
-      `Please subscribe directly from the web:\n${appUrl}/packages\n\n` +
-      `Or try again by sending *SUBSCRIBE*.`
+      `Subscribe directly from the web:\n${appUrl}/packages\n\n` +
+      `Or try again: send *SUBSCRIBE*`
     );
   }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Menus
+// Main menu
 // ─────────────────────────────────────────────────────────────────────────────
 
 async function sendMainMenu(waId: string, userId?: string) {
@@ -701,7 +1132,6 @@ async function sendMainMenu(waId: string, userId?: string) {
     const name = user?.name?.split(" ")[0] ?? "Investor";
     const isPro = user?.isPremium ?? false;
 
-    // Check expiry warning
     const expiresIn = user?.premiumExpiresAt
       ? Math.ceil((new Date(user.premiumExpiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
       : null;
@@ -714,12 +1144,12 @@ async function sendMainMenu(waId: string, userId?: string) {
       waId,
       `👋 *Hello, ${name}!*\n\n` +
       `📱 *Sentil Africa — Wealth Intelligence Hub*\n` +
-      (isPro ? `⚡ Pro Member` : `🔓 Free Plan — Send *SUBSCRIBE* to upgrade`) +
+      (isPro ? `⚡ Pro Member` : `🔓 Free Plan`) +
       expiryWarning +
-      `\n\nWhat would you like to do?`,
+      `\n\nWhat would you like today?`,
       [
-        { id: "MARKETS",   title: "📈 Markets" },
-        { id: "STATUS",    title: isPro ? "⚡ My Subscription" : "🔓 My Plan" },
+        { id: "INVEST",    title: "🏦 Browse Investments" },
+        { id: "MARKETS",   title: "📈 Live Rates" },
         { id: "SUBSCRIBE", title: isPro ? "🔄 Renew Pro" : "⚡ Upgrade to Pro" },
       ],
       userId
@@ -727,27 +1157,26 @@ async function sendMainMenu(waId: string, userId?: string) {
 
     return sendWhatsAppMessage(
       waId,
-      `📌 *Commands:*\n` +
-      `*MARKETS* — Live NSE/MMF/T-Bill rates\n` +
-      (isPro
-        ? `*PORTFOLIO* — Your tracked assets\n*GOALS* — Financial goals\n`
-        : ``) +
-      `*WATCHLIST* — Saved providers\n` +
-      `*STATUS* — Subscription details\n` +
-      `*SUBSCRIBE* | *RENEW* — Upgrade/Renew Pro\n` +
-      `*HELP* — Full command list`,
+      `📌 *All commands:*\n` +
+      `*INVEST* — browse all investment options\n` +
+      `*MARKETS* — live NSE/MMF/T-Bill rates\n` +
+      `*ASK* — ask AI any investment question\n` +
+      (isPro ? `*PORTFOLIO* — your tracked assets\n*GOALS* — financial goals\n*LOG* — add investment\n` : ``) +
+      `*WATCHLIST* — saved providers\n` +
+      `*STATUS* — subscription details\n` +
+      `*SUBSCRIBE* | *RENEW* — upgrade/renew\n` +
+      `*HELP* — full command list`,
       userId
     );
   }
 
-  // Guest menu
   return sendInteractiveButtons(
     waId,
     `👋 *Welcome to Sentil Africa!*\n\n` +
     `🌍 Kenya's premier wealth intelligence hub.\n\n` +
-    `📊 Compare MMFs, T-Bills, Bonds, SACCOs\n` +
+    `📊 Browse MMFs, T-Bills, Bonds, SACCOs\n` +
     `🧠 AI-powered investment insights\n` +
-    `📱 Manage everything via WhatsApp\n\n` +
+    `📱 Everything via WhatsApp\n\n` +
     `Get started:`,
     [
       { id: "REGISTER", title: "🆕 Create Account" },
@@ -757,28 +1186,30 @@ async function sendMainMenu(waId: string, userId?: string) {
 }
 
 async function sendHelp(waId: string) {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://sentil.africa";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://sentill.africa";
   return sendWhatsAppMessage(
     waId,
     `🆘 *Sentil WhatsApp Help*\n\n` +
-    `*── Information (Free) ──*\n` +
-    `*MARKETS* (M) — Live market rates\n` +
-    `*WATCHLIST* (W) — Your saved providers\n\n` +
-    `*── Pro Features ──*\n` +
-    `*PORTFOLIO* (P) — Tracked assets & returns\n` +
-    `*GOALS* (G) — Financial goal progress\n\n` +
+    `*── Investment Hub ──*\n` +
+    `*INVEST* (I) — browse all categories\n` +
+    `*MARKETS* (M) — live rates\n` +
+    `*ASK <question>* — AI investment advice\n\n` +
+    `*── Portfolio (Pro) ──*\n` +
+    `*PORTFOLIO* (P) — tracked assets\n` +
+    `*LOG* — add investment\n` +
+    `*GOALS* (G) — financial goals\n\n` +
     `*── Subscription ──*\n` +
-    `*SUBSCRIBE* — View & purchase Pro plans\n` +
-    `*RENEW* — Renew your Pro subscription\n` +
-    `*STATUS* (S) — Check subscription status\n\n` +
-    `*── Account ──*\n` +
-    `*MENU* — Main menu\n` +
-    `*LOGOUT* — Disconnect WhatsApp\n\n` +
+    `*SUBSCRIBE* — view & purchase Pro\n` +
+    `*RENEW* — renew Pro\n` +
+    `*STATUS* (S) — subscription details\n\n` +
     `*── Plans ──*\n` +
-    `• Trial:   *KES 100 / 7 days* — try Pro free!\n` +
+    `• Trial: *KES 100 / 7 days*\n` +
     `• Monthly: *KES 499/month*\n` +
-    `• Annual:  *KES 4,990/year* (save 2 months!)\n\n` +
-    `_ℹ️ Sentil is an intelligence hub. We do not hold or manage your funds._\n\n` +
+    `• Annual: *KES 4,990/year*\n\n` +
+    `*── Account ──*\n` +
+    `*MENU* — main menu\n` +
+    `*LOGOUT* — disconnect\n\n` +
+    `_ℹ️ Sentil tracks info only — your money stays with providers._\n\n` +
     `🌐 ${appUrl}`
   );
 }

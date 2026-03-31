@@ -71,8 +71,9 @@ export async function GET(req: NextRequest) {
       }
 
       // Upgrade user to premium
+      let upgradedUser = null;
       try {
-        await prisma.user.update({
+        upgradedUser = await prisma.user.update({
           where: { id: userId },
           data: { 
             isPremium: true, 
@@ -83,8 +84,33 @@ export async function GET(req: NextRequest) {
         console.log("[Verify] User upgraded to premium successfully. Expires:", premiumExpiresAt);
       } catch (userErr: any) {
         console.error("[Verify] CRITICAL: Failed to upgrade user:", userErr.message);
-        // Even if Prisma fails, still tell user it succeeded - we can manually reconcile
-        // The payment WAS successful on Paystack's side
+      }
+
+      // Notify via WhatsApp if they have a linked number
+      if (upgradedUser?.whatsappId && upgradedUser.whatsappVerified) {
+        try {
+          const { sendWhatsAppMessage } = await import("@/lib/whatsapp");
+          const expiryDate = premiumExpiresAt
+            ? new Date(premiumExpiresAt).toLocaleDateString("en-KE", { day: "numeric", month: "long", year: "numeric" })
+            : "N/A";
+          const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://sentill.africa";
+          await sendWhatsAppMessage(
+            upgradedUser.whatsappId,
+            `🎉 *Payment Confirmed!*\n\n` +
+            `⚡ *Sentil Pro is now ACTIVE!*\n\n` +
+            `✅ Plan: ${plan ?? "Pro"}\n` +
+            `📅 Expires: ${expiryDate}\n\n` +
+            `You now have access to:\n` +
+            `📊 Portfolio Tracker\n` +
+            `🧠 AI Oracle\n` +
+            `🎯 Goal Planning\n\n` +
+            `🌐 Dashboard: ${appUrl}/dashboard\n\n` +
+            `Send *MENU* to get started!`,
+            userId
+          );
+        } catch (waErr) {
+          console.error("[Verify] WA notification failed:", waErr);
+        }
       }
 
       if (isJsonRequest) {
