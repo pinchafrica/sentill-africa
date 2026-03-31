@@ -5,7 +5,7 @@
  * Features:
  *  • Investment browser (MMF/T-Bill/SACCO/Bond/NSE) with interactive buttons
  *  • Asset logging via WhatsApp chat
- *  • Gemini AI for any investment question
+ *  • Sentil AI for any investment question
  *  • Paystack Subscribe/Renew with direct checkout links
  *  • Registration, Login (OTP), Portfolio, Goals, Watchlist
  */
@@ -70,9 +70,31 @@ interface SessionContext {
 async function getOrCreateSession(waId: string) {
   let session = await prisma.whatsAppSession.findUnique({ where: { waId } });
   if (!session) {
-    session = await prisma.whatsAppSession.create({
-      data: { waId, state: "IDLE", context: "{}" },
+    // Auto-link userId if user already registered this waId via direct enrollment
+    const linkedUser = await prisma.user.findUnique({
+      where: { whatsappId: waId },
+      select: { id: true },
     });
+    session = await prisma.whatsAppSession.create({
+      data: {
+        waId,
+        state: "IDLE",
+        context: "{}",
+        ...(linkedUser ? { userId: linkedUser.id } : {}),
+      },
+    });
+  } else if (!session.userId) {
+    // Session exists but has no userId — try to recover it
+    const linkedUser = await prisma.user.findUnique({
+      where: { whatsappId: waId },
+      select: { id: true },
+    });
+    if (linkedUser) {
+      session = await prisma.whatsAppSession.update({
+        where: { waId },
+        data: { userId: linkedUser.id },
+      });
+    }
   }
   return session;
 }
@@ -89,7 +111,8 @@ async function updateSession(
       state,
       context: JSON.stringify(context ?? {}),
       lastSeen: new Date(),
-      ...(userId ? { userId } : {}),
+      // Only set userId if explicitly provided — never wipe an existing one
+      ...(userId !== undefined ? { userId } : {}),
     },
   });
 }
@@ -122,6 +145,35 @@ export async function processIncomingMessage(
   const ctx: SessionContext = JSON.parse(session.context || "{}");
 
   await logInbound(waId, rawInput || input, session.userId ?? undefined);
+
+  // ── Button payloads: route directly regardless of state ─────────────────
+  // This ensures interactive button taps always work even if state is IDLE
+  if (buttonPayload) {
+    // Plan selections
+    if (buttonPayload === "TRIAL_7_DAYS") return handleSelectPlan(waId, "TRIAL_7_DAYS", ctx, session.userId ?? undefined);
+    if (buttonPayload === "PRO_MONTHLY")  return handleSelectPlan(waId, "PRO_MONTHLY",  ctx, session.userId ?? undefined);
+    if (buttonPayload === "PRO_ANNUAL")   return handleSelectPlan(waId, "PRO_ANNUAL",   ctx, session.userId ?? undefined);
+    if (buttonPayload === "MARKETS")      return handleMarkets(waId);
+    if (buttonPayload === "INVEST" || buttonPayload === "BROWSE") {
+      if (session.userId) return sendInvestmentCategories(waId, session.userId);
+    }
+    if (buttonPayload === "SUBSCRIBE" || buttonPayload === "RENEW") {
+      return sendSubscriptionPlans(waId, session.userId ?? undefined);
+    }
+    if (buttonPayload.startsWith("CAT_")) {
+      if (session.userId) {
+        await updateSession(waId, "BROWSE_PROVIDERS", ctx, session.userId);
+        return handleBrowseCategoryInput(waId, buttonPayload, session.userId, ctx);
+      }
+    }
+    if (buttonPayload === "REGISTER") {
+      await updateSession(waId, "REGISTER_NAME", {});
+      return sendWhatsAppMessage(waId,
+        `🎉 Welcome to *Sentil Africa!*\n\nKenya's #1 wealth intelligence hub.\n\nLet's create your free account.\n\nFirst, what is your *full name*?`
+      );
+    }
+    if (buttonPayload === "LOGIN") return handleLoginRequest(waId);
+  }
 
   // ── Route by session state ────────────────────────────────────────────────
   switch (session.state) {
@@ -236,8 +288,8 @@ export async function processIncomingMessage(
     return handleGeminiQuestion(waId, question, userId);
   }
 
-  // Smart fallback — route to Gemini for anything investment-related
-  const investKeywords = ["what", "which", "how", "best", "compare", "rate", "invest", "return", "yield", "risk", "mmf", "tbill", "sacco", "explain", "difference", "recommend"];
+  // Smart fallback — route to Sentil AI for anything investment-related
+  const investKeywords = ["what", "which", "how", "best", "compare", "rate", "invest", "return", "yield", "risk", "mmf", "tbill", "sacco", "explain", "difference", "recommend", "should", "advice"];
   const looksLikeQuestion = investKeywords.some((kw) => rawInput.toLowerCase().includes(kw)) || rawInput.includes("?");
 
   if (looksLikeQuestion && rawInput.length > 8) {
@@ -252,7 +304,7 @@ export async function processIncomingMessage(
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Gemini AI handler
+// Sentil AI handler
 // ─────────────────────────────────────────────────────────────────────────────
 
 async function handleGeminiQuestion(waId: string, question: string, userId: string) {
@@ -261,7 +313,7 @@ async function handleGeminiQuestion(waId: string, question: string, userId: stri
     select: { name: true, isPremium: true },
   });
 
-  await sendWhatsAppMessage(waId, "🤔 Thinking...");
+  await sendWhatsAppMessage(waId, "🧠 *Sentil AI* is thinking...");
 
   const answer = await askGeminiBot(question, {
     name: user?.name ?? "Investor",
@@ -269,7 +321,7 @@ async function handleGeminiQuestion(waId: string, question: string, userId: stri
     isPremium: user?.isPremium ?? false,
   });
 
-  return sendWhatsAppMessage(waId, `🧠 *Oracle Says:*\n\n${answer}`);
+  return sendWhatsAppMessage(waId, `🧠 *Sentil AI Says:*\n\n${answer}`);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

@@ -1,6 +1,6 @@
 /**
  * lib/whatsapp-gemini.ts
- * Gemini AI conversational layer for the Sentil WhatsApp bot.
+ * Sentil AI conversational layer for the Sentil WhatsApp bot.
  * Answers investment questions with user-specific context.
  */
 
@@ -55,9 +55,10 @@ export async function askGeminiBot(
     getMarketContext(),
   ]);
 
-  const systemPrompt = `You are Sentil Oracle, an expert AI wealth intelligence assistant for Kenyan investors.
+  const systemPrompt = `You are Sentil AI, an expert wealth intelligence assistant for Kenyan investors.
 You are replying via WhatsApp — keep answers SHORT (max 150 words), plain text, no markdown headers.
 Use bullet points (•) and bold (*word*) for WhatsApp formatting.
+Never mention Gemini, Google, or any AI provider name — you are simply "Sentil AI".
 
 User: ${user.name} | Plan: ${user.isPremium ? "Pro" : "Free"}
 Current market rates: ${marketCtx}
@@ -77,9 +78,9 @@ Answer this investment question concisely:`;
     }
     return text;
   } catch (err) {
-    console.error("[Gemini Bot] Error:", err);
+    console.error("[Sentil AI] Error:", err);
     return (
-      `🤖 I couldn't process that right now. Try:\n\n` +
+      `🤖 Sentil AI is temporarily unavailable. Try:\n\n` +
       `• *MARKETS* — live rates\n` +
       `• *PORTFOLIO* — your assets\n` +
       `• *INVEST* — browse options\n\n` +
