@@ -1,5 +1,5 @@
 {
-  "scraped_at": "2026-03-24T06:43:16.070636+00:00",
+  "scraped_at": "2026-03-31T06:58:14.678639+00:00",
   "source": "sentill-scraper-v2",
   "mmfs": [
     {
@@ -243,7 +243,7 @@
   "macro": {
     "cbk_rate": 13.0,
     "inflation": 6.3,
-    "usd_kes": 129.6,
+    "usd_kes": 129.93,
     "nse20": 2198,
     "nse20_ytd": 20.8,
     "nasi": 118.4
