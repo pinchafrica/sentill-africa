@@ -33,8 +33,18 @@ const PLANS = {
 
 type PlanKey = keyof typeof PLANS;
 
-// Investment category labels
+// Investment category labels — MAX 20 chars for WhatsApp button titles
 const INVEST_CATEGORIES: Record<string, string> = {
+  MONEY_MARKET: "💰 Money Mkt Funds",
+  "T-Bill":     "📈 Treasury Bills",
+  Bond:         "🏛 Govt Bonds",
+  SACCO:        "🤝 SACCOs",
+  Equity:       "📊 NSE Stocks",
+  Pension:      "🧓 Pension Funds",
+};
+
+// Full names for display in messages (no limit)
+const INVEST_LABELS: Record<string, string> = {
   MONEY_MARKET: "💰 Money Market Funds",
   "T-Bill":     "📈 Treasury Bills",
   Bond:         "🏛 Government Bonds",
@@ -202,7 +212,7 @@ export async function processIncomingMessage(
     return sendMainMenu(waId, session.userId ?? undefined);
   }
 
-  if (input === "REGISTER" || input === "1") {
+  if (input === "REGISTER") {
     if (session.userId) {
       return sendWhatsAppMessage(waId, "✅ You already have an account! Send *MENU* for options.");
     }
@@ -215,12 +225,27 @@ export async function processIncomingMessage(
     );
   }
 
-  if (input === "LOGIN" || input === "2") {
+  if (input === "LOGIN") {
     if (session.userId) {
       return sendWhatsAppMessage(waId, "✅ Already logged in! Send *MENU* for options.");
     }
     return handleLoginRequest(waId);
   }
+
+  // Logged-in: numbers 1–6 navigate investment categories
+  if (session.userId && /^[1-6]$/.test(input)) {
+    await updateSession(waId, "BROWSE_PROVIDERS", ctx, session.userId);
+    return handleBrowseCategoryInput(waId, input, session.userId, ctx);
+  }
+
+  // Logged-out: 1=Register, 2=Login shortcuts
+  if (input === "1" && !session.userId) {
+    await updateSession(waId, "REGISTER_NAME", {});
+    return sendWhatsAppMessage(waId,
+      `🎉 Welcome to *Sentil Africa!*\n\nLet's create your *free account*.\n\nFirst, what is your *full name*?`
+    );
+  }
+  if (input === "2" && !session.userId) return handleLoginRequest(waId);
 
   if (!session.userId) {
     return sendInteractiveButtons(
@@ -279,6 +304,22 @@ export async function processIncomingMessage(
     return handleSelectPlan(waId, "PRO_ANNUAL", ctx, userId);
   }
 
+  // COMPARE — compare two funds via AI
+  if (input === "COMPARE" || input.startsWith("COMPARE ")) {
+    const parts = rawInput.replace(/^compare\s*/i, "").trim();
+    return handleCompare(waId, parts, userId);
+  }
+
+  // TIPS — get a daily AI investment tip
+  if (input === "TIPS" || input === "TIP") {
+    return handleTip(waId, userId);
+  }
+
+  // GOAL via chat — "GOAL Home Fund 2000000 2026-12-31"
+  if (input.startsWith("GOAL ")) {
+    return handleSetGoal(waId, rawInput, userId);
+  }
+
   // ASK command — explicit Gemini question
   if (input.startsWith("ASK ") || rawInput.toLowerCase().startsWith("ask ")) {
     const question = rawInput.replace(/^ask\s+/i, "").trim();
@@ -329,65 +370,97 @@ async function handleGeminiQuestion(waId: string, question: string, userId: stri
 // ─────────────────────────────────────────────────────────────────────────────
 
 async function sendInvestmentCategories(waId: string, userId: string) {
-  // Get available types from DB
   const types = await prisma.provider.groupBy({
     by: ["type"],
     _count: { id: true },
     orderBy: { type: "asc" },
   });
 
-  const typeButtons = types
-    .slice(0, 3)
-    .map((t) => ({
-      id: `CAT_${t.type.toUpperCase().replace(/[^A-Z0-9]/g, "_")}`,
-      title: INVEST_CATEGORIES[t.type] ?? `📊 ${t.type}`,
-    }));
-
-  await sendInteractiveButtons(
-    waId,
+  // Build numbered text list as primary flow (always works, no char limits)
+  const header =
     `🏦 *Sentil Investment Hub*\n\n` +
-    `Browse and compare investment options across all categories.\n\n` +
-    `📊 Tap a category to see live rates & options:\n` +
-    `_(Tap any category to explore)_`,
-    typeButtons.length > 0
-      ? typeButtons
-      : [
-          { id: "CAT_MONEY_MARKET", title: "💰 Money Market Funds" },
-          { id: "CAT_T-BILL",      title: "📈 Treasury Bills" },
-          { id: "CAT_SACCO",       title: "🤝 SACCOs" },
-        ]
-  );
+    `Kenya's top investment options — all in one place.\n\n` +
+    `📊 *Browse by Category:*\n`;
 
-  // Also send more categories as text
-  if (types.length > 3) {
-    const moreTypes = types.slice(3).map((t) => `• *${INVEST_CATEGORIES[t.type] ?? t.type}* — reply _${t.type.toUpperCase()}_`).join("\n");
-    return sendWhatsAppMessage(
+  let categoryList = "";
+  const typesList = types.length > 0 ? types : [
+    { type: "MONEY_MARKET" }, { type: "T-Bill" }, { type: "SACCO" },
+  ];
+
+  typesList.forEach((t, i) => {
+    categoryList += `*${i + 1}.* ${INVEST_LABELS[t.type] ?? t.type}\n`;
+  });
+
+  const footer =
+    `\nReply with a *number* (1-${typesList.length}) to explore.\n` +
+    `Or ask: _ASK best investment for KES 100K?_`;
+
+  // Try interactive buttons (max 3, titles ≤20 chars)
+  const buttonTypes = typesList.slice(0, 3);
+  let buttonsSent = false;
+  try {
+    await sendInteractiveButtons(
       waId,
-      `📌 *More categories:*\n${moreTypes}\n\n` +
-      `Or ask me directly:\n_ASK best investment for KES 100,000?_`
+      header + categoryList + `\nOr tap a category:`,
+      buttonTypes.map((t) => ({
+        id: `CAT_${t.type.toUpperCase().replace(/[^A-Z0-9]/g, "_")}`,
+        title: INVEST_CATEGORIES[t.type] ?? t.type.slice(0, 20),
+      }))
     );
+    buttonsSent = true;
+  } catch (e) {
+    console.error("[Bot] Interactive buttons failed, using text fallback:", e);
+  }
+
+  // Always send the text list as well — ensures user can always navigate
+  if (!buttonsSent) {
+    await sendWhatsAppMessage(waId, header + categoryList + footer);
+  } else if (typesList.length > 3) {
+    // Show extra categories as text below buttons
+    const extras = typesList.slice(3).map((t, i) => `*${i + 4}.* ${INVEST_LABELS[t.type] ?? t.type}`).join("\n");
+    await sendWhatsAppMessage(waId, `📌 *More options:*\n${extras}\n\n${footer}`);
   }
 }
 
 async function handleBrowseCategoryInput(waId: string, input: string, userId: string, ctx: SessionContext) {
-  // Detect CAT_ prefix from button payload
+  // Handle CAT_ button payload
   const catMatch = input.match(/^CAT_(.+)$/);
-  if (!catMatch) return sendInvestmentCategories(waId, userId);
 
-  const rawType = catMatch[1].replace(/_/g, " ").replace("MONEY MARKET", "MONEY_MARKET");
-  // Map common aliases
-  const typeMap: Record<string, string> = {
-    "MONEY_MARKET": "MONEY_MARKET",
-    "T BILL": "T-Bill",
-    "T-BILL": "T-Bill",
-    "SACCO": "SACCO",
-    "BOND": "Bond",
-    "EQUITY": "Equity",
+  // Handle numeric selection (1=MMF, 2=T-Bill, 3=SACCO, 4=Bond, 5=Equity, 6=Pension)
+  const numericMap: Record<string, string> = {
+    "1": "MONEY_MARKET",
+    "2": "T-Bill",
+    "3": "SACCO",
+    "4": "Bond",
+    "5": "Equity",
+    "6": "Pension",
+  };
+
+  // Text/keyword shortcuts
+  const keywordMap: Record<string, string> = {
+    "MMF": "MONEY_MARKET", "MONEY MARKET": "MONEY_MARKET", "MONEY_MARKET": "MONEY_MARKET",
+    "TBILL": "T-Bill",     "T-BILL": "T-Bill", "T BILL": "T-Bill", "TREASURY": "T-Bill",
+    "SACCO": "SACCO",      "SACCOS": "SACCO",
+    "BOND": "Bond",        "BONDS": "Bond", "GOVT BOND": "Bond",
+    "EQUITY": "Equity",    "NSE": "Equity", "STOCKS": "Equity",
     "PENSION": "Pension",
   };
-  const dbType = typeMap[rawType] ?? rawType;
+
+  let dbType: string | undefined;
+
+  if (catMatch) {
+    const rawType = catMatch[1].replace(/_/g, " ").replace("MONEY MARKET", "MONEY_MARKET");
+    dbType = keywordMap[rawType] ?? { "T-BILL": "T-Bill", "MONEY_MARKET": "MONEY_MARKET" }[rawType] ?? rawType;
+  } else if (numericMap[input.trim()]) {
+    dbType = numericMap[input.trim()];
+  } else if (keywordMap[input.trim().toUpperCase()]) {
+    dbType = keywordMap[input.trim().toUpperCase()];
+  }
+
+  if (!dbType) return sendInvestmentCategories(waId, userId);
   return sendProviderList(waId, dbType, userId, ctx);
 }
+
 
 async function sendProviderList(waId: string, providerType: string, userId: string, ctx: SessionContext) {
   const providers = await prisma.provider.findMany({
@@ -463,30 +536,46 @@ async function handleBrowseProviderAction(waId: string, input: string, ctx: Sess
         providerYield: selected.currentYield,
       }, userId);
 
-      // Get AI summary
-      await sendWhatsAppMessage(waId, "🤔 Getting AI summary...");
+      // Show thinking indicator then get AI summary
+      await sendWhatsAppMessage(waId, "🧠 *Sentil AI* is analysing this fund...");
       const aiSummary = await generateInvestmentSummary(
         selected.name, selected.type, selected.currentYield,
         selected.riskLevel, selected.minimumInvest ?? null
       );
 
-      const msg =
+      const liquidity = (selected as any).liquidity ?? "Check provider";
+      const regulated = (selected as any).regulatedBy ?? "CMA Kenya";
+
+      const detail =
         `🏦 *${selected.name}*\n` +
         `━━━━━━━━━━━━━━━━\n` +
-        `📈 Yield: *${selected.currentYield.toFixed(2)}% p.a.*\n` +
-        `⚡ Risk: ${selected.riskLevel}\n` +
-        `🏛 AUM: ${selected.aum}\n` +
-        (selected.minimumInvest ? `💵 Minimum: ${selected.minimumInvest}\n` : ``) +
+        `📈 *Yield:* ${selected.currentYield.toFixed(2)}% p.a.\n` +
+        `⚡ *Risk:* ${selected.riskLevel}\n` +
+        `🏛 *AUM:* ${selected.aum}\n` +
+        (selected.minimumInvest ? `💵 *Min. Invest:* ${selected.minimumInvest}\n` : ``) +
+        `⚖️ *Regulated by:* ${regulated}\n` +
+        `💧 *Liquidity:* ${liquidity}\n\n` +
+        `🧠 *Sentil AI Says:*\n${aiSummary}\n\n` +
         `━━━━━━━━━━━━━━━━\n` +
-        `🧠 *Oracle Says:*\n${aiSummary}\n\n` +
-        `━━━━━━━━━━━━━━━━\n` +
-        `What would you like to do?\n` +
-        `• Reply *LOG* to track this investment\n` +
-        `• Reply *WATCH* to add to watchlist\n` +
-        `• Reply *BACK* to see all ${ctx.category} funds\n` +
-        `• Reply *ASK* + your question about this fund`;
+        `*LOG* — track this  |  *WATCH* — save it\n` +
+        `*BACK* — other ${ctx.category ?? "funds"}  |  *COMPARE* — vs another`;
 
-      return sendWhatsAppMessage(waId, msg);
+      // Send detail text first
+      await sendWhatsAppMessage(waId, detail);
+
+      // Then action buttons
+      try {
+        await sendInteractiveButtons(
+          waId,
+          `What would you like to do with *${selected.name}*?`,
+          [
+            { id: "LOG",    title: "📝 Log Investment" },
+            { id: "WATCH",  title: "👁 Add to Watchlist" },
+            { id: "INVEST", title: "🔙 Browse More" },
+          ]
+        );
+      } catch { /* buttons optional */ }
+      return;
     }
   }
 
@@ -914,54 +1003,93 @@ async function handlePortfolio(waId: string, userId: string) {
 }
 
 async function handleMarkets(waId: string) {
-  const rates = await prisma.marketRateCache.findMany({
-    orderBy: { lastSyncedAt: "desc" },
-    take: 8,
-  });
+  const [rates, topMMF, topBond] = await Promise.all([
+    prisma.marketRateCache.findMany({ orderBy: { lastSyncedAt: "desc" }, take: 8 }),
+    prisma.provider.findFirst({ where: { type: "MONEY_MARKET" }, orderBy: { currentYield: "desc" }, select: { name: true, currentYield: true } }),
+    prisma.provider.findFirst({ where: { type: { in: ["T-Bill", "Bond"] } }, orderBy: { currentYield: "desc" }, select: { name: true, currentYield: true, type: true } }),
+  ]);
 
-  let msg = `📈 *Live Market Rates — Kenya*\n\n`;
+  const now = new Date().toLocaleDateString("en-KE", { day: "numeric", month: "short", year: "numeric" });
+
+  let msg = `📊 *Sentil Market Snapshot*\n_${now}_\n\n`;
+
+  msg += `🏦 *Money Market Funds (MMFs):*\n`;
+  if (topMMF) msg += `⭐ Best: *${topMMF.name}* — ${topMMF.currentYield.toFixed(2)}% p.a.\n`;
+
   if (rates.length) {
-    rates.forEach((r) => {
-      msg += `• *${r.symbol}:* ${r.price.toFixed(2)}%\n`;
-    });
+    const mmfRates = rates.filter(r => r.symbol.includes("MMF") || r.symbol.includes("CIC") || r.symbol.includes("Sanlam"));
+    const otherRates = rates.filter(r => !mmfRates.includes(r));
+    mmfRates.slice(0, 3).forEach(r => { msg += `• ${r.symbol}: *${r.price.toFixed(2)}%*\n`; });
+    if (otherRates.length) {
+      msg += `\n📈 *Treasury & Bonds:*\n`;
+      otherRates.slice(0, 3).forEach(r => { msg += `• ${r.symbol}: *${r.price.toFixed(2)}%*\n`; });
+    }
   } else {
-    msg += `• 91-Day T-Bill: 15.78%\n• CIC MMF: 13.40%\n• Sanlam MMF: 13.10%\n• Zimele MMF: 13.05%\n`;
+    msg += `• 91-Day T-Bill: *15.78%*\n• CIC MMF: *13.40%*\n• Sanlam MMF: *13.10%*\n`;
+    if (topBond) msg += `\n📈 *${topBond.type}:*\n• ${topBond.name}: *${topBond.currentYield.toFixed(2)}%*\n`;
   }
-  msg += `\n_Updated: ${new Date().toLocaleDateString("en-KE", { day: "numeric", month: "short" })}_\n`;
-  msg += `_ℹ️ Rates for information only._\n\n`;
-  msg += `• *INVEST* — browse providers\n• *ASK* which fund is best for me?`;
 
-  return sendWhatsAppMessage(waId, msg);
+  msg += `\n🔔 *Daily AI brief hits your WhatsApp at 7AM EAT*\n`;
+  msg += `\n_ℹ️ Rates are informational — invest via your chosen provider._\n\n`;
+  msg += `• *INVEST* — browse all options\n• *COMPARE* — compare two funds\n• *ASK* — get AI advice`;
+
+  await sendWhatsAppMessage(waId, msg);
+
+  // Add quick action buttons
+  try {
+    await sendInteractiveButtons(
+      waId,
+      `What next?`,
+      [
+        { id: "INVEST",  title: "🏦 Browse Funds" },
+        { id: "CAT_T-BILL", title: "📈 T-Bills" },
+        { id: "SUBSCRIBE", title: "⚡ Go Pro" },
+      ]
+    );
+  } catch { /* optional */ }
 }
 
 async function handleGoals(waId: string, userId: string) {
-  const user = await prisma.user.findUnique({ where: { id: userId } });
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    include: { goals: true, portfolioAssets: { include: { provider: { select: { name: true } } } } },
+  });
 
   if (!user?.isPremium) {
-    return sendWhatsAppMessage(
+    return sendInteractiveButtons(
       waId,
-      `🎯 *Financial Goals*\n\nGoal planning is a *Pro feature*.\n\n` +
-      `Send *SUBSCRIBE* to unlock.`
+      `🎯 *Financial Goals*\n\nGoal planning is a *Pro feature*.\nUpgrade to set goals, track progress, and get AI-powered savings plans.`,
+      [
+        { id: "SUBSCRIBE", title: "⚡ Upgrade to Pro" },
+        { id: "MARKETS",   title: "📈 Live Rates" },
+        { id: "INVEST",    title: "🏦 Browse Funds" },
+      ]
     );
   }
 
-  const goals = await prisma.userGoal.findMany({ where: { userId } });
-
-  if (!goals.length) {
+  if (!user.goals.length) {
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://sentill.africa";
     return sendWhatsAppMessage(
       waId,
-      `🎯 *Your Goals*\n\nNo goals set yet.\n\nSet your first goal:\n${appUrl}/dashboard`
+      `🎯 *Your Financial Goals*\n\nNo goals set yet!\n\n` +
+      `💡 *Set a goal via WhatsApp:*\nType: *GOAL <name> <target amount> <deadline>*\n\n` +
+      `Example: _GOAL Home Fund 2000000 2026-12-31_\n\n` +
+      `Or set detailed goals at: ${appUrl}/dashboard`
     );
   }
 
+  const totalSaved = user.portfolioAssets.reduce((s, a) => s + a.principal, 0);
   let msg = `🎯 *Your Financial Goals*\n\n`;
-  goals.forEach((g) => {
-    const deadline = new Date(g.deadline).toLocaleDateString("en-KE");
-    msg += `• *${g.name}* (${g.category})\n  Target: ${formatKES(g.target)} by ${deadline}\n\n`;
+  user.goals.forEach((g) => {
+    const deadline = new Date(g.deadline).toLocaleDateString("en-KE", { day: "numeric", month: "short", year: "numeric" });
+    const pct = totalSaved > 0 ? Math.min(100, Math.round((totalSaved / g.target) * 100)) : 0;
+    const bar = "█".repeat(Math.round(pct / 10)) + "░".repeat(10 - Math.round(pct / 10));
+    msg += `*${g.name}* (${g.category})\n`;
+    msg += `Target: *${formatKES(g.target)}* by ${deadline}\n`;
+    msg += `Progress: ${bar} ${pct}%\n\n`;
   });
-  msg += `Send *PORTFOLIO* to review your investments.`;
-
+  msg += `💡 Add a goal: *GOAL <name> <amount> <YYYY-MM-DD>*\n`;
+  msg += `• *PORTFOLIO* — view investments\n• *ASK* — get savings advice`;
   return sendWhatsAppMessage(waId, msg);
 }
 
@@ -1247,27 +1375,223 @@ async function sendHelp(waId: string) {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://sentill.africa";
   return sendWhatsAppMessage(
     waId,
-    `🆘 *Sentil WhatsApp Help*\n\n` +
-    `*── Investment Hub ──*\n` +
-    `*INVEST* (I) — browse all categories\n` +
-    `*MARKETS* (M) — live rates\n` +
-    `*ASK <question>* — AI investment advice\n\n` +
+    `🆘 *Sentil WhatsApp Commands*\n\n` +
+    `*── Investments ──*\n` +
+    `*INVEST* — browse MMFs, T-Bills, Bonds, SACCOs\n` +
+    `*MARKETS* — live market rates\n` +
+    `*COMPARE <fund1> vs <fund2>* — AI comparison\n` +
+    `*TIPS* — get today's AI investment tip\n\n` +
+    `*── AI ──*\n` +
+    `*ASK <question>* — ask Sentil AI anything\n` +
+    `_Example: ASK best fund for KES 50,000?_\n\n` +
     `*── Portfolio (Pro) ──*\n` +
-    `*PORTFOLIO* (P) — tracked assets\n` +
-    `*LOG* — add investment\n` +
-    `*GOALS* (G) — financial goals\n\n` +
-    `*── Subscription ──*\n` +
-    `*SUBSCRIBE* — view & purchase Pro\n` +
-    `*RENEW* — renew Pro\n` +
-    `*STATUS* (S) — subscription details\n\n` +
-    `*── Plans ──*\n` +
-    `• Trial: *KES 100 / 7 days*\n` +
-    `• Monthly: *KES 499/month*\n` +
-    `• Annual: *KES 4,990/year*\n\n` +
+    `*PORTFOLIO* — your tracked assets\n` +
+    `*LOG* — add an investment\n` +
+    `*GOALS* — view financial goals\n` +
+    `*GOAL <name> <amount> <date>* — set a goal\n` +
+    `*WATCHLIST* — saved providers\n\n` +
     `*── Account ──*\n` +
-    `*MENU* — main menu\n` +
-    `*LOGOUT* — disconnect\n\n` +
-    `_ℹ️ Sentil tracks info only — your money stays with providers._\n\n` +
+    `*STATUS* — subscription info\n` +
+    `*SUBSCRIBE* / *RENEW* — upgrade to Pro\n` +
+    `*MENU* — main menu  |  *LOGOUT* — disconnect\n\n` +
+    `_ℹ️ Sentil tracks info only — your money stays with providers._\n` +
     `🌐 ${appUrl}`
   );
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// COMPARE — AI side-by-side fund comparison
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function handleCompare(waId: string, query: string, userId: string) {
+  await sendWhatsAppMessage(waId, "🧠 *Sentil AI* is comparing funds...");
+
+  // Parse "Fund A vs Fund B" or just list top 2
+  let name1 = "", name2 = "";
+  const vsMatch = query.match(/^(.+?)\s+(?:vs|versus|and|or)\s+(.+)$/i);
+  if (vsMatch) {
+    name1 = vsMatch[1].trim();
+    name2 = vsMatch[2].trim();
+  }
+
+  const [p1, p2, user, rates] = await Promise.all([
+    name1
+      ? prisma.provider.findFirst({ where: { name: { contains: name1, mode: "insensitive" } } })
+      : prisma.provider.findFirst({ where: { type: "MONEY_MARKET" }, orderBy: { currentYield: "desc" } }),
+    name2
+      ? prisma.provider.findFirst({ where: { name: { contains: name2, mode: "insensitive" } } })
+      : prisma.provider.findFirst({ where: { type: "MONEY_MARKET" }, orderBy: { currentYield: "desc" }, skip: 1 }),
+    prisma.user.findUnique({ where: { id: userId }, select: { name: true, isPremium: true } }),
+    prisma.marketRateCache.findMany({ take: 4, orderBy: { lastSyncedAt: "desc" } }),
+  ]);
+
+  if (!p1 || !p2) {
+    return sendWhatsAppMessage(
+      waId,
+      `❌ Could not find both funds.\n\n` +
+      `Try: *COMPARE CIC MMF vs Sanlam MMF*\n` +
+      `Or: *COMPARE T-Bill vs MMF*\n\n` +
+      `Send *INVEST* to browse available funds.`
+    );
+  }
+
+  const marketCtx = rates.map(r => `${r.symbol}: ${r.price.toFixed(2)}%`).join(", ") || "91-Day T-Bill: 15.78%";
+
+  const prompt =
+    `Compare these two Kenyan investments for a ${user?.isPremium ? "Pro" : "Free"} Sentil user:\n\n` +
+    `Fund A: ${p1.name} | Type: ${p1.type} | Yield: ${p1.currentYield}% | Risk: ${p1.riskLevel} | Min: ${p1.minimumInvest ?? "N/A"} | AUM: ${p1.aum}\n` +
+    `Fund B: ${p2.name} | Type: ${p2.type} | Yield: ${p2.currentYield}% | Risk: ${p2.riskLevel} | Min: ${p2.minimumInvest ?? "N/A"} | AUM: ${p2.aum}\n\n` +
+    `Market context: ${marketCtx}\n\n` +
+    `Give a concise WhatsApp comparison (max 120 words). Use bullets. End with a clear recommendation. ` +
+    `No markdown headers. Use *bold* for key points. Never mention Gemini or Google.`;
+
+  const { askGeminiBot } = await import("./whatsapp-gemini");
+  const comparison = await askGeminiBot(prompt, {
+    name: user?.name ?? "Investor",
+    userId,
+    isPremium: user?.isPremium ?? false,
+  });
+
+  const msg =
+    `⚖️ *Fund Comparison*\n\n` +
+    `*${p1.name}*\n` +
+    `📈 ${p1.currentYield.toFixed(2)}% | ⚡ ${p1.riskLevel} | 💵 Min: ${p1.minimumInvest ?? "Check provider"}\n\n` +
+    `vs\n\n` +
+    `*${p2.name}*\n` +
+    `📈 ${p2.currentYield.toFixed(2)}% | ⚡ ${p2.riskLevel} | 💵 Min: ${p2.minimumInvest ?? "Check provider"}\n\n` +
+    `━━━━━━━━━━━━━━━━\n` +
+    `🧠 *Sentil AI Verdict:*\n${comparison}`;
+
+  await sendWhatsAppMessage(waId, msg);
+
+  try {
+    await sendInteractiveButtons(waId, `What would you like to do?`, [
+      { id: `CAT_${p1.type.toUpperCase().replace(/[^A-Z0-9]/g, "_")}`, title: "🏦 Browse More Funds" },
+      { id: "LOG",       title: "📝 Log Investment" },
+      { id: "SUBSCRIBE", title: "⚡ Go Pro" },
+    ]);
+  } catch { /* optional */ }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TIPS — daily AI investment tip
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function handleTip(waId: string, userId: string) {
+  await sendWhatsAppMessage(waId, "🧠 *Sentil AI* generating your tip...");
+
+  const [user, topMMF, rates] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: { name: true, isPremium: true },
+    }),
+    prisma.provider.findFirst({ where: { type: "MONEY_MARKET" }, orderBy: { currentYield: "desc" } }),
+    prisma.marketRateCache.findMany({ take: 3, orderBy: { lastSyncedAt: "desc" } }),
+  ]);
+
+  const marketCtx = rates.map(r => `${r.symbol}: ${r.price.toFixed(2)}%`).join(", ")
+    || `Top MMF: ${topMMF?.name ?? "CIC Money Market"} at ${topMMF?.currentYield.toFixed(2) ?? "13.40"}%`;
+
+  const today = new Date().toLocaleDateString("en-KE", { weekday: "long", day: "numeric", month: "long" });
+
+  const { askGeminiBot } = await import("./whatsapp-gemini");
+  const tip = await askGeminiBot(
+    `Give one specific, actionable investment tip for a Kenyan investor today (${today}).\n` +
+    `Market context: ${marketCtx}\n` +
+    `Keep it under 80 words. Be specific with numbers. WhatsApp format. Never mention Gemini.`,
+    { name: user?.name ?? "Investor", userId, isPremium: user?.isPremium ?? false }
+  );
+
+  await sendWhatsAppMessage(
+    waId,
+    `💡 *Sentil AI Tip — ${today}*\n\n${tip}\n\n` +
+    `• *INVEST* — act on this\n• *ASK* — go deeper\n• *COMPARE* — compare options`
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GOAL via chat — set financial goal directly from WhatsApp
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function handleSetGoal(waId: string, rawInput: string, userId: string) {
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { isPremium: true, name: true } });
+
+  if (!user?.isPremium) {
+    return sendInteractiveButtons(
+      waId,
+      `🎯 *Set a Goal*\n\nGoal setting is a *Pro feature*.\nUpgrade to plan your financial future with AI.`,
+      [
+        { id: "SUBSCRIBE", title: "⚡ Upgrade to Pro" },
+        { id: "INVEST",    title: "🏦 Browse Funds" },
+        { id: "MARKETS",   title: "📈 Live Rates" },
+      ]
+    );
+  }
+
+  // Parse: "GOAL Home Fund 2000000 2026-12-31"
+  const parts = rawInput.replace(/^goal\s+/i, "").trim();
+  // Last part = date (YYYY-MM-DD), second to last = amount, rest = name
+  const tokens = parts.split(/\s+/);
+  const dateStr = tokens[tokens.length - 1];
+  const amountStr = tokens[tokens.length - 2];
+  const goalName = tokens.slice(0, tokens.length - 2).join(" ");
+
+  const amount = parseFloat(amountStr?.replace(/[^0-9.]/g, "") ?? "");
+  const deadline = new Date(dateStr ?? "");
+
+  const isValidDate = !isNaN(deadline.getTime()) && deadline > new Date();
+  const isValidAmount = !isNaN(amount) && amount >= 1000;
+  const isValidName = goalName.length >= 2;
+
+  if (!isValidName || !isValidAmount || !isValidDate) {
+    return sendWhatsAppMessage(
+      waId,
+      `❌ *Invalid format.*\n\n` +
+      `Use: *GOAL <name> <amount> <YYYY-MM-DD>*\n\n` +
+      `Example:\n_GOAL Home Fund 2000000 2027-06-30_\n_GOAL Education 500000 2026-09-01_\n\n` +
+      `Requirements:\n• Name: at least 2 words\n• Amount: min KES 1,000\n• Date: future date (YYYY-MM-DD)`
+    );
+  }
+
+  // Determine category from goal name
+  const nameLower = goalName.toLowerCase();
+  let category = "OTHER";
+  if (nameLower.includes("home") || nameLower.includes("house") || nameLower.includes("land")) category = "HOME";
+  else if (nameLower.includes("retire") || nameLower.includes("pension")) category = "RETIREMENT";
+  else if (nameLower.includes("school") || nameLower.includes("education") || nameLower.includes("fees")) category = "EDUCATION";
+  else if (nameLower.includes("emergency") || nameLower.includes("fund")) category = "SAVINGS";
+
+  try {
+    await prisma.userGoal.create({
+      data: { userId, name: goalName, target: amount, deadline, category },
+    });
+
+    // AI savings plan
+    const { askGeminiBot } = await import("./whatsapp-gemini");
+    const monthsLeft = Math.max(1, Math.round((deadline.getTime() - Date.now()) / (30 * 24 * 60 * 60 * 1000)));
+    const monthlyNeeded = amount / monthsLeft;
+
+    const plan = await askGeminiBot(
+      `A Kenyan investor wants to save ${formatKES(amount)} for "${goalName}" by ${deadline.toLocaleDateString("en-KE")} (${monthsLeft} months). ` +
+      `They need to save about ${formatKES(monthlyNeeded)} per month. ` +
+      `Suggest the best Kenyan investment vehicle (MMF, T-Bill, SACCO) and why. Max 60 words. WhatsApp format.`,
+      { name: user.name, userId, isPremium: true }
+    );
+
+    return sendWhatsAppMessage(
+      waId,
+      `✅ *Goal Set!*\n\n` +
+      `🎯 *${goalName}*\n` +
+      `💰 Target: *${formatKES(amount)}*\n` +
+      `📅 Deadline: *${deadline.toLocaleDateString("en-KE", { day: "numeric", month: "long", year: "numeric" })}*\n` +
+      `⏱ ${monthsLeft} months | *${formatKES(monthlyNeeded)}/month needed*\n\n` +
+      `━━━━━━━━━━━━━━━━\n` +
+      `🧠 *Sentil AI Savings Plan:*\n${plan}\n\n` +
+      `• *INVEST* — start investing now\n• *GOALS* — view all goals\n• *LOG* — track an investment`
+    );
+  } catch (err) {
+    console.error("[Bot] Goal set error:", err);
+    return sendWhatsAppMessage(waId, "❌ Could not save goal. Please try again.");
+  }
+}
+
