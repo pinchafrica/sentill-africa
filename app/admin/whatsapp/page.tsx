@@ -40,6 +40,7 @@ export default function AdminWhatsAppPage() {
   const [logs, setLogs] = useState<WALog[]>([]);
   const [sessions, setSessions] = useState<WASession[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [broadcastMsg, setBroadcastMsg] = useState("");
   const [broadcasting, setBroadcasting] = useState(false);
   const [broadcastResult, setBroadcastResult] = useState<string | null>(null);
@@ -47,6 +48,7 @@ export default function AdminWhatsAppPage() {
 
   const fetchData = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
       const res = await fetch("/api/whatsapp/stats");
       if (res.ok) {
@@ -54,13 +56,24 @@ export default function AdminWhatsAppPage() {
         setStats(data.stats);
         setLogs(data.recentLogs ?? []);
         setSessions(data.sessions ?? []);
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        setError(errData.error ?? `Server error ${res.status}`);
       }
+    } catch (err) {
+      setError("Network error — check your connection or server");
+      console.error("[Admin WA] fetch error:", err);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  useEffect(() => { fetchData(); }, [fetchData]);
+  useEffect(() => {
+    fetchData();
+    // Auto-refresh every 60 seconds
+    const interval = setInterval(fetchData, 60_000);
+    return () => clearInterval(interval);
+  }, [fetchData]);
 
   const triggerCron = async () => {
     setCronRunning(true);
@@ -69,7 +82,11 @@ export default function AdminWhatsAppPage() {
         headers: { Authorization: `Bearer ${process.env.NEXT_PUBLIC_CRON_SECRET ?? ""}` },
       });
       const data = await res.json();
-      setBroadcastResult(`✅ Sent: ${data.sent}, Failed: ${data.failed}, Total: ${data.total}`);
+      if (res.ok) {
+        setBroadcastResult(`✅ Sent: ${data.sent}, Failed: ${data.failed}, Total: ${data.total}`);
+      } else {
+        setBroadcastResult(`❌ ${data.error ?? "Cron trigger failed"}`);
+      }
     } catch {
       setBroadcastResult("❌ Cron trigger failed");
     } finally {
@@ -81,7 +98,6 @@ export default function AdminWhatsAppPage() {
     if (!broadcastMsg.trim()) return;
     setBroadcasting(true);
     try {
-      // This sends to all WhatsApp-verified users
       const res = await fetch("/api/whatsapp/broadcast", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -97,10 +113,30 @@ export default function AdminWhatsAppPage() {
     }
   };
 
-  if (loading) {
+  if (loading && !stats) {
     return (
       <div className="flex items-center justify-center h-96">
         <Loader2 className="w-8 h-8 animate-spin text-emerald-500" />
+      </div>
+    );
+  }
+
+  if (error && !stats) {
+    return (
+      <div className="flex flex-col items-center justify-center h-96 gap-4">
+        <div className="w-12 h-12 rounded-2xl bg-rose-100 flex items-center justify-center">
+          <XCircle className="w-6 h-6 text-rose-500" />
+        </div>
+        <div className="text-center">
+          <p className="text-sm font-black text-slate-900">Failed to load WhatsApp data</p>
+          <p className="text-xs text-slate-500 mt-1">{error}</p>
+        </div>
+        <button
+          onClick={fetchData}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 text-white text-xs font-black uppercase tracking-widest"
+        >
+          <RefreshCw className="w-3.5 h-3.5" /> Retry
+        </button>
       </div>
     );
   }
@@ -118,14 +154,24 @@ export default function AdminWhatsAppPage() {
             <p className="text-sm text-slate-500">Monitor all WhatsApp activity and manage broadcasts</p>
           </div>
         </div>
-        <button
-          onClick={fetchData}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-black uppercase tracking-widest text-slate-600 hover:bg-slate-50 transition-all"
-        >
-          <RefreshCw className="w-3.5 h-3.5" />
-          Refresh
-        </button>
+        <div className="flex items-center gap-2">
+          {loading && <Loader2 className="w-4 h-4 animate-spin text-slate-400" />}
+          <button
+            onClick={fetchData}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-black uppercase tracking-widest text-slate-600 hover:bg-slate-50 transition-all"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+            Refresh
+          </button>
+        </div>
       </div>
+
+      {/* Error banner (non-blocking — still shows stale data) */}
+      {error && stats && (
+        <div className="bg-rose-50 border border-rose-200 rounded-xl px-4 py-3 text-xs text-rose-700 font-semibold flex items-center gap-2">
+          <XCircle className="w-4 h-4 flex-shrink-0" /> {error} — showing cached data
+        </div>
+      )}
 
       {/* Stats Row */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
@@ -242,7 +288,7 @@ export default function AdminWhatsAppPage() {
       <div className="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden">
         <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
           <h2 className="text-sm font-black text-slate-900 uppercase tracking-wider">Message Log</h2>
-          <span className="text-xs text-slate-400">Last 50 messages</span>
+          <span className="text-xs text-slate-400">Last 50 messages · auto-refreshes every 60s</span>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
