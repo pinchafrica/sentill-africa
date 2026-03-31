@@ -202,6 +202,12 @@ export async function processIncomingMessage(
     return sendInvestmentCategories(waId, userId);
   }
 
+  // Category button taps (from investment hub) — works from IDLE state
+  if (input.startsWith("CAT_")) {
+    await updateSession(waId, "BROWSE_PROVIDERS", ctx, userId);
+    return handleBrowseCategoryInput(waId, input, userId, ctx);
+  }
+
   // Asset logging
   if (["LOG", "ADD", "LOG ASSET", "ADD ASSET"].includes(input)) {
     return startLogAsset(waId, ctx, userId);
