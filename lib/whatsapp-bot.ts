@@ -252,10 +252,16 @@ async function handleRegisterOTP(waId: string, inputOtp: string, ctx: SessionCon
     },
   });
 
-  // Enable WhatsApp notifications by default
-  await prisma.alertPreference.create({
-    data: {
+  // Auto-enable WhatsApp daily notifications for all WA registrations
+  await prisma.alertPreference.upsert({
+    where: { userId: user.id },
+    create: {
       userId: user.id,
+      whatsappEnabled: true,
+      whatsappNumber: normalizedPhone,
+      frequency: "DAILY",
+    },
+    update: {
       whatsappEnabled: true,
       whatsappNumber: normalizedPhone,
       frequency: "DAILY",
@@ -332,6 +338,21 @@ async function handleLoginOTP(waId: string, inputOtp: string, ctx: SessionContex
     data: { otpCode: null, otpExpiry: null, whatsappVerified: true },
   });
 
+  // Auto-enable WA notifications for ALL users who log in via WhatsApp
+  await prisma.alertPreference.upsert({
+    where: { userId: user.id },
+    create: {
+      userId: user.id,
+      whatsappEnabled: true,
+      whatsappNumber: normalizePhone(waId),
+      frequency: "DAILY",
+    },
+    update: {
+      whatsappEnabled: true,
+      whatsappNumber: normalizePhone(waId),
+    },
+  });
+
   await updateSession(waId, "IDLE", {}, user.id);
 
   // Show subscription status on login
@@ -344,6 +365,7 @@ async function handleLoginOTP(waId: string, inputOtp: string, ctx: SessionContex
     waId,
     `✅ *Logged in!* Welcome back, *${user.name.split(" ")[0]}* 👋\n\n` +
     `${subStatus}${expiry}\n\n` +
+    `🔔 *Daily AI briefs are ON* — you'll get market intel at 7AM EAT.\n\n` +
     `Send *MENU* to see your options.`
   );
 }

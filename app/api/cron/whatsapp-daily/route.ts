@@ -31,14 +31,16 @@ export async function GET(req: Request) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let users: any[] = [];
   try {
+    // LEFT JOIN so users without AlertPreference still receive briefs.
+    // Any user with a verified WhatsApp number gets the daily message.
     users = await prisma.$queryRaw`
-      SELECT u.id, u.name, u."whatsappId", u."whatsappVerified",
-             a."whatsappEnabled", a."whatsappNumber"
+      SELECT u.id, u.name, u."whatsappId",
+             COALESCE(a."whatsappNumber", u."whatsappId") AS "resolvedWaId"
       FROM "User" u
-      JOIN "AlertPreference" a ON a."userId" = u.id
-      WHERE a."whatsappEnabled" = true
-        AND (u."whatsappId" IS NOT NULL OR a."whatsappNumber" IS NOT NULL)
-        AND u."whatsappVerified" = true
+      LEFT JOIN "AlertPreference" a ON a."userId" = u.id
+      WHERE u."whatsappVerified" = true
+        AND u."whatsappId" IS NOT NULL
+        AND (a."whatsappEnabled" IS NULL OR a."whatsappEnabled" = true)
     `;
   } catch (dbErr) {
     console.error("[Cron] DB error fetching opted-in users:", dbErr);
@@ -54,7 +56,7 @@ export async function GET(req: Request) {
   let failed = 0;
 
   for (const user of users) {
-    const waId: string = user.whatsappId ?? user.whatsappNumber;
+    const waId: string = user.whatsappId ?? user.resolvedWaId;
     if (!waId) { failed++; continue; }
 
     try {
