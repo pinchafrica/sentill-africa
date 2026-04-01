@@ -271,7 +271,7 @@ export default function AlertsHubPage() {
                 <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-3">
                   <h3 className="text-sm font-black text-slate-900 uppercase tracking-wide pb-3 border-b border-slate-100">Alert Categories</h3>
                   {[
-                    { key: "aiOracleAlerts", label: "AI Oracle Insights", desc: "Weekly AI-generated portfolio recommendations", checked: prefs.aiOracleAlerts },
+                    { key: "aiOracleAlerts", label: "Sentill Africa Oracle Insights", desc: "Weekly Sentill Africa-generated portfolio recommendations", checked: prefs.aiOracleAlerts },
                   ].map(item => (
                     <div key={item.key} className="flex items-center justify-between">
                       <div>

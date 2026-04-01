@@ -233,7 +233,7 @@ export default function AlertsSettings() {
          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-10">
             <div className="max-w-xl">
                <h3 className="text-2xl font-black text-white uppercase tracking-tighter flex items-center gap-3">
-                  Sentill AI Oracle Alerts <ShieldCheck className="w-6 h-6 text-blue-400 animate-pulse" />
+                  Sentill Sentill Africa Oracle Alerts <ShieldCheck className="w-6 h-6 text-blue-400 animate-pulse" />
                </h3>
                <p className="text-slate-400 text-xs font-medium leading-relaxed mt-4 uppercase tracking-wider">
                   Enable high-latency predictive alerts. The Oracle will notify you about unusual market yield spreads, dividend announcements, and institutional bond auction results before they become mainstream.

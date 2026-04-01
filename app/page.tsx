@@ -113,7 +113,7 @@ const HERO_SLIDES = [
     description: "Empowering every Kenyan with institutional-grade capital data. Transitioning the national economy from passive savings to active, tax-optimized wealth generation.",
     stats: [
       { label: "Data Uptime", value: "99.99%" },
-      { label: "AI Oracle", value: "Active" },
+      { label: "Sentill Africa Oracle", value: "Active" },
       { label: "Encryption", value: "End-to-End" },
     ],
   },
@@ -789,7 +789,7 @@ export default function HomePage() {
         <div className="max-w-[1400px] mx-auto px-6 lg:px-12">
           <div className="mb-14 flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div>
-              <h2 className="text-[11px] font-black text-indigo-600 uppercase tracking-[0.2em] mb-2 flex items-center gap-2"><Cpu className="w-4 h-4" /> AI Oracle</h2>
+              <h2 className="text-[11px] font-black text-indigo-600 uppercase tracking-[0.2em] mb-2 flex items-center gap-2"><Cpu className="w-4 h-4" /> Sentill Africa Oracle</h2>
               <h3 className="text-4xl font-black text-slate-900 tracking-tight">Today&apos;s Top Recommendations</h3>
             </div>
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Neural Wealth Diagnostics · Updated {new Date().toLocaleDateString()}</p>

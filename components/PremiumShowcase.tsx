@@ -24,7 +24,7 @@ const CATEGORIES = [
       { label: "NSE Block Trade Scanner", free: false },
       { label: "Global Macro Sentiment Pulse", free: false },
       { label: "Automated KRA Tax Export", free: false },
-      { label: "Priority AI Oracle Support", free: false },
+      { label: "Priority Sentill Africa Oracle Support", free: false },
     ],
   },
   {

@@ -345,7 +345,7 @@ function DashboardInner() {
             <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-md">
               <BrainCircuit className="w-4 h-4" />
             </div>
-            <span className="text-[10px] font-black uppercase tracking-widest text-blue-800">Sentill AI Oracle</span>
+            <span className="text-[10px] font-black uppercase tracking-widest text-blue-800">Sentill Sentill Africa Oracle</span>
          </div>
          <p className="text-xs font-bold text-slate-700 leading-relaxed mb-4">
            {assets.length === 0 

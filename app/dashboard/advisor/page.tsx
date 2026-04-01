@@ -238,12 +238,12 @@ export default function IntelligenceDashboard() {
       });
       const data = await res.json();
       if (data.error === "upgrade_required") {
-        setAiResponse("⚡ Premium Required — Upgrade to Pro to unlock unlimited AI Oracle queries.");
+        setAiResponse("⚡ Premium Required — Upgrade to Pro to unlock unlimited Sentill Africa Oracle queries.");
       } else {
         setAiResponse(data.response || "No response generated.");
       }
     } catch {
-      setAiResponse("AI Oracle temporarily unavailable. Please try again.");
+      setAiResponse("Sentill Africa Oracle temporarily unavailable. Please try again.");
     } finally {
       setIsAiLoading(false);
     }
@@ -271,7 +271,7 @@ export default function IntelligenceDashboard() {
           </p>
         </div>
         <Link href="/dashboard/analyze" className="flex items-center gap-2 px-4 py-2.5 bg-slate-900 text-white rounded-xl text-xs font-black uppercase tracking-wide hover:bg-blue-600 transition-colors shadow-lg">
-          <BrainCircuit className="w-4 h-4" /> Ask AI Oracle
+          <BrainCircuit className="w-4 h-4" /> Ask Sentill Africa Oracle
         </Link>
       </div>
 
@@ -456,7 +456,7 @@ export default function IntelligenceDashboard() {
                   <Brain className="w-6 h-6 text-white" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-white font-black text-lg mb-1">Sentill AI Oracle — Live Intelligence</h3>
+                  <h3 className="text-white font-black text-lg mb-1">Sentill Sentill Africa Oracle — Live Intelligence</h3>
                   <p className="text-indigo-300 text-xs font-bold">{AI_RECOMMENDATIONS.length} active intelligence alerts based on current market conditions</p>
                 </div>
               </div>
@@ -485,7 +485,7 @@ export default function IntelligenceDashboard() {
                   <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="mt-4 bg-white/5 border border-white/10 rounded-2xl p-4">
                     <div className="flex items-center gap-2 mb-3">
                       <Sparkles className="w-4 h-4 text-indigo-400" />
-                      <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">AI Oracle Response</span>
+                      <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Sentill Africa Response</span>
                     </div>
                     <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">{aiResponse}</p>
                   </motion.div>

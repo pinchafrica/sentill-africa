@@ -57,7 +57,7 @@ export function buildWelcomeEmail(name: string): string {
         </div>
         <div style="display:flex;align-items:center;gap:12px;padding:12px;background:#eff6ff;border-radius:12px;border:1px solid #bfdbfe">
           <span style="font-size:20px">🤖</span>
-          <div><p style="font-weight:800;color:#0f172a;font-size:13px;margin:0">AI Oracle Insights</p><p style="color:#64748b;font-size:12px;margin:0">Personalized recommendations 24/7</p></div>
+          <div><p style="font-weight:800;color:#0f172a;font-size:13px;margin:0">Sentill Africa Oracle Insights</p><p style="color:#64748b;font-size:12px;margin:0">Personalized recommendations 24/7</p></div>
         </div>
         <div style="display:flex;align-items:center;gap:12px;padding:12px;background:#faf5ff;border-radius:12px;border:1px solid #e9d5ff">
           <span style="font-size:20px">💰</span>
@@ -89,7 +89,7 @@ export function buildAssetLoggedEmail(name: string, assetName: string, amount: n
       <p style="color:#64748b;font-size:14px;margin:0 0 20px">Hi ${name},</p>
       <p style="color:#0f172a;font-size:16px;font-weight:700;margin:0 0 4px">${assetName}</p>
       <p style="color:#10b981;font-size:28px;font-weight:900;margin:0 0 20px">KES ${amount.toLocaleString()}</p>
-      <p style="color:#64748b;font-size:13px;line-height:1.7;margin:0 0 24px">Your investment has been logged and is now being tracked in your portfolio. The Sentill AI Oracle will monitor this for yield changes and alert you when action is needed.</p>
+      <p style="color:#64748b;font-size:13px;line-height:1.7;margin:0 0 24px">Your investment has been logged and is now being tracked in your portfolio. The Sentill Africa Oracle will monitor this for yield changes and alert you when action is needed.</p>
       <a href="https://sentill.africa/dashboard/assets" style="display:block;padding:14px;background:#0f172a;color:#ffffff;text-decoration:none;font-weight:800;font-size:13px;text-align:center;border-radius:12px">VIEW MY ASSETS →</a>
     </div>
   </div>
@@ -106,14 +106,14 @@ export function buildAIInsightEmail(name: string, insight: string): string {
   <div style="max-width:600px;margin:0 auto;padding:40px 20px">
     <div style="background:linear-gradient(135deg,#1e1b4b,#312e81);border-radius:24px;padding:40px;margin-bottom:24px;text-align:center">
       <div style="font-size:32px;margin-bottom:12px">🧠</div>
-      <h1 style="color:#ffffff;font-size:22px;font-weight:900;margin:0 0 8px">Sentill AI Oracle Alert</h1>
+      <h1 style="color:#ffffff;font-size:22px;font-weight:900;margin:0 0 8px">Sentill Africa Oracle Alert</h1>
       <p style="color:#a5b4fc;font-size:13px;margin:0">Weekly intelligence digest for ${name}</p>
     </div>
     <div style="background:#ffffff;border-radius:24px;padding:32px;border:1px solid #e2e8f0">
       <div style="background:#f0f9ff;border-left:4px solid #3b82f6;padding:20px;border-radius:0 12px 12px 0;margin-bottom:24px">
         <p style="color:#1e40af;font-size:14px;font-style:italic;line-height:1.7;margin:0">"${insight}"</p>
       </div>
-      <a href="https://sentill.africa/dashboard/analyze" style="display:block;padding:14px;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#ffffff;text-decoration:none;font-weight:800;font-size:13px;text-align:center;border-radius:12px">OPEN AI ORACLE →</a>
+      <a href="https://sentill.africa/dashboard/analyze" style="display:block;padding:14px;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#ffffff;text-decoration:none;font-weight:800;font-size:13px;text-align:center;border-radius:12px">OPEN Sentill Africa Oracle →</a>
     </div>
   </div>
 </body>

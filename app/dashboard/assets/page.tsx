@@ -290,7 +290,7 @@ function MyAssetsInner() {
         {([
           { id: "overview", label: "Overview", icon: BarChart3 },
           { id: "instruments", label: "Instruments", icon: Layers },
-          { id: "ai", label: `AI Oracle ${highPriorityCount > 0 ? `(${highPriorityCount})` : ""}`, icon: Brain },
+          { id: "ai", label: `Sentill Africa Oracle ${highPriorityCount > 0 ? `(${highPriorityCount})` : ""}`, icon: Brain },
         ] as const).map(tab => (
           <button
             key={tab.id}
@@ -485,7 +485,7 @@ function MyAssetsInner() {
                   <Brain className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-white font-black text-lg">Sentill AI Oracle</h3>
+                  <h3 className="text-white font-black text-lg">Sentill Sentill Africa Oracle</h3>
                   <p className="text-slate-400 text-xs font-bold tracking-wide">
                     {recommendations.length} personalized intelligence alerts · {highPriorityCount} high priority
                   </p>
@@ -563,7 +563,7 @@ function MyAssetsInner() {
               <Sparkles className="w-6 h-6 text-blue-500 mx-auto mb-2" />
               <p className="text-xs font-bold text-slate-600 mb-3">Have a specific question about your portfolio?</p>
               <Link href="/dashboard/analyze" className="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-900 text-white rounded-xl text-xs font-black uppercase tracking-wide hover:bg-blue-600 transition-colors">
-                <Brain className="w-3.5 h-3.5" /> Ask AI Oracle
+                <Brain className="w-3.5 h-3.5" /> Ask Sentill Africa Oracle
               </Link>
             </div>
           </motion.div>
@@ -615,7 +615,7 @@ function EmptyState() {
             </Link>
           </div>
           <div className="pt-4 text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center justify-center gap-2">
-            <Zap className="w-3 h-3 text-amber-500" /> AI Oracle Ready · Awaiting First Asset
+            <Zap className="w-3 h-3 text-amber-500" /> Oracle Ready · Awaiting First Asset
           </div>
         </div>
       </div>

@@ -102,7 +102,7 @@ export async function GET(req: NextRequest) {
             `📅 Expires: ${expiryDate}\n\n` +
             `You now have access to:\n` +
             `📊 Portfolio Tracker\n` +
-            `🧠 AI Oracle\n` +
+            `🧠 Sentill Africa Oracle\n` +
             `🎯 Goal Planning\n\n` +
             `🌐 Dashboard: ${appUrl}/dashboard\n\n` +
             `Send *MENU* to get started!`,

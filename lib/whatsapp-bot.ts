@@ -1179,7 +1179,7 @@ async function handleSubscriptionStatus(waId: string, userId: string) {
       `⚡ *Sentil Pro — Active*\n\n` +
       `👤 ${user.name}\n` +
       `📅 ${expires}\n\n` +
-      `✅ Portfolio Tracker\n✅ AI Oracle\n✅ Goal Planning\n✅ Daily Intelligence\n\n`;
+      `✅ Portfolio Tracker\n✅ Sentill Africa Oracle\n✅ Goal Planning\n✅ Daily Intelligence\n\n`;
 
     if (isExpiringSoon) {
       msg += `⚠️ *Expiring soon!* Send *RENEW* to keep access.`;
@@ -1195,7 +1195,7 @@ async function handleSubscriptionStatus(waId: string, userId: string) {
     `🔓 *Sentil Free Plan*\n\n` +
     `👤 ${user.name}\n\n` +
     `✅ Live market rates\n✅ Investment browser\n✅ AI Q&A\n✅ Daily WhatsApp brief\n` +
-    `❌ Portfolio tracker\n❌ AI Oracle\n❌ Goal planning\n\n` +
+    `❌ Portfolio tracker\n❌ Sentill Africa Oracle\n❌ Goal planning\n\n` +
     `⚡ *Upgrade to Pro:*\n` +
     `• Trial (7 days) — *KES 100*\n` +
     `• Monthly — *KES 499/month*\n` +
@@ -1233,7 +1233,7 @@ async function sendSubscriptionPlans(waId: string, userId?: string) {
     waId,
     `⚡ *${action} Sentil Pro*\n\n` +
     `Unlock full intelligence:\n` +
-    `📊 Portfolio tracking\n🧠 AI Oracle deep insights\n🎯 Goal planning\n\n` +
+    `📊 Portfolio tracking\n🧠 Sentill Africa Oracle deep insights\n🎯 Goal planning\n\n` +
     (!hadTrial ? `🆓 *Trial:* KES 100 / 7 days\n` : ``) +
     `📱 *Monthly:* KES 499/month\n` +
     `📅 *Annual:* KES 4,990/year _(save 2 months!)_\n\n` +

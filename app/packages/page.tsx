@@ -26,7 +26,7 @@ const PACKAGES = [
     missing: [
       "Tax Alpha Optimizer",
       "Real-time Institutional Order Book",
-      "Sentil Cortex AI Oracle",
+      "Sentil Cortex Sentill Africa Oracle",
       "Unlimited Asset Logging"
     ],
     cta: "Sign Up Free",
