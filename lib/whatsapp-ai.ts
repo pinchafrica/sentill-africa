@@ -1,14 +1,47 @@
 /**
  * lib/whatsapp-ai.ts
- * Gemini-powered WhatsApp content generators for Sentil.
+ * Gemini 2.0 Flash-powered WhatsApp content generators for Sentil.
  * Used by the daily cron to produce personalized investment briefs.
+ * Available 24/7 — AI-driven responses at any hour.
  */
 
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { prisma } from "./prisma";
 import { formatKES } from "./whatsapp";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY ?? "");
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY ?? "";
+const GEMINI_MODEL = "gemini-2.0-flash";
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
+
+async function callGemini(prompt: string): Promise<string> {
+  if (!GEMINI_API_KEY) {
+    throw new Error("GEMINI_API_KEY not set");
+  }
+
+  const res = await fetch(GEMINI_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: {
+        temperature: 0.7,
+        topP: 0.85,
+        topK: 40,
+        maxOutputTokens: 512,
+      },
+    }),
+  });
+
+  if (!res.ok) {
+    const err = await res.text();
+    console.error("[WhatsApp AI] Gemini HTTP error:", err);
+    throw new Error(`Gemini API error: ${res.status}`);
+  }
+
+  const data = await res.json();
+  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+  if (!text) throw new Error("Empty Gemini response");
+  return text;
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Daily brief for a single user
@@ -81,9 +114,7 @@ Generate a brief (max 5 lines) with:
 Format: plain text, no markdown headers. Keep under 200 words.`;
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-    const result = await model.generateContent(prompt);
-    return result.response.text().trim();
+    return await callGemini(prompt);
   } catch (err) {
     console.error("[WhatsApp AI] Gemini error:", err);
     return `Your portfolio is earning at ${portfolio.avgYield.toFixed(1)}% p.a. Consider reviewing your allocations on the dashboard today.`;
@@ -165,9 +196,7 @@ Market data: ${rateText}
 Focus: MMFs, T-Bills, NSE. Be concise. Use emoji. Max 60 words total.`;
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-    const result = await model.generateContent(prompt);
-    return result.response.text().trim();
+    return await callGemini(prompt);
   } catch {
     return "Markets are performing steadily today. T-Bills leading at ~15.78% with MMFs close behind.";
   }

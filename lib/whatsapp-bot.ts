@@ -253,7 +253,7 @@ export async function processIncomingMessage(
       `👋 *Welcome to Sentil Africa!*\n\n` +
       `🌍 Kenya's premier wealth intelligence hub.\n\n` +
       `📊 Compare MMFs, T-Bills, Bonds, SACCOs\n` +
-      `🧠 AI-powered investment insights\n` +
+      `🧠 AI-powered investment insights — *available 24/7*\n` +
       `📱 Manage everything via WhatsApp\n\n` +
       `Get started:`,
       [
@@ -329,18 +329,22 @@ export async function processIncomingMessage(
     return handleGeminiQuestion(waId, question, userId);
   }
 
-  // Smart fallback — route to Sentil AI for anything investment-related
-  const investKeywords = ["what", "which", "how", "best", "compare", "rate", "invest", "return", "yield", "risk", "mmf", "tbill", "sacco", "explain", "difference", "recommend", "should", "advice"];
-  const looksLikeQuestion = investKeywords.some((kw) => rawInput.toLowerCase().includes(kw)) || rawInput.includes("?");
-
-  if (looksLikeQuestion && rawInput.length > 8) {
+  // ── 24/7 AI Fallback — ALL unrecognized messages go to Gemini ─────────────
+  // Instead of showing "I didn't get that", we route everything to AI.
+  // This ensures the bot is always helpful, any time of day or night.
+  if (rawInput.length > 2) {
     return handleGeminiQuestion(waId, rawInput, userId);
   }
 
   return sendWhatsAppMessage(
     waId,
-    `❓ I didn't get that. Send *MENU* to see all options, or ask me a question!\n\n` +
-    `Example: _ASK what is the best investment for KES 10,000?_`
+    `🧠 *Sentil AI is here for you 24/7!*\n\n` +
+    `Just type any question about investing, or use these commands:\n\n` +
+    `• *MENU* — main menu\n` +
+    `• *MARKETS* — live rates\n` +
+    `• *INVEST* — browse options\n` +
+    `• *ASK* — ask AI anything\n\n` +
+    `Example: _What's the best MMF for KES 50,000?_`
   );
 }
 
@@ -1332,7 +1336,7 @@ async function sendMainMenu(waId: string, userId?: string) {
       `📱 *Sentil Africa — Wealth Intelligence Hub*\n` +
       (isPro ? `⚡ Pro Member` : `🔓 Free Plan`) +
       expiryWarning +
-      `\n\nWhat would you like today?`,
+      `\n\n🧠 *AI assistant available 24/7* — just type any question!\n\nWhat would you like today?`,
       [
         { id: "INVEST",    title: "🏦 Browse Investments" },
         { id: "MARKETS",   title: "📈 Live Rates" },
@@ -1346,12 +1350,13 @@ async function sendMainMenu(waId: string, userId?: string) {
       `📌 *All commands:*\n` +
       `*INVEST* — browse all investment options\n` +
       `*MARKETS* — live NSE/MMF/T-Bill rates\n` +
-      `*ASK* — ask AI any investment question\n` +
+      `*ASK* — ask AI any investment question (24/7)\n` +
       (isPro ? `*PORTFOLIO* — your tracked assets\n*GOALS* — financial goals\n*LOG* — add investment\n` : ``) +
       `*WATCHLIST* — saved providers\n` +
       `*STATUS* — subscription details\n` +
       `*SUBSCRIBE* | *RENEW* — upgrade/renew\n` +
-      `*HELP* — full command list`,
+      `*HELP* — full command list\n\n` +
+      `💡 _Or just type any question — Sentil AI is always here to help!_`,
       userId
     );
   }

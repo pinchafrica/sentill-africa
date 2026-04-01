@@ -1,13 +1,14 @@
 /**
  * lib/whatsapp-gemini.ts
  * Sentil AI conversational layer for the Sentil WhatsApp bot.
- * Answers investment questions with user-specific context.
+ * 24/7 AI-driven answers to any investment question using Gemini 2.0 Flash.
  */
 
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import { prisma } from "./prisma";
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY ?? "";
+const GEMINI_MODEL = "gemini-2.0-flash";
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY ?? "");
+import { prisma } from "./prisma";
 
 interface UserContext {
   name: string;
@@ -46,6 +47,37 @@ async function getMarketContext(): Promise<string> {
   }
 }
 
+async function callGemini(prompt: string): Promise<string> {
+  if (!GEMINI_API_KEY) {
+    throw new Error("GEMINI_API_KEY not set");
+  }
+
+  const res = await fetch(GEMINI_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: {
+        temperature: 0.7,
+        topP: 0.85,
+        topK: 40,
+        maxOutputTokens: 512,
+      },
+    }),
+  });
+
+  if (!res.ok) {
+    const err = await res.text();
+    console.error("[Sentil AI] Gemini HTTP error:", err);
+    throw new Error(`Gemini API error: ${res.status}`);
+  }
+
+  const data = await res.json();
+  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+  if (!text) throw new Error("Empty Gemini response");
+  return text;
+}
+
 export async function askGeminiBot(
   question: string,
   user: UserContext
@@ -59,19 +91,22 @@ export async function askGeminiBot(
 You are replying via WhatsApp — keep answers SHORT (max 150 words), plain text, no markdown headers.
 Use bullet points (•) and bold (*word*) for WhatsApp formatting.
 Never mention Gemini, Google, or any AI provider name — you are simply "Sentil AI".
+You are available 24 hours a day, 7 days a week to help with any investment question.
 
 User: ${user.name} | Plan: ${user.isPremium ? "Pro" : "Free"}
 Current market rates: ${marketCtx}
 ${user.isPremium ? portfolioCtx : ""}
 
-IMPORTANT DISCLAIMER: Always end with: "_Sentil is an information hub — invest directly with your chosen provider._"
+IMPORTANT RULES:
+1. Always be helpful, friendly, and concise.
+2. If the user greets you casually, respond warmly and offer investment help.
+3. If the question is not about investments, politely redirect to finance/investing topics.
+4. Always end with: "_Sentil is an information hub — invest directly with your chosen provider._"
 
-Answer this investment question concisely:`;
+Answer this question concisely:`;
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-    const result = await model.generateContent(`${systemPrompt}\n\n${question}`);
-    const text = result.response.text().trim();
+    const text = await callGemini(`${systemPrompt}\n\n${question}`);
     // Ensure disclaimer is present
     if (!text.includes("information hub")) {
       return text + "\n\n_Sentil is an information hub — invest directly with your chosen provider._";
@@ -101,9 +136,7 @@ Provider: ${providerName} | Type: ${providerType} | Yield: ${currentYield}% | Ri
 Be specific, conversational. No markdown. End with one actionable tip.`;
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-    const result = await model.generateContent(prompt);
-    return result.response.text().trim();
+    return await callGemini(prompt);
   } catch {
     return `${providerName} offers ${currentYield}% p.a. with ${riskLevel.toLowerCase()} risk. Minimum investment: ${minimumInvest ?? "check provider"}.`;
   }
