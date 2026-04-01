@@ -65,7 +65,7 @@ export async function POST(req: Request) {
     console.log("[AI API] Query:", query);
     console.log("[AI API] Context:", contextStr);
 
-    const modelToUse = "gemini-2.0-flash"; 
+    const modelToUse = "gemini-flash-latest"; 
 
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelToUse}:generateContent?key=${API_KEY}`, {
       method: "POST",
