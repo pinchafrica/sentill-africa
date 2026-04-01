@@ -99,6 +99,123 @@ export async function GET(req: Request) {
 
   console.log(`[Cron] WhatsApp broadcast complete: ${sent} sent, ${failed} failed out of ${recipients.length} total`);
 
+  // ── 4. Expiry Notifications — 2 days before subscription ends ──────────────
+  let expiryNotified = 0;
+  let autoExpired = 0;
+
+  try {
+    const twoDaysFromNow = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000);
+    const now = new Date();
+
+    // Find Pro users expiring within 2 days who haven't been notified today
+    const expiringUsers = await prisma.user.findMany({
+      where: {
+        isPremium: true,
+        premiumExpiresAt: {
+          lte: twoDaysFromNow,
+          gte: now,
+        },
+        whatsappId: { not: null },
+      },
+      select: {
+        id: true,
+        name: true,
+        whatsappId: true,
+        premiumExpiresAt: true,
+      },
+    });
+
+    for (const user of expiringUsers) {
+      if (!user.whatsappId || !user.premiumExpiresAt) continue;
+      const daysLeft = Math.ceil(
+        (new Date(user.premiumExpiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+      );
+
+      const expiryDate = new Date(user.premiumExpiresAt).toLocaleDateString("en-KE", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      });
+
+      try {
+        await sendWhatsAppMessage(
+          user.whatsappId,
+          `⚠️ *Sentill Pro Expiry Notice*\n\n` +
+          `Hi *${user.name?.split(" ")[0] ?? "Investor"}*,\n\n` +
+          `Your Sentill Pro subscription expires ${daysLeft <= 0 ? "today" : `in *${daysLeft} day${daysLeft !== 1 ? "s" : ""}*`} (${expiryDate}).\n\n` +
+          `━━━━━━━━━━━━━━━━━━\n` +
+          `Don't lose access to:\n\n` +
+          `✅ Unlimited AI wealth insights\n` +
+          `✅ Portfolio tracking & analytics\n` +
+          `✅ KRA Tax AI & goal planning\n` +
+          `✅ Daily AI market briefs\n` +
+          `✅ Priority support\n\n` +
+          `━━━━━━━━━━━━━━━━━━\n` +
+          `💰 *Renew now:*\n\n` +
+          `📱 1 Week — *KES 99*\n` +
+          `📅 1 Month — *KES 349* _(Save 12%)_\n` +
+          `🏆 3 Months — *KES 999* _(Save 24%)_\n\n` +
+          `Send *RENEW* to keep your Pro access.\n` +
+          `Or visit: https://sentill.africa/packages`,
+          user.id
+        );
+        expiryNotified++;
+        console.log(`[Cron] ⏰ Expiry reminder sent to ${user.name} (${daysLeft}d left)`);
+        await new Promise((r) => setTimeout(r, 1100));
+      } catch (err) {
+        console.error(`[Cron] ❌ Expiry notification failed for ${user.name}:`, err);
+      }
+    }
+
+    // Auto-disable expired subscriptions
+    const expiredUsers = await prisma.user.findMany({
+      where: {
+        isPremium: true,
+        premiumExpiresAt: { lt: now },
+      },
+      select: { id: true, name: true, whatsappId: true },
+    });
+
+    for (const user of expiredUsers) {
+      try {
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { isPremium: false },
+        });
+        autoExpired++;
+        console.log(`[Cron] 🔄 Auto-expired: ${user.name}`);
+
+        // Send expired notification
+        if (user.whatsappId) {
+          await sendWhatsAppMessage(
+            user.whatsappId,
+            `🔒 *Sentill Pro Expired*\n\n` +
+            `Hi *${user.name?.split(" ")[0] ?? "Investor"}*,\n\n` +
+            `Your Sentill Pro subscription has ended. Your free plan limits are now active:\n\n` +
+            `✅ 3 AI questions per day\n` +
+            `✅ Live market rates\n` +
+            `✅ Investment browser\n` +
+            `❌ Portfolio tracker — *locked*\n` +
+            `❌ Unlimited AI — *locked*\n` +
+            `❌ Goal planning — *locked*\n\n` +
+            `━━━━━━━━━━━━━━━━━━\n` +
+            `⚡ *Reactivate Pro from just KES 99:*\n\n` +
+            `Send *SUBSCRIBE* to get back to full access.\n` +
+            `Or visit: https://sentill.africa/packages`,
+            user.id
+          );
+          await new Promise((r) => setTimeout(r, 1100));
+        }
+      } catch (err) {
+        console.error(`[Cron] ❌ Auto-expiry failed for ${user.name}:`, err);
+      }
+    }
+  } catch (err) {
+    console.error("[Cron] Expiry notification error:", err);
+  }
+
+  console.log(`[Cron] Expiry: ${expiryNotified} reminded, ${autoExpired} auto-expired`);
+
   return NextResponse.json({
     success: true,
     sent,
@@ -106,6 +223,8 @@ export async function GET(req: Request) {
     total: recipients.length,
     vipCount: VIP_RECIPIENTS.length,
     dbUserCount: dbUsers.length,
+    expiryNotified,
+    autoExpired,
     authMethod,
     timestamp: new Date().toISOString(),
   });

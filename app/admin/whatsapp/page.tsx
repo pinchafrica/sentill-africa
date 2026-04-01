@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
   Smartphone, Users, MessageSquare, Send, RefreshCw,
   TrendingUp, CheckCircle2, XCircle, Clock, Loader2,
@@ -481,50 +481,273 @@ export default function AdminWhatsAppPage() {
                     </td>
                   </tr>
                 ) : (
-                  filteredUsers.map((u) => (
-                    <tr
-                      key={u.id}
-                      onClick={() => setExpandedUserId(expandedUserId === u.id ? null : u.id)}
-                      className="hover:bg-slate-50/80 transition-colors cursor-pointer group"
-                    >
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-3">
-                          <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-[10px] font-black text-white ${
-                            u.isPremium
-                              ? "bg-gradient-to-br from-violet-600 to-purple-700"
-                              : "bg-gradient-to-br from-slate-400 to-slate-500"
-                          }`}>
-                            {u.name.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase()}
-                          </div>
-                          <div>
-                            <p className="font-bold text-slate-900 group-hover:text-emerald-700 transition-colors">{u.name}</p>
-                            <p className="text-[10px] text-slate-400">{u.email}</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className="font-mono text-slate-600 text-[11px]">+{u.phone}</span>
-                        {u.verified && <CheckCircle2 className="w-3 h-3 text-emerald-500 inline ml-1" />}
-                      </td>
-                      <td className="px-4 py-3">
-                        <PlanBadge isPremium={u.isPremium} expiresAt={u.premiumExpiresAt} />
-                      </td>
-                      <td className="px-4 py-3">
-                        <SourceBadge source={u.paymentSource} />
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className="font-bold text-slate-700">{u.messageCount.toLocaleString()}</span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className={`font-bold ${u.assetsCount > 0 ? "text-emerald-600" : "text-slate-400"}`}>
-                          {u.assetsCount}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-slate-500">
-                        {new Date(u.joinedAt).toLocaleDateString("en-KE", { day: "numeric", month: "short", year: "2-digit" })}
-                      </td>
-                    </tr>
-                  ))
+                  filteredUsers.map((u) => {
+                    const isExpanded = expandedUserId === u.id;
+                    const daysLeft = u.premiumExpiresAt
+                      ? Math.ceil((new Date(u.premiumExpiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+                      : null;
+                    const isExpiringSoon = daysLeft !== null && daysLeft <= 7 && daysLeft > 0;
+                    const isExpired = daysLeft !== null && daysLeft <= 0;
+
+                    return (
+                      <React.Fragment key={u.id}>
+                        <tr
+                          onClick={() => setExpandedUserId(isExpanded ? null : u.id)}
+                          className={`hover:bg-slate-50/80 transition-colors cursor-pointer group ${isExpanded ? "bg-slate-50/50" : ""}`}
+                        >
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-3">
+                              <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-[10px] font-black text-white ${
+                                u.isPremium
+                                  ? "bg-gradient-to-br from-violet-600 to-purple-700"
+                                  : "bg-gradient-to-br from-slate-400 to-slate-500"
+                              }`}>
+                                {u.name.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase()}
+                              </div>
+                              <div>
+                                <div className="flex items-center gap-1.5">
+                                  <p className="font-bold text-slate-900 group-hover:text-emerald-700 transition-colors">{u.name}</p>
+                                  {isExpiringSoon && (
+                                    <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" title={`Expires in ${daysLeft} days`} />
+                                  )}
+                                  {isExpired && u.isPremium && (
+                                    <span className="w-2 h-2 rounded-full bg-rose-500" title="Subscription expired" />
+                                  )}
+                                </div>
+                                <p className="text-[10px] text-slate-400">{u.email}</p>
+                              </div>
+                              <ChevronDown className={`w-3 h-3 text-slate-300 transition-transform ml-auto ${isExpanded ? "rotate-180" : ""}`} />
+                            </div>
+                          </td>
+                          <td className="px-4 py-3">
+                            <span className="font-mono text-slate-600 text-[11px]">+{u.phone}</span>
+                            {u.verified && <CheckCircle2 className="w-3 h-3 text-emerald-500 inline ml-1" />}
+                          </td>
+                          <td className="px-4 py-3">
+                            <PlanBadge isPremium={u.isPremium} expiresAt={u.premiumExpiresAt} />
+                          </td>
+                          <td className="px-4 py-3">
+                            <SourceBadge source={u.paymentSource} />
+                          </td>
+                          <td className="px-4 py-3">
+                            <span className="font-bold text-slate-700">{u.messageCount.toLocaleString()}</span>
+                          </td>
+                          <td className="px-4 py-3">
+                            <span className={`font-bold ${u.assetsCount > 0 ? "text-emerald-600" : "text-slate-400"}`}>
+                              {u.assetsCount}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-slate-500">
+                            {new Date(u.joinedAt).toLocaleDateString("en-KE", { day: "numeric", month: "short", year: "2-digit" })}
+                          </td>
+                        </tr>
+
+                        {/* ── Expanded Detail Panel ──────────────────────── */}
+                        <AnimatePresence>
+                          {isExpanded && (
+                            <tr>
+                              <td colSpan={7} className="p-0">
+                                <motion.div
+                                  initial={{ height: 0, opacity: 0 }}
+                                  animate={{ height: "auto", opacity: 1 }}
+                                  exit={{ height: 0, opacity: 0 }}
+                                  transition={{ duration: 0.2 }}
+                                  className="overflow-hidden"
+                                >
+                                  <div className="px-6 py-5 bg-gradient-to-r from-slate-50/80 to-white border-b border-slate-100">
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+
+                                      {/* Subscription Status Card */}
+                                      <div className={`rounded-xl p-4 border ${
+                                        u.isPremium
+                                          ? isExpiringSoon
+                                            ? "bg-amber-50 border-amber-200"
+                                            : isExpired
+                                              ? "bg-rose-50 border-rose-200"
+                                              : "bg-gradient-to-br from-violet-50 to-purple-50 border-purple-200"
+                                          : "bg-slate-50 border-slate-200"
+                                      }`}>
+                                        <div className="flex items-center gap-2 mb-2">
+                                          <Crown className={`w-4 h-4 ${u.isPremium ? "text-purple-600" : "text-slate-400"}`} />
+                                          <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Subscription</p>
+                                        </div>
+                                        {u.isPremium ? (
+                                          <>
+                                            <p className="text-sm font-black text-slate-900">
+                                              {u.lastPayment?.plan?.replace(/_/g, " ") ?? "Pro Active"}
+                                            </p>
+                                            {daysLeft !== null && (
+                                              <div className="mt-2">
+                                                <div className="flex items-center justify-between text-[10px] mb-1">
+                                                  <span className="font-bold text-slate-500">Time remaining</span>
+                                                  <span className={`font-black ${
+                                                    isExpired ? "text-rose-600" : isExpiringSoon ? "text-amber-600" : "text-emerald-600"
+                                                  }`}>
+                                                    {isExpired ? "EXPIRED" : `${daysLeft} day${daysLeft !== 1 ? "s" : ""}`}
+                                                  </span>
+                                                </div>
+                                                {!isExpired && (
+                                                  <div className="h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                                                    <div
+                                                      className={`h-full rounded-full transition-all ${
+                                                        isExpiringSoon ? "bg-amber-400" : "bg-purple-500"
+                                                      }`}
+                                                      style={{ width: `${Math.min(100, Math.max(5, (daysLeft / 30) * 100))}%` }}
+                                                    />
+                                                  </div>
+                                                )}
+                                              </div>
+                                            )}
+                                          </>
+                                        ) : (
+                                          <p className="text-sm font-bold text-slate-500">Free Plan</p>
+                                        )}
+                                      </div>
+
+                                      {/* Dates Card */}
+                                      <div className="rounded-xl p-4 bg-white border border-slate-200">
+                                        <div className="flex items-center gap-2 mb-2">
+                                          <Clock className="w-4 h-4 text-blue-500" />
+                                          <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Key Dates</p>
+                                        </div>
+                                        <div className="space-y-2">
+                                          <div>
+                                            <p className="text-[9px] font-bold text-slate-400 uppercase">Joined</p>
+                                            <p className="text-xs font-bold text-slate-800">
+                                              {new Date(u.joinedAt).toLocaleDateString("en-KE", { day: "numeric", month: "long", year: "numeric" })}
+                                            </p>
+                                          </div>
+                                          {u.premiumActivatedAt && (
+                                            <div>
+                                              <p className="text-[9px] font-bold text-slate-400 uppercase">Pro Since</p>
+                                              <p className="text-xs font-bold text-purple-700">
+                                                {new Date(u.premiumActivatedAt).toLocaleDateString("en-KE", { day: "numeric", month: "long", year: "numeric" })}
+                                              </p>
+                                            </div>
+                                          )}
+                                          {u.premiumExpiresAt && (
+                                            <div>
+                                              <p className="text-[9px] font-bold text-slate-400 uppercase">Expires On</p>
+                                              <p className={`text-xs font-bold ${
+                                                isExpired ? "text-rose-600" : isExpiringSoon ? "text-amber-600" : "text-slate-800"
+                                              }`}>
+                                                {new Date(u.premiumExpiresAt).toLocaleDateString("en-KE", { day: "numeric", month: "long", year: "numeric" })}
+                                                {isExpiringSoon && " ⚠️"}
+                                                {isExpired && " ❌"}
+                                              </p>
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
+
+                                      {/* Payment Card */}
+                                      <div className="rounded-xl p-4 bg-white border border-slate-200">
+                                        <div className="flex items-center gap-2 mb-2">
+                                          <Wallet className="w-4 h-4 text-emerald-500" />
+                                          <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Last Payment</p>
+                                        </div>
+                                        {u.lastPayment ? (
+                                          <div className="space-y-2">
+                                            <div>
+                                              <p className="text-[9px] font-bold text-slate-400 uppercase">Amount</p>
+                                              <p className="text-lg font-black text-emerald-600">
+                                                KES {u.lastPayment.amount.toLocaleString()}
+                                              </p>
+                                            </div>
+                                            <div className="flex gap-3">
+                                              <div>
+                                                <p className="text-[9px] font-bold text-slate-400 uppercase">Method</p>
+                                                <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded ${
+                                                  u.lastPayment.method === "MPESA" ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700"
+                                                }`}>
+                                                  {u.lastPayment.method}
+                                                </span>
+                                              </div>
+                                              <div>
+                                                <p className="text-[9px] font-bold text-slate-400 uppercase">Date</p>
+                                                <p className="text-[11px] font-bold text-slate-700">
+                                                  {new Date(u.lastPayment.createdAt).toLocaleDateString("en-KE", { day: "numeric", month: "short" })}
+                                                </p>
+                                              </div>
+                                            </div>
+                                          </div>
+                                        ) : (
+                                          <p className="text-xs text-slate-400 italic">No payments recorded</p>
+                                        )}
+                                      </div>
+
+                                      {/* Activity Card */}
+                                      <div className="rounded-xl p-4 bg-white border border-slate-200">
+                                        <div className="flex items-center gap-2 mb-2">
+                                          <BarChart3 className="w-4 h-4 text-orange-500" />
+                                          <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Activity</p>
+                                        </div>
+                                        <div className="space-y-2">
+                                          <div className="flex justify-between">
+                                            <span className="text-[10px] text-slate-500">Messages</span>
+                                            <span className="text-xs font-black text-slate-800">{u.messageCount.toLocaleString()}</span>
+                                          </div>
+                                          <div className="flex justify-between">
+                                            <span className="text-[10px] text-slate-500">Assets Logged</span>
+                                            <span className="text-xs font-black text-slate-800">{u.assetsCount}</span>
+                                          </div>
+                                          <div className="flex justify-between">
+                                            <span className="text-[10px] text-slate-500">WA Verified</span>
+                                            <span className={`text-xs font-black ${u.verified ? "text-emerald-600" : "text-rose-500"}`}>
+                                              {u.verified ? "Yes ✓" : "No"}
+                                            </span>
+                                          </div>
+                                          <div className="flex justify-between">
+                                            <span className="text-[10px] text-slate-500">Source</span>
+                                            <SourceBadge source={u.paymentSource} />
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+
+                                    {/* Expiry Warning Banner */}
+                                    {u.isPremium && isExpiringSoon && !isExpired && (
+                                      <div className="mt-4 flex items-center gap-3 px-4 py-3 bg-amber-50 border border-amber-200 rounded-xl">
+                                        <Clock className="w-5 h-5 text-amber-500 flex-shrink-0" />
+                                        <div className="flex-1">
+                                          <p className="text-xs font-black text-amber-800">
+                                            Subscription expires in {daysLeft} day{daysLeft !== 1 ? "s" : ""}
+                                          </p>
+                                          <p className="text-[10px] text-amber-600 mt-0.5">
+                                            WhatsApp renewal reminder will be sent {daysLeft <= 2 ? "today" : `${daysLeft - 2} day${daysLeft - 2 !== 1 ? "s" : ""} before expiry`} via the daily cron job.
+                                          </p>
+                                        </div>
+                                        <span className="text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg bg-amber-200 text-amber-800">
+                                          ⚠️ EXPIRING
+                                        </span>
+                                      </div>
+                                    )}
+
+                                    {u.isPremium && isExpired && (
+                                      <div className="mt-4 flex items-center gap-3 px-4 py-3 bg-rose-50 border border-rose-200 rounded-xl">
+                                        <XCircle className="w-5 h-5 text-rose-500 flex-shrink-0" />
+                                        <div className="flex-1">
+                                          <p className="text-xs font-black text-rose-800">
+                                            Subscription has expired
+                                          </p>
+                                          <p className="text-[10px] text-rose-600 mt-0.5">
+                                            User was sent a renewal reminder. Pro features are now locked.
+                                          </p>
+                                        </div>
+                                        <span className="text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg bg-rose-200 text-rose-800">
+                                          ❌ EXPIRED
+                                        </span>
+                                      </div>
+                                    )}
+                                  </div>
+                                </motion.div>
+                              </td>
+                            </tr>
+                          )}
+                        </AnimatePresence>
+                      </React.Fragment>
+                    );
+                  })
                 )}
               </tbody>
             </table>
