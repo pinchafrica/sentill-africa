@@ -160,6 +160,33 @@ export default function AdminWhatsAppPage() {
   const [dmSending, setDmSending] = useState(false);
   const [dmResult, setDmResult] = useState<string | null>(null);
 
+  // Admin Upgrade
+  const [upgradeLoading, setUpgradeLoading] = useState<string | null>(null);
+  const [upgradeResult, setUpgradeResult] = useState<Record<string, string>>({});
+
+  const adminUpgrade = async (userId: string, action: "upgrade" | "downgrade" | "extend", days: number, plan?: string) => {
+    setUpgradeLoading(userId);
+    try {
+      const res = await fetch("/api/whatsapp/upgrade", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, action, days, plan }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setUpgradeResult((prev) => ({ ...prev, [userId]: `✅ ${data.action}: ${data.userName}` }));
+        // Refresh data after 1s
+        setTimeout(() => { fetchData(); setUpgradeResult((prev) => { const n = {...prev}; delete n[userId]; return n; }); }, 2000);
+      } else {
+        setUpgradeResult((prev) => ({ ...prev, [userId]: `❌ ${data.error}` }));
+      }
+    } catch {
+      setUpgradeResult((prev) => ({ ...prev, [userId]: "❌ Network error" }));
+    } finally {
+      setUpgradeLoading(null);
+    }
+  };
+
   const fetchData = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -792,6 +819,98 @@ export default function AdminWhatsAppPage() {
                                         </span>
                                       </div>
                                     )}
+
+                                    {/* ── Admin Upgrade Controls ──────────────── */}
+                                    <div className="mt-4 p-4 bg-gradient-to-r from-slate-900 to-slate-800 rounded-xl">
+                                      <div className="flex items-center justify-between mb-3">
+                                        <div className="flex items-center gap-2">
+                                          <Crown className="w-4 h-4 text-emerald-400" />
+                                          <p className="text-[10px] font-black uppercase tracking-widest text-white">Admin Controls</p>
+                                        </div>
+                                        {upgradeLoading === u.id && (
+                                          <Loader2 className="w-4 h-4 animate-spin text-emerald-400" />
+                                        )}
+                                      </div>
+
+                                      {upgradeResult[u.id] && (
+                                        <div className={`text-xs font-bold px-3 py-2 rounded-lg mb-3 ${
+                                          upgradeResult[u.id].startsWith("✅") ? "bg-emerald-500/20 text-emerald-300" : "bg-rose-500/20 text-rose-300"
+                                        }`}>
+                                          {upgradeResult[u.id]}
+                                        </div>
+                                      )}
+
+                                      {!u.isPremium || isExpired ? (
+                                        // UPGRADE controls for free/expired users
+                                        <div className="space-y-2">
+                                          <p className="text-[10px] text-slate-400 font-bold">Upgrade to Pro:</p>
+                                          <div className="flex gap-2">
+                                            <button
+                                              onClick={(e) => { e.stopPropagation(); adminUpgrade(u.id, "upgrade", 7, "1 Week Pro"); }}
+                                              disabled={upgradeLoading === u.id}
+                                              className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-white text-[10px] font-black uppercase tracking-wider rounded-lg transition-all disabled:opacity-50"
+                                            >
+                                              <Zap className="w-3 h-3" />
+                                              7 Days
+                                            </button>
+                                            <button
+                                              onClick={(e) => { e.stopPropagation(); adminUpgrade(u.id, "upgrade", 30, "1 Month Pro"); }}
+                                              disabled={upgradeLoading === u.id}
+                                              className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 bg-purple-500 hover:bg-purple-400 text-white text-[10px] font-black uppercase tracking-wider rounded-lg transition-all disabled:opacity-50"
+                                            >
+                                              <Crown className="w-3 h-3" />
+                                              30 Days
+                                            </button>
+                                            <button
+                                              onClick={(e) => { e.stopPropagation(); adminUpgrade(u.id, "upgrade", 90, "3 Months Pro"); }}
+                                              disabled={upgradeLoading === u.id}
+                                              className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 bg-blue-500 hover:bg-blue-400 text-white text-[10px] font-black uppercase tracking-wider rounded-lg transition-all disabled:opacity-50"
+                                            >
+                                              <TrendingUp className="w-3 h-3" />
+                                              90 Days
+                                            </button>
+                                          </div>
+                                        </div>
+                                      ) : (
+                                        // MANAGE controls for active Pro users
+                                        <div className="space-y-2">
+                                          <p className="text-[10px] text-slate-400 font-bold">Manage Subscription:</p>
+                                          <div className="flex gap-2">
+                                            <button
+                                              onClick={(e) => { e.stopPropagation(); adminUpgrade(u.id, "extend", 7); }}
+                                              disabled={upgradeLoading === u.id}
+                                              className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 bg-emerald-500/30 hover:bg-emerald-500/50 text-emerald-300 text-[10px] font-black uppercase tracking-wider rounded-lg transition-all disabled:opacity-50 border border-emerald-500/30"
+                                            >
+                                              +7 Days
+                                            </button>
+                                            <button
+                                              onClick={(e) => { e.stopPropagation(); adminUpgrade(u.id, "extend", 30); }}
+                                              disabled={upgradeLoading === u.id}
+                                              className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 bg-purple-500/30 hover:bg-purple-500/50 text-purple-300 text-[10px] font-black uppercase tracking-wider rounded-lg transition-all disabled:opacity-50 border border-purple-500/30"
+                                            >
+                                              +30 Days
+                                            </button>
+                                            <button
+                                              onClick={(e) => { e.stopPropagation(); adminUpgrade(u.id, "downgrade", 0); }}
+                                              disabled={upgradeLoading === u.id}
+                                              className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 bg-rose-500/20 hover:bg-rose-500/40 text-rose-400 text-[10px] font-black uppercase tracking-wider rounded-lg transition-all disabled:opacity-50 border border-rose-500/30"
+                                            >
+                                              Downgrade
+                                            </button>
+                                          </div>
+                                        </div>
+                                      )}
+
+                                      <div className="flex gap-2 mt-3">
+                                        <button
+                                          onClick={(e) => { e.stopPropagation(); setDmUser(u); setDmText(""); setDmResult(null); }}
+                                          className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-white/10 hover:bg-white/20 text-white text-[10px] font-black uppercase tracking-wider rounded-lg transition-all border border-white/10"
+                                        >
+                                          <MessageCircle className="w-3 h-3" />
+                                          Send DM
+                                        </button>
+                                      </div>
+                                    </div>
                                   </div>
                                 </motion.div>
                               </td>
