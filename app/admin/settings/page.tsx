@@ -43,6 +43,7 @@ export default function AdminSettingsPage() {
   const [showGeminiKey, setShowGeminiKey] = useState(false);
   const [showWhatsappToken, setShowWhatsappToken] = useState(false);
   const [savingKey, setSavingKey] = useState<string | null>(null);
+  const [seeding, setSeeding] = useState(false);
   const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
 
   const showToast = (msg: string, type: "success" | "error" = "success") => {
@@ -97,6 +98,24 @@ export default function AdminSettingsPage() {
 
   const getKeyInfo = (service: string) => apiKeys.find(k => k.service === service);
 
+  const seedFromEnv = async () => {
+    setSeeding(true);
+    try {
+      const res = await fetch("/api/admin/seed-key", { method: "POST" });
+      const data = await res.json();
+      if (res.ok) {
+        showToast(`🔐 ${data.seeded?.length || 0} keys encrypted from environment!`);
+        fetchKeys();
+      } else {
+        showToast(data.error || "Seed failed", "error");
+      }
+    } catch {
+      showToast("Network error seeding keys", "error");
+    } finally {
+      setSeeding(false);
+    }
+  };
+
   const handleSave = () => {
     setIsSaving(true);
     setTimeout(() => setIsSaving(false), 1200);
@@ -123,6 +142,14 @@ export default function AdminSettingsPage() {
           </p>
         </div>
         <div className="flex items-center gap-3">
+           <button 
+             onClick={seedFromEnv}
+             disabled={seeding}
+             className="px-5 py-3 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-xl shadow-slate-900/20 flex items-center gap-2 disabled:opacity-70"
+           >
+             {seeding ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
+             {seeding ? "Seeding..." : "Seed from Server"}
+           </button>
            <button 
              onClick={handleSave}
              disabled={isSaving}
