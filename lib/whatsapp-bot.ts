@@ -1454,49 +1454,48 @@ async function sendMainMenu(waId: string, userId?: string) {
         ? `\n⚠️ Pro expires in *${expiresIn} day${expiresIn !== 1 ? "s" : ""}* — send *RENEW*`
         : "";
 
-    await sendInteractiveButtons(
-      waId,
-      `👋 *Hello, ${name}!*\n\n` +
-      `📱 *Sentil Africa — Wealth Intelligence Hub*\n` +
-      (isPro ? `⚡ Pro Member` : `🔓 Free Plan`) +
-      expiryWarning +
-      `\n\n🧠 *AI assistant available 24/7* — just type any question!\n\nWhat would you like today?`,
-      [
-        { id: "INVEST",    title: "🏦 Browse Investments" },
-        { id: "MARKETS",   title: "📈 Live Rates" },
-        { id: "SUBSCRIBE", title: isPro ? "🔄 Renew Pro" : "⚡ Upgrade to Pro" },
-      ],
-      userId
-    );
-
     return sendWhatsAppMessage(
       waId,
-      `📌 *All commands:*\n` +
+      `👋 *Hello, ${name}!*\n\n` +
+      `📱 *Sentill Africa — Wealth Intelligence Hub*\n` +
+      (isPro ? `⚡ Pro Member` : `🔓 Free Plan (${FREE_AI_LIMIT} AI questions/day)`) +
+      expiryWarning +
+      `\n\n🧠 *Just type any question and Sentill Africa will answer instantly!*\n\n` +
+      `Try asking:\n` +
+      `• _"What is the best MMF in Kenya?"_\n` +
+      `• _"Compare Cytonn vs Sanlam MMF"_\n` +
+      `• _"How do T-Bills work?"_\n` +
+      `• _"Best investment for KES 50,000?"_\n\n` +
+      `━━━━━━━━━━━━━━━━━━\n` +
+      `📌 *Quick Commands:*\n` +
       `*INVEST* — browse all investment options\n` +
       `*MARKETS* — live NSE/MMF/T-Bill rates\n` +
-      `*ASK* — ask AI any investment question (24/7)\n` +
       (isPro ? `*PORTFOLIO* — your tracked assets\n*GOALS* — financial goals\n*LOG* — add investment\n` : ``) +
-      `*WATCHLIST* — saved providers\n` +
+      `*SUBSCRIBE* — upgrade to Pro\n` +
       `*STATUS* — subscription details\n` +
-      `*SUBSCRIBE* | *RENEW* — upgrade/renew\n` +
       `*HELP* — full command list\n\n` +
-      `💡 _Or just type any question — Sentill Africa is always here to help!_`,
+      `💡 _Or just type any question — Sentill Africa is always here!_`,
       userId
     );
   }
 
-  return sendInteractiveButtons(
+  // Guest (not logged in) — also AI-first
+  return sendWhatsAppMessage(
     waId,
-    `👋 *Welcome to Sentil Africa!*\n\n` +
+    `👋 *Welcome to Sentill Africa!*\n\n` +
     `🌍 Kenya's premier wealth intelligence hub.\n\n` +
-    `📊 Browse MMFs, T-Bills, Bonds, SACCOs\n` +
-    `🧠 AI-powered investment insights\n` +
-    `📱 Everything via WhatsApp\n\n` +
-    `Get started:`,
-    [
-      { id: "REGISTER", title: "🆕 Create Account" },
-      { id: "LOGIN",    title: "🔐 Login" },
-    ]
+    `🧠 *Just type any investment question and get instant answers!*\n\n` +
+    `Try asking:\n` +
+    `• _"What are the best MMFs in Kenya?"_\n` +
+    `• _"How do I invest KES 10,000?"_\n` +
+    `• _"T-Bill rates today?"_\n\n` +
+    `━━━━━━━━━━━━━━━━━━\n` +
+    `📌 *Commands:*\n` +
+    `*REGISTER* — create free account\n` +
+    `*LOGIN* — access your account\n` +
+    `*INVEST* — browse investments\n` +
+    `*MARKETS* — live market rates\n\n` +
+    `💡 _${FREE_AI_LIMIT} free AI questions per day — upgrade for unlimited!_`
   );
 }
 
