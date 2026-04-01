@@ -28,7 +28,7 @@ export async function GET(req: Request) {
   // ── Auth: allow Vercel Cron OR manual call with correct secret ─────────────
   const isVercelCron = req.headers.get("x-vercel-cron") === "1";
   const authHeader   = req.headers.get("authorization");
-  const cronSecret   = process.env.CRON_SECRET ?? "";
+  const cronSecret   = (process.env.CRON_SECRET ?? "").trim();
   const isManualAuth = cronSecret && authHeader === `Bearer ${cronSecret}`;
 
   if (!isVercelCron && !isManualAuth) {
