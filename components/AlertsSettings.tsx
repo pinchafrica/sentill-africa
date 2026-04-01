@@ -168,7 +168,7 @@ export default function AlertsSettings() {
                           className="w-full bg-white border border-slate-200 px-4 py-3 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:border-emerald-500 transition-all mb-4"
                         />
                         <a 
-                          href={`https://wa.me/2540706206160?text=${encodeURIComponent("Hello Sentill, I'm setting up my WhatsApp alerts and have a few questions...")}`}
+                          href={`https://wa.me/254703469525?text=${encodeURIComponent("Hello Sentill, I'm setting up my WhatsApp alerts and have a few questions...")}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex items-center justify-center gap-2 w-full py-3 bg-emerald-50 text-emerald-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-100 transition-colors border border-emerald-200"

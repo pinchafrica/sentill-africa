@@ -32,9 +32,9 @@ export default function SovereignTicker() {
   return (
     <div className="fixed top-0 left-0 w-full z-[100] h-9 bg-slate-950/80 backdrop-blur-md border-b border-white/5 flex items-center overflow-hidden">
       {/* Left: phone */}
-      <a href="tel:+254706206160" className="absolute left-0 z-20 flex items-center gap-1.5 px-3 h-full bg-slate-950 border-r border-white/10 hover:bg-slate-800 transition-colors shrink-0">
+      <a href="tel:+254703469525" className="absolute left-0 z-20 flex items-center gap-1.5 px-3 h-full bg-slate-950 border-r border-white/10 hover:bg-slate-800 transition-colors shrink-0">
         <Phone className="w-2.5 h-2.5 text-blue-500" />
-        <span className="text-[9px] font-black text-slate-300 tracking-widest uppercase whitespace-nowrap">+254 706 206 160</span>
+        <span className="text-[9px] font-black text-slate-300 tracking-widest uppercase whitespace-nowrap">+254 703 469 525</span>
       </a>
 
       {/* Scrolling ticker */}
