@@ -248,6 +248,10 @@ export async function processIncomingMessage(
   if (input === "2" && !session.userId) return handleLoginRequest(waId);
 
   if (!session.userId) {
+    // If user typed a real question (>5 chars), route to AI even without login
+    if (rawInput.length > 5) {
+      return handleGeminiQuestionGuest(waId, rawInput);
+    }
     return sendInteractiveButtons(
       waId,
       `👋 *Welcome to Sentil Africa!*\n\n` +
@@ -353,20 +357,52 @@ export async function processIncomingMessage(
 // ─────────────────────────────────────────────────────────────────────────────
 
 async function handleGeminiQuestion(waId: string, question: string, userId: string) {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { name: true, isPremium: true },
-  });
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { name: true, isPremium: true },
+    });
 
-  await sendWhatsAppMessage(waId, "🧠 *Sentil AI* is thinking...");
+    await sendWhatsAppMessage(waId, "🧠 *Sentil AI* is thinking...");
 
-  const answer = await askGeminiBot(question, {
-    name: user?.name ?? "Investor",
-    userId,
-    isPremium: user?.isPremium ?? false,
-  });
+    const answer = await askGeminiBot(question, {
+      name: user?.name ?? "Investor",
+      userId,
+      isPremium: user?.isPremium ?? false,
+    });
 
-  return sendWhatsAppMessage(waId, `🧠 *Sentil AI Says:*\n\n${answer}`);
+    return sendWhatsAppMessage(waId, `🧠 *Sentil AI Says:*\n\n${answer}`);
+  } catch (err) {
+    console.error("[Bot] Gemini AI error:", err);
+    return sendWhatsAppMessage(
+      waId,
+      `⚠️ *AI temporarily unavailable*.\n\nPlease try again in a moment, or use:\n• *MENU* — main menu\n• *MARKETS* — live rates\n• *INVEST* — browse investments`
+    );
+  }
+}
+
+// Guest AI handler — for users who haven't registered/logged in
+async function handleGeminiQuestionGuest(waId: string, question: string) {
+  try {
+    await sendWhatsAppMessage(waId, "🧠 *Sentil AI* is thinking...");
+
+    const answer = await askGeminiBot(question, {
+      name: "Investor",
+      userId: "guest",
+      isPremium: false,
+    });
+
+    return sendWhatsAppMessage(
+      waId,
+      `🧠 *Sentil AI Says:*\n\n${answer}\n\n━━━━━━━━━━━━━━━━\n💡 *Register* for personalized insights!\nSend *REGISTER* to create your free account.`
+    );
+  } catch (err) {
+    console.error("[Bot] Guest Gemini error:", err);
+    return sendWhatsAppMessage(
+      waId,
+      `⚠️ *AI temporarily unavailable*. Send *MENU* for options.`
+    );
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
