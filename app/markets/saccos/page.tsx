@@ -6,17 +6,19 @@ import {
 } from "recharts";
 import {
   TrendingUp, Shield, Zap, Search, ChevronRight, CheckCircle,
-  Building2, Percent, Users, Landmark, AlertCircle, ArrowUpRight, BarChart2, Plus, Info, Globe, ShieldCheck
+  Building2, Percent, Users, Landmark, AlertCircle, ArrowUpRight, BarChart2, Plus, Info, Globe, ShieldCheck, Plane
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import AssetModal from "@/components/AssetModal";
 import { PORTFOLIOS } from "@/lib/portfolios";
+import Link from "next/link";
 
 // ─── TIER 1 SACCO DATA (Extended for Analytics) ──────────────────────────────
 const SACCO_METRICS = [
   { name: "Stima SACCO", yield: 15.0, aum: 53.8, interest: 11.0, rating: "AAA" },
   { name: "Police SACCO", yield: 17.0, aum: 47.9, interest: 11.0, rating: "AAA" },
   { name: "Mwalimu National", yield: 11.2, aum: 64.5, interest: 10.5, rating: "AAA" },
+  { name: "Wanandege SACCO", yield: 15.0, aum: 12.5, interest: 10.5, rating: "AA+" },
   { name: "Tower SACCO", yield: 20.0, aum: 31.0, interest: 13.0, rating: "AA+" },
   { name: "Safaricom SACCO", yield: 13.0, aum: 9.3, interest: 8.0, rating: "AA+" },
   { name: "Harambee SACCO", yield: 12.0, aum: 36.2, interest: 8.5, rating: "AA" },
@@ -196,6 +198,35 @@ export default function SaccosPage() {
               </div>
            </div>
         </div>
+
+        {/* ── WANANDEGE SACCO FEATURED ── */}
+        <Link href="/markets/saccos/wanandege" className="block">
+          <div className="relative overflow-hidden rounded-[3rem] bg-gradient-to-r from-emerald-600 via-green-700 to-teal-700 p-8 md:p-12 shadow-2xl group cursor-pointer hover:shadow-emerald-500/20 transition-all">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -mr-48 -mt-48 blur-[60px] pointer-events-none" />
+            <div className="absolute bottom-4 right-8 opacity-10 group-hover:opacity-20 transition-opacity">
+              <Plane className="w-48 h-48 text-white" />
+            </div>
+            <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/10 border border-white/20 text-white text-[9px] font-black uppercase tracking-widest">
+                    ✨ Featured SACCO
+                  </span>
+                  <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/10 border border-white/20 text-white text-[9px] font-black uppercase tracking-widest">
+                    15% Dividend · 10.5% Deposits
+                  </span>
+                </div>
+                <h2 className="text-3xl md:text-4xl font-black text-white tracking-tighter uppercase">Wanandege SACCO</h2>
+                <p className="text-white/70 text-xs font-bold uppercase tracking-widest max-w-xl">Full product suite with 8 loan products, savings accounts, mortgage at 9.5%, and interactive calculators. Serving Kenya&apos;s aviation sector since 1977.</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="px-8 py-4 bg-white text-emerald-700 rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-lg group-hover:shadow-2xl group-hover:-translate-y-1 transition-all flex items-center gap-2">
+                  Explore Full Profile <ArrowUpRight className="w-4 h-4" />
+                </span>
+              </div>
+            </div>
+          </div>
+        </Link>
 
         {/* ── SACCO DIRECTORY ── */}
         <div className="bg-white rounded-[3.5rem] border border-slate-100 shadow-xl overflow-hidden">
