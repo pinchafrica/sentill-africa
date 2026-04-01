@@ -45,19 +45,18 @@ export async function GET(req: NextRequest) {
 
       // Calculate expiry based on plan
       const now = new Date();
-      let premiumExpiresAt: Date | null = null;
-      if (plan === "TRIAL_7_DAYS") {
-        premiumExpiresAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-      } else if (plan === "TRIAL_3_DAYS") {
-        premiumExpiresAt = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
-      } else if (plan === "PRO_MONTHLY") {
-        premiumExpiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-      } else if (plan === "PRO_ANNUAL") {
-        premiumExpiresAt = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000);
-      } else {
-        // Default: 7-day trial for unknown plans
-        premiumExpiresAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-      }
+      const PLAN_DAYS: Record<string, number> = {
+        WEEKLY_7_DAYS: 7,
+        MONTHLY_30_DAYS: 30,
+        QUARTERLY_90_DAYS: 90,
+        // Legacy
+        TRIAL_7_DAYS: 7,
+        TRIAL_3_DAYS: 3,
+        PRO_MONTHLY: 30,
+        PRO_ANNUAL: 365,
+      };
+      const days = PLAN_DAYS[plan ?? ""] || 7;
+      const premiumExpiresAt = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
 
       // Update payment record (best-effort)
       try {

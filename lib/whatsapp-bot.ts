@@ -32,7 +32,7 @@ const PLANS = {
 } as const;
 
 // ── Free-tier AI prompt limit ────────────────────────────────────────────────
-const FREE_AI_LIMIT = 3; // Max AI questions per day for free users
+const FREE_AI_LIMIT = 10; // Max AI questions per day for free users
 
 type PlanKey = keyof typeof PLANS;
 
