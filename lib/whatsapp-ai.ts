@@ -3,21 +3,26 @@
  * Gemini 2.0 Flash-powered WhatsApp content generators for Sentil.
  * Used by the daily cron to produce personalized investment briefs.
  * Available 24/7 — AI-driven responses at any hour.
+ * API key loaded from encrypted DB (admin dashboard) → env fallback.
  */
 
 import { prisma } from "./prisma";
 import { formatKES } from "./whatsapp";
+import { getGeminiApiKey } from "./api-keys";
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY ?? "";
 const GEMINI_MODEL = "gemini-2.0-flash";
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
+
+function getGeminiUrl(apiKey: string) {
+  return `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
+}
 
 async function callGemini(prompt: string): Promise<string> {
-  if (!GEMINI_API_KEY) {
-    throw new Error("GEMINI_API_KEY not set");
+  const apiKey = await getGeminiApiKey();
+  if (!apiKey) {
+    throw new Error("GEMINI_API_KEY not configured — add via Admin Dashboard or env");
   }
 
-  const res = await fetch(GEMINI_URL, {
+  const res = await fetch(getGeminiUrl(apiKey), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({

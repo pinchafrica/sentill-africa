@@ -226,3 +226,18 @@ model WhatsAppLog {
   status      String   @default("SENT")  // SENT, DELIVERED, READ, FAILED
   createdAt   DateTime @default(now())
 }
+
+// Encrypted API keys — managed via admin dashboard
+model ApiKey {
+  id           String   @id @default(cuid())
+  service      String   @unique  // GEMINI, WHATSAPP, PAYSTACK, etc.
+  label        String             // Human readable label
+  encryptedKey String             // AES-256-GCM encrypted value
+  iv           String             // Initialization vector for decryption
+  authTag      String             // GCM authentication tag
+  isActive     Boolean  @default(true)
+  lastRotated  DateTime @default(now())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+

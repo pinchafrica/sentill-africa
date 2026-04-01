@@ -42,7 +42,7 @@ const adminNav = [
   { group: "Security & Admin", items: [
     { label: "Alpha Analytics", href: "/admin/analytics", icon: Zap },
     { label: "Security Audit", href: "/admin/audit", icon: ShieldCheck },
-    { label: "Gateway Configs", href: "/admin/settings", icon: Settings2 },
+    { label: "AI Keys & Vault", href: "/admin/settings", icon: Settings2 },
   ]}
 ];
 
