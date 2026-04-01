@@ -24,6 +24,20 @@ interface WAStats {
   conversionRate: number;
 }
 
+interface RevenueData {
+  totalRevenue: number;
+  mrr: number;
+  arr: number;
+  revenueToday: number;
+  monthlyRevenue: { month: string; revenue: number }[];
+  totalPayments: number;
+}
+
+interface HeatmapData {
+  data: number[][];
+  days: string[];
+}
+
 interface WAUser {
   id: string;
   name: string;
@@ -44,6 +58,9 @@ interface WAUser {
   messageCount: number;
   assetsCount: number;
   joinedAt: string;
+  churnRisk: number;
+  lastMessageAt: string | null;
+  daysSinceLastMsg: number;
 }
 
 interface WALog {
@@ -116,6 +133,8 @@ function PlanBadge({ isPremium, expiresAt }: { isPremium: boolean; expiresAt: st
 
 export default function AdminWhatsAppPage() {
   const [stats, setStats] = useState<WAStats | null>(null);
+  const [revenue, setRevenue] = useState<RevenueData | null>(null);
+  const [heatmap, setHeatmap] = useState<HeatmapData | null>(null);
   const [users, setUsers] = useState<WAUser[]>([]);
   const [logs, setLogs] = useState<WALog[]>([]);
   const [sessions, setSessions] = useState<WASession[]>([]);
@@ -132,8 +151,14 @@ export default function AdminWhatsAppPage() {
   const [filterSource, setFilterSource] = useState<"all" | "whatsapp" | "website" | "app" | "free">("all");
   const [sortField, setSortField] = useState<"joinedAt" | "messageCount" | "name">("joinedAt");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
-  const [activeTab, setActiveTab] = useState<"users" | "messages" | "sessions">("users");
+  const [activeTab, setActiveTab] = useState<"users" | "messages" | "sessions" | "analytics">("users");
   const [expandedUserId, setExpandedUserId] = useState<string | null>(null);
+
+  // Direct Message
+  const [dmUser, setDmUser] = useState<WAUser | null>(null);
+  const [dmText, setDmText] = useState("");
+  const [dmSending, setDmSending] = useState(false);
+  const [dmResult, setDmResult] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -143,6 +168,8 @@ export default function AdminWhatsAppPage() {
       if (res.ok) {
         const data = await res.json();
         setStats(data.stats);
+        setRevenue(data.revenue ?? null);
+        setHeatmap(data.heatmap ?? null);
         setUsers(data.users ?? []);
         setLogs(data.recentLogs ?? []);
         setSessions(data.sessions ?? []);
@@ -199,6 +226,31 @@ export default function AdminWhatsAppPage() {
       setBroadcastResult("❌ Failed to send broadcast");
     } finally {
       setBroadcasting(false);
+    }
+  };
+
+  const sendDM = async () => {
+    if (!dmUser || !dmText.trim()) return;
+    setDmSending(true);
+    setDmResult(null);
+    try {
+      const res = await fetch("/api/whatsapp/dm", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ waId: dmUser.phone, message: dmText, userId: dmUser.id }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setDmResult(`✅ Message sent to ${dmUser.name}`);
+        setDmText("");
+        setTimeout(() => { setDmUser(null); setDmResult(null); }, 2000);
+      } else {
+        setDmResult(`❌ ${data.error}`);
+      }
+    } catch {
+      setDmResult("❌ Failed to send");
+    } finally {
+      setDmSending(false);
     }
   };
 
@@ -379,9 +431,10 @@ export default function AdminWhatsAppPage() {
       {/* ── Tab Navigation ────────────────────────────────────────────────── */}
       <div className="flex gap-1 bg-slate-100 p-1 rounded-xl w-fit">
         {([
-          { key: "users",    label: "User Directory",     icon: Users },
-          { key: "messages", label: "Message Log",        icon: MessageSquare },
-          { key: "sessions", label: "Live Sessions",      icon: Radio },
+          { key: "users",     label: "User Directory",     icon: Users },
+          { key: "analytics", label: "Revenue & Insights", icon: BarChart3 },
+          { key: "messages",  label: "Message Log",        icon: MessageSquare },
+          { key: "sessions",  label: "Live Sessions",      icon: Radio },
         ] as const).map(tab => (
           <button
             key={tab.key}
@@ -857,6 +910,167 @@ export default function AdminWhatsAppPage() {
           </div>
         </motion.div>
       )}
+      {/* ── TAB: Revenue & Insights ──────────────────────────────────────── */}
+      {activeTab === "analytics" && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="space-y-6"
+        >
+          {/* Revenue Cards */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {[
+              { label: "Total Revenue", value: revenue?.totalRevenue ?? 0, prefix: "KES ", color: "emerald", icon: DollarSign },
+              { label: "Monthly Recurring", value: revenue?.mrr ?? 0, prefix: "KES ", color: "purple", icon: TrendingUp },
+              { label: "Projected ARR", value: revenue?.arr ?? 0, prefix: "KES ", color: "blue", icon: ArrowUpRight },
+              { label: "Today's Revenue", value: revenue?.revenueToday ?? 0, prefix: "KES ", color: "orange", icon: Zap },
+            ].map((card, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: i * 0.08 }}
+                className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm"
+              >
+                <div className={`w-8 h-8 rounded-xl flex items-center justify-center mb-3 ${
+                  card.color === "emerald" ? "bg-emerald-100" :
+                  card.color === "purple" ? "bg-purple-100" :
+                  card.color === "blue" ? "bg-blue-100" : "bg-orange-100"
+                }`}>
+                  <card.icon className={`w-4 h-4 ${
+                    card.color === "emerald" ? "text-emerald-600" :
+                    card.color === "purple" ? "text-purple-600" :
+                    card.color === "blue" ? "text-blue-600" : "text-orange-600"
+                  }`} />
+                </div>
+                <p className="text-2xl font-black text-slate-900">
+                  {card.prefix}{card.value.toLocaleString()}
+                </p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-1">{card.label}</p>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Monthly Revenue Chart */}
+          <div className="bg-white border border-slate-100 rounded-2xl shadow-sm p-6">
+            <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-500 mb-4">Monthly Revenue (Last 6 Months)</h3>
+            <div className="flex items-end gap-2 h-40">
+              {(revenue?.monthlyRevenue ?? []).map((m, i) => {
+                const maxRev = Math.max(...(revenue?.monthlyRevenue ?? []).map(r => r.revenue), 1);
+                const heightPct = (m.revenue / maxRev) * 100;
+                return (
+                  <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                    <span className="text-[9px] font-bold text-slate-500">
+                      {m.revenue > 0 ? `${(m.revenue / 1000).toFixed(1)}K` : "0"}
+                    </span>
+                    <div className="w-full relative" style={{ height: "120px" }}>
+                      <motion.div
+                        initial={{ height: 0 }}
+                        animate={{ height: `${Math.max(heightPct, 2)}%` }}
+                        transition={{ delay: i * 0.1, duration: 0.6, ease: "easeOut" }}
+                        className={`absolute bottom-0 w-full rounded-lg ${
+                          i === (revenue?.monthlyRevenue?.length ?? 0) - 1
+                            ? "bg-gradient-to-t from-emerald-600 to-emerald-400"
+                            : "bg-gradient-to-t from-slate-300 to-slate-200"
+                        }`}
+                      />
+                    </div>
+                    <span className="text-[9px] font-bold text-slate-400">{m.month}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-6">
+            {/* Activity Heatmap */}
+            <div className="bg-white border border-slate-100 rounded-2xl shadow-sm p-6">
+              <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-500 mb-4">
+                🔥 Activity Heatmap — 7 Day × 24 Hour
+              </h3>
+              <div className="space-y-1">
+                {(heatmap?.data ?? []).map((row, dayIdx) => (
+                  <div key={dayIdx} className="flex items-center gap-1">
+                    <span className="w-8 text-[9px] font-bold text-slate-400 text-right">
+                      {heatmap?.days?.[dayIdx] ?? ""}
+                    </span>
+                    <div className="flex-1 flex gap-[2px]">
+                      {row.map((count, hourIdx) => {
+                        const maxCount = Math.max(...(heatmap?.data ?? [[]]).flat(), 1);
+                        const intensity = count / maxCount;
+                        return (
+                          <div
+                            key={hourIdx}
+                            title={`${heatmap?.days?.[dayIdx]} ${hourIdx}:00 — ${count} messages`}
+                            className="flex-1 h-5 rounded-sm transition-colors"
+                            style={{
+                              backgroundColor: count === 0
+                                ? "#f1f5f9"
+                                : `rgba(16, 185, 129, ${Math.max(0.15, intensity)})`
+                            }}
+                          />
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+                <div className="flex items-center gap-1 mt-2">
+                  <span className="w-8" />
+                  <div className="flex-1 flex justify-between text-[8px] text-slate-300 font-bold">
+                    <span>00</span><span>06</span><span>12</span><span>18</span><span>23</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Churn Risk Leaderboard */}
+            <div className="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden">
+              <div className="px-6 py-5 border-b border-slate-100">
+                <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-500">
+                  ⚠️ Churn Risk — At-Risk Users
+                </h3>
+                <p className="text-[10px] text-slate-400 mt-1">Users most likely to disengage (scored 0–100)</p>
+              </div>
+              <div className="divide-y divide-slate-50">
+                {[...users]
+                  .sort((a, b) => b.churnRisk - a.churnRisk)
+                  .slice(0, 8)
+                  .map((u) => (
+                    <div key={u.id} className="px-6 py-3 flex items-center gap-3">
+                      <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-[9px] font-black text-white ${
+                        u.churnRisk >= 70 ? "bg-rose-500" : u.churnRisk >= 40 ? "bg-amber-500" : "bg-emerald-500"
+                      }`}>
+                        {u.churnRisk}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-bold text-slate-900 truncate">{u.name}</p>
+                        <p className="text-[10px] text-slate-400">
+                          {u.daysSinceLastMsg === 999 ? "Never messaged" : `Last active ${u.daysSinceLastMsg}d ago`}
+                          {" · "}{u.messageCount} msgs
+                        </p>
+                      </div>
+                      <div className="w-20 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full rounded-full ${
+                            u.churnRisk >= 70 ? "bg-rose-500" : u.churnRisk >= 40 ? "bg-amber-400" : "bg-emerald-400"
+                          }`}
+                          style={{ width: `${u.churnRisk}%` }}
+                        />
+                      </div>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setDmUser(u); setDmText(""); setDmResult(null); }}
+                        className="p-1.5 rounded-lg hover:bg-emerald-50 transition-colors"
+                        title={`DM ${u.name}`}
+                      >
+                        <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
+                      </button>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
 
       {/* ── Broadcast + Cron Panel ────────────────────────────────────────── */}
       <div className="grid lg:grid-cols-2 gap-6">
@@ -931,13 +1145,133 @@ export default function AdminWhatsAppPage() {
               </div>
             </div>
             <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-              <p className="text-[10px] font-black uppercase tracking-widest text-emerald-400 mb-1">Conversion Rate</p>
-              <p className="text-3xl font-black text-emerald-400">{stats?.conversionRate ?? 0}%</p>
-              <p className="text-[10px] text-slate-400 mt-1">{stats?.premiumUsers ?? 0} of {stats?.totalWaUsers ?? 0} WhatsApp users are Pro</p>
+              <p className="text-[10px] font-black uppercase tracking-widest text-emerald-400 mb-1">Revenue</p>
+              <p className="text-3xl font-black text-emerald-400">KES {(revenue?.totalRevenue ?? 0).toLocaleString()}</p>
+              <p className="text-[10px] text-slate-400 mt-1">Total lifetime · MRR: KES {(revenue?.mrr ?? 0).toLocaleString()}</p>
             </div>
           </div>
         </div>
       </div>
+
+      {/* ── DM Modal (Slide-over) ──────────────────────────────────────────── */}
+      <AnimatePresence>
+        {dmUser && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex justify-end"
+            onClick={() => setDmUser(null)}
+          >
+            <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="relative w-full max-w-md bg-white shadow-2xl flex flex-col"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="px-6 py-5 border-b border-slate-100 bg-gradient-to-r from-emerald-600 to-green-700">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-sm font-black text-white">
+                      {dmUser.name.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase()}
+                    </div>
+                    <div>
+                      <p className="text-sm font-black text-white">{dmUser.name}</p>
+                      <p className="text-[11px] text-white/70">+{dmUser.phone}</p>
+                    </div>
+                  </div>
+                  <button onClick={() => setDmUser(null)} className="p-2 rounded-lg hover:bg-white/10 transition-colors">
+                    <XCircle className="w-5 h-5 text-white/70" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Body */}
+              <div className="flex-1 p-6 space-y-4 overflow-y-auto">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <PlanBadge isPremium={dmUser.isPremium} expiresAt={dmUser.premiumExpiresAt} />
+                    <SourceBadge source={dmUser.paymentSource} />
+                    <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded ${
+                      dmUser.churnRisk >= 70 ? "bg-rose-100 text-rose-700" :
+                      dmUser.churnRisk >= 40 ? "bg-amber-100 text-amber-700" : "bg-emerald-100 text-emerald-700"
+                    }`}>
+                      Risk: {dmUser.churnRisk}%
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="bg-slate-50 rounded-xl p-3 text-center">
+                      <p className="text-lg font-black text-slate-900">{dmUser.messageCount}</p>
+                      <p className="text-[9px] text-slate-400 font-bold uppercase">Messages</p>
+                    </div>
+                    <div className="bg-slate-50 rounded-xl p-3 text-center">
+                      <p className="text-lg font-black text-slate-900">{dmUser.assetsCount}</p>
+                      <p className="text-[9px] text-slate-400 font-bold uppercase">Assets</p>
+                    </div>
+                    <div className="bg-slate-50 rounded-xl p-3 text-center">
+                      <p className="text-lg font-black text-slate-900">{dmUser.daysSinceLastMsg === 999 ? "—" : `${dmUser.daysSinceLastMsg}d`}</p>
+                      <p className="text-[9px] text-slate-400 font-bold uppercase">Last Active</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Quick Templates */}
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Quick Templates</p>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      "Hi! 👋 Just checking in — how's your investment journey going?",
+                      "🎉 Special offer! Upgrade to Pro for just KES 99/week. Send SUBSCRIBE anytime.",
+                      "📊 Have you checked today's market rates? Send RATES to see live NSE prices!",
+                      "⏳ Your Pro subscription expires soon. Renew at sentill.africa/packages",
+                    ].map((tpl, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setDmText(tpl)}
+                        className="text-[10px] px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-600 transition-colors text-left"
+                      >
+                        {tpl.slice(0, 40)}…
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer — Compose */}
+              <div className="px-6 py-4 border-t border-slate-100 space-y-3">
+                {dmResult && (
+                  <div className={`text-xs font-bold px-3 py-2 rounded-lg text-center ${
+                    dmResult.startsWith("✅") ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700"
+                  }`}>
+                    {dmResult}
+                  </div>
+                )}
+                <div className="flex gap-2">
+                  <textarea
+                    value={dmText}
+                    onChange={(e) => setDmText(e.target.value)}
+                    placeholder={`Message ${dmUser.name.split(" ")[0]}...`}
+                    rows={3}
+                    className="flex-1 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
+                  />
+                </div>
+                <button
+                  onClick={sendDM}
+                  disabled={dmSending || !dmText.trim()}
+                  className="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black uppercase tracking-widest py-3 rounded-xl transition-all disabled:opacity-50"
+                >
+                  {dmSending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+                  Send WhatsApp Message
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
