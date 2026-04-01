@@ -181,7 +181,7 @@ export default function FAQPage() {
                    Our Nairobi-based support team is active 24/7 to help you navigate any investment question.
                  </p>
               </div>
-              <Link href="https://wa.me/254700000000" target="_blank" className="inline-flex px-10 py-5 bg-white text-emerald-600 font-black rounded-2xl text-[10px] uppercase tracking-[0.3em] hover:bg-slate-900 hover:text-white transition-all shadow-xl">
+              <Link href="https://wa.me/254703469525" target="_blank" className="inline-flex px-10 py-5 bg-white text-emerald-600 font-black rounded-2xl text-[10px] uppercase tracking-[0.3em] hover:bg-slate-900 hover:text-white transition-all shadow-xl">
                 Open WhatsApp Support
               </Link>
            </div>

@@ -13,6 +13,7 @@ import SovereignTicker from "@/components/SovereignTicker";
 import SovereignSeal from "@/components/SovereignSeal";
 import GlobalOverlays from "@/components/GlobalOverlays";
 import WhatsAppFloating from "@/components/WhatsAppFloating";
+import SentillOracle from "@/components/SentillOracle";
 import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 import WealthPredictorModal from "@/components/WealthPredictorModal";
 import RiskProfilerModal from "@/components/RiskProfilerModal";
@@ -153,6 +154,7 @@ export default function RootLayout({
         <InterceptorModal />
         <GlobalOverlays />
         <WhatsAppFloating />
+        <SentillOracle />
         <WealthPredictorModal />
         <RiskProfilerModal />
         <ServiceWorkerRegister />

@@ -1,0 +1,140 @@
+﻿Γû▓ Next.js 16.1.6 (Turbopack)
+- Environments: .env.production.local, .env.local, .env
+
+  Creating an optimized production build ...
+Γ£ô Compiled successfully in 17.5s
+  Skipping validation of types
+  Collecting page data using 7 workers ...
+  Generating static pages using 7 workers (0/40) ...
+  Generating static pages using 7 workers (10/40) 
+  Generating static pages using 7 workers (20/40) 
+  Generating static pages using 7 workers (30/40) 
+Γ£ô Generating static pages using 7 workers (40/40) in 468.4ms
+  Finalizing page optimization ...
+
+Route (app)
+Γöî ╞Æ /
+Γö£ ╞Æ /_not-found
+Γö£ ╞Æ /about
+Γö£ ╞Æ /academy
+Γö£ ╞Æ /admin
+Γö£ ╞Æ /admin/academy
+Γö£ ╞Æ /admin/analytics
+Γö£ ╞Æ /admin/api-status
+Γö£ ╞Æ /admin/audit
+Γö£ ╞Æ /admin/finance
+Γö£ ╞Æ /admin/settings
+Γö£ ╞Æ /admin/system
+Γö£ ╞Æ /admin/users
+Γö£ ╞Æ /admin/whatsapp
+Γö£ ╞Æ /api/admin/api-keys
+Γö£ ╞Æ /api/admin/diagnose
+Γö£ ╞Æ /api/admin/metrics
+Γö£ ╞Æ /api/admin/seed-key
+Γö£ ╞Æ /api/admin/seed-production
+Γö£ ╞Æ /api/admin/send-daily
+Γö£ ╞Æ /api/ai
+Γö£ ╞Æ /api/auth/change-password
+Γö£ ╞Æ /api/auth/login
+Γö£ ╞Æ /api/auth/logout
+Γö£ ╞Æ /api/auth/register
+Γö£ ╞Æ /api/auth/session
+Γö£ ╞Æ /api/client/login
+Γö£ ╞Æ /api/cron/market-sync
+Γö£ ╞Æ /api/cron/whatsapp-daily
+Γö£ ╞Æ /api/market/ai-rates
+Γö£ ╞Æ /api/market/exchange-rate
+Γö£ ╞Æ /api/market/nse
+Γö£ ╞Æ /api/market/nse/history
+Γö£ ╞Æ /api/market/yields
+Γö£ ╞Æ /api/payment/list
+Γö£ ╞Æ /api/payment/mpesa
+Γö£ ╞Æ /api/payment/paystack
+Γö£ ╞Æ /api/payment/verify
+Γö£ ╞Æ /api/portfolio/assets
+Γö£ ╞Æ /api/portfolio/clone
+Γö£ ╞Æ /api/providers
+Γö£ ╞Æ /api/seed
+Γö£ ╞Æ /api/seed2
+Γö£ ╞Æ /api/seed3
+Γö£ ╞Æ /api/user/alerts
+Γö£ ╞Æ /api/webhooks/paystack
+Γö£ ╞Æ /api/whatsapp/broadcast
+Γö£ ╞Æ /api/whatsapp/me
+Γö£ ╞Æ /api/whatsapp/send
+Γö£ ╞Æ /api/whatsapp/stats
+Γö£ ╞Æ /api/whatsapp/webhook
+Γö£ ╞Æ /auth/login
+Γö£ ╞Æ /auth/register
+Γö£ ╞Æ /contact
+Γö£ ╞Æ /dashboard
+Γö£ ╞Æ /dashboard/advisor
+Γö£ ╞Æ /dashboard/alerts
+Γö£ ╞Æ /dashboard/allocation
+Γö£ ╞Æ /dashboard/analyze
+Γö£ ╞Æ /dashboard/assets
+Γö£ ╞Æ /dashboard/chamas
+Γö£ ╞Æ /dashboard/chamas/assets
+Γö£ ╞Æ /dashboard/chamas/dividends
+Γö£ ╞Æ /dashboard/chamas/members
+Γö£ ╞Æ /dashboard/explore
+Γö£ ╞Æ /dashboard/feedback
+Γö£ ╞Æ /dashboard/history
+Γö£ ╞Æ /dashboard/land
+Γö£ ╞Æ /dashboard/risk
+Γö£ ╞Æ /dashboard/sacco
+Γö£ ╞Æ /dashboard/settings
+Γö£ ╞Æ /dashboard/whatsapp
+Γö£ ╞Æ /dashboard/yields
+Γö£ ╞Æ /diaspora
+Γö£ ╞Æ /hubs/stewardship
+Γö£ ╞Æ /institutions/britam
+Γö£ ╞Æ /institutions/old-mutual
+Γö£ ╞Æ /markets
+Γö£ ╞Æ /markets/[...slug]
+Γö£ ╞Æ /markets/agri
+Γö£ ╞Æ /markets/asset-classes
+Γö£ ╞Æ /markets/bonds
+Γö£ ╞Æ /markets/commodities
+Γö£ ╞Æ /markets/corporate-bonds
+Γö£ ╞Æ /markets/eurobonds
+Γö£ ╞Æ /markets/global-etfs
+Γö£ ╞Æ /markets/mmfs
+Γö£ ╞Æ /markets/mmfs/[id]
+Γö£ ╞Æ /markets/nse
+Γö£ ╞Æ /markets/nse/[symbol]
+Γö£ ╞Æ /markets/pe
+Γö£ ╞Æ /markets/pensions
+Γö£ ╞Æ /markets/providers
+Γö£ ╞Æ /markets/reits
+Γö£ ╞Æ /markets/saccos
+Γö£ ╞Æ /markets/special/[id]
+Γö£ ╞Æ /markets/trading
+Γö£ ╞Æ /markets/treasuries
+Γö£ ╞Æ /markets/us-stocks
+Γö£ ╞Æ /markets/vc
+Γö£ ╞Æ /markets/yields
+Γö£ ╞Æ /packages
+Γö£ ╞Æ /payment/callback
+Γö£ ╞Æ /privacy
+Γö£ ╞Æ /providers/[slug]
+Γö£ ╞Æ /resources/blogs
+Γö£ ╞Æ /resources/chama-guides
+Γö£ ╞Æ /resources/chamas
+Γö£ ╞Æ /resources/faqs
+Γö£ ╞Æ /resources/scam-checker
+Γö£ Γùï /robots.txt
+Γö£ ╞Æ /security
+Γö£ Γùï /sitemap.xml
+Γö£ ╞Æ /terms
+Γö£ ╞Æ /tools/compare
+Γö£ ╞Æ /tools/dhowcsd
+Γö£ ╞Æ /tools/matrix
+Γöö ╞Æ /tools/tax-calculator
+
+
+╞Æ Proxy (Middleware)
+
+Γùï  (Static)   prerendered as static content
+╞Æ  (Dynamic)  server-rendered on demand
+

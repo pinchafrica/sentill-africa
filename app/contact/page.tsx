@@ -44,7 +44,7 @@ export default function ContactPage() {
               </div>
               <div>
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">WhatsApp Pulse</p>
-                <p className="text-lg font-black text-slate-950 uppercase tracking-tight">+254 700 000 000</p>
+                <p className="text-lg font-black text-slate-950 uppercase tracking-tight">+254 703 469 525</p>
               </div>
             </div>
 
