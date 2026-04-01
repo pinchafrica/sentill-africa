@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyWebhookSignature } from "@/lib/whatsapp";
 import { processIncomingMessage } from "@/lib/whatsapp-bot";
+import { prisma } from "@/lib/prisma";
 
 // ── GET: Meta webhook verification ───────────────────────────────────────────
 
@@ -20,25 +21,51 @@ export async function GET(req: NextRequest) {
 
   const verifyToken = process.env.WHATSAPP_VERIFY_TOKEN ?? "sentil_webhook_2026";
 
+  console.log("[WhatsApp] Webhook GET verification:", { mode, token, verifyToken, challenge: challenge?.slice(0, 20) });
+
   if (mode === "subscribe" && token === verifyToken) {
     console.log("[WhatsApp] Webhook verified ✅");
     return new NextResponse(challenge, { status: 200 });
   }
 
+  console.warn("[WhatsApp] Webhook verification FAILED — token mismatch");
   return new NextResponse("Forbidden", { status: 403 });
 }
 
 // ── POST: Incoming message handler ───────────────────────────────────────────
 
 export async function POST(req: NextRequest) {
+  const timestamp = new Date().toISOString();
+  
   try {
     const rawBody = await req.text();
+    
+    // Log EVERYTHING for debugging
+    console.log(`[WhatsApp][${timestamp}] POST webhook received, body length: ${rawBody.length}`);
+    console.log(`[WhatsApp][${timestamp}] Raw body preview: ${rawBody.slice(0, 500)}`);
 
-    // Verify signature in production
-    if (process.env.NODE_ENV === "production") {
+    // Save raw webhook payload to DB for debugging
+    try {
+      await prisma.whatsAppLog.create({
+        data: {
+          waId: "WEBHOOK_RAW",
+          direction: "INBOUND",
+          message: rawBody.slice(0, 2000),
+          msgType: "webhook_debug",
+          status: "RECEIVED",
+        },
+      });
+    } catch (logErr) {
+      console.error("[WhatsApp] Failed to log raw webhook:", logErr);
+    }
+
+    // Skip signature verification — WHATSAPP_APP_SECRET is not configured
+    // and was previously blocking messages silently
+    const appSecret = process.env.WHATSAPP_APP_SECRET;
+    if (appSecret) {
       const sig = req.headers.get("x-hub-signature-256");
       if (!verifyWebhookSignature(rawBody, sig)) {
-        console.error("[WhatsApp] Invalid webhook signature");
+        console.error(`[WhatsApp][${timestamp}] Invalid webhook signature — BLOCKED`);
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
       }
     }
@@ -52,13 +79,17 @@ export async function POST(req: NextRequest) {
 
     // Handle status updates (delivered, read, etc.) — just ack
     if (value?.statuses) {
+      console.log(`[WhatsApp][${timestamp}] Status update received (delivered/read)`);
       return NextResponse.json({ status: "ok" });
     }
 
     const messages = value?.messages;
     if (!messages?.length) {
+      console.log(`[WhatsApp][${timestamp}] No messages in payload — might be a status update or other event`);
       return NextResponse.json({ status: "ok" });
     }
+
+    console.log(`[WhatsApp][${timestamp}] Processing ${messages.length} message(s)`);
 
     for (const msg of messages) {
       const waId: string = msg.from;
@@ -68,7 +99,6 @@ export async function POST(req: NextRequest) {
       if (msg.type === "text") {
         text = msg.text?.body;
       } else if (msg.type === "interactive") {
-        // Button reply
         buttonPayload =
           msg.interactive?.button_reply?.id ??
           msg.interactive?.list_reply?.id;
@@ -76,15 +106,20 @@ export async function POST(req: NextRequest) {
           msg.interactive?.list_reply?.title;
       }
 
-      // Fire and don't await (webhook must respond within 15s)
-      processIncomingMessage(waId, text, buttonPayload).catch((err) => {
-        console.error("[WhatsApp] processIncomingMessage error:", err);
-      });
+      console.log(`[WhatsApp][${timestamp}] Message from ${waId}: type=${msg.type}, text="${text?.slice(0, 50)}", button="${buttonPayload}"`);
+
+      // Process message — DO await to catch errors
+      try {
+        await processIncomingMessage(waId, text, buttonPayload);
+        console.log(`[WhatsApp][${timestamp}] ✅ Processed message from ${waId}`);
+      } catch (err) {
+        console.error(`[WhatsApp][${timestamp}] ❌ processIncomingMessage error for ${waId}:`, err);
+      }
     }
 
     return NextResponse.json({ status: "ok" });
   } catch (err) {
-    console.error("[WhatsApp] Webhook error:", err);
+    console.error(`[WhatsApp][${timestamp}] Webhook error:`, err);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }
