@@ -26,10 +26,13 @@ import bcrypt from "bcryptjs";
 // ─────────────────────────────────────────────────────────────────────────────
 
 const PLANS = {
-  TRIAL_7_DAYS: { label: "7-Day Trial",  amount: 100,  days: 7,   description: "Full Pro for 7 days!" },
-  PRO_MONTHLY:  { label: "Pro Monthly",  amount: 499,  days: 30,  description: "Full Pro for 1 month" },
-  PRO_ANNUAL:   { label: "Pro Annual",   amount: 4990, days: 365, description: "Full Pro for 12 months — save 2 months!" },
+  WEEKLY_7_DAYS:    { label: "1 Week Pro",     amount: 99,   days: 7,   description: "Full Pro access for 7 days!" },
+  MONTHLY_30_DAYS:  { label: "1 Month Pro",    amount: 349,  days: 30,  description: "Full Pro for 1 month — save 12%!" },
+  QUARTERLY_90_DAYS:{ label: "3 Months Pro",   amount: 999,  days: 90,  description: "Full Pro for 3 months — save 24%!" },
 } as const;
+
+// ── Free-tier AI prompt limit ────────────────────────────────────────────────
+const FREE_AI_LIMIT = 3; // Max AI questions per day for free users
 
 type PlanKey = keyof typeof PLANS;
 
@@ -156,13 +159,16 @@ export async function processIncomingMessage(
 
   await logInbound(waId, rawInput || input, session.userId ?? undefined);
 
+  // Update lastSeen
+  await prisma.whatsAppSession.update({ where: { waId }, data: { lastSeen: new Date() } }).catch(() => {});
+
   // ── Button payloads: route directly regardless of state ─────────────────
   // This ensures interactive button taps always work even if state is IDLE
   if (buttonPayload) {
     // Plan selections
-    if (buttonPayload === "TRIAL_7_DAYS") return handleSelectPlan(waId, "TRIAL_7_DAYS", ctx, session.userId ?? undefined);
-    if (buttonPayload === "PRO_MONTHLY")  return handleSelectPlan(waId, "PRO_MONTHLY",  ctx, session.userId ?? undefined);
-    if (buttonPayload === "PRO_ANNUAL")   return handleSelectPlan(waId, "PRO_ANNUAL",   ctx, session.userId ?? undefined);
+    if (buttonPayload === "WEEKLY_7_DAYS")     return handleSelectPlan(waId, "WEEKLY_7_DAYS",     ctx, session.userId ?? undefined);
+    if (buttonPayload === "MONTHLY_30_DAYS")   return handleSelectPlan(waId, "MONTHLY_30_DAYS",   ctx, session.userId ?? undefined);
+    if (buttonPayload === "QUARTERLY_90_DAYS") return handleSelectPlan(waId, "QUARTERLY_90_DAYS", ctx, session.userId ?? undefined);
     if (buttonPayload === "MARKETS")      return handleMarkets(waId);
     if (buttonPayload === "INVEST" || buttonPayload === "BROWSE") {
       if (session.userId) return sendInvestmentCategories(waId, session.userId);
@@ -298,14 +304,14 @@ export async function processIncomingMessage(
   if (["SUBSCRIBE", "RENEW", "UPGRADE", "PRO", "PAY", "TRIAL"].includes(input)) {
     return sendSubscriptionPlans(waId, userId);
   }
-  if (input === "TRIAL_7_DAYS" || input === "TRIAL7" || input === "100") {
-    return handleSelectPlan(waId, "TRIAL_7_DAYS", ctx, userId);
+  if (input === "WEEKLY_7_DAYS" || input === "WEEKLY" || input === "99") {
+    return handleSelectPlan(waId, "WEEKLY_7_DAYS", ctx, userId);
   }
-  if (input === "PRO_MONTHLY" || input === "MONTHLY" || input === "499") {
-    return handleSelectPlan(waId, "PRO_MONTHLY", ctx, userId);
+  if (input === "MONTHLY_30_DAYS" || input === "MONTHLY" || input === "349") {
+    return handleSelectPlan(waId, "MONTHLY_30_DAYS", ctx, userId);
   }
-  if (input === "PRO_ANNUAL" || input === "ANNUAL" || input === "4990") {
-    return handleSelectPlan(waId, "PRO_ANNUAL", ctx, userId);
+  if (input === "QUARTERLY_90_DAYS" || input === "QUARTERLY" || input === "999") {
+    return handleSelectPlan(waId, "QUARTERLY_90_DAYS", ctx, userId);
   }
 
   // COMPARE — compare two funds via AI
@@ -363,7 +369,29 @@ async function handleGeminiQuestion(waId: string, question: string, userId: stri
       select: { name: true, isPremium: true },
     });
 
-    await sendWhatsAppMessage(waId, "🧠 *Sentill Africa* is thinking...");
+    // ── 3-prompt gate for free users ──────────────────────────────────
+    if (!user?.isPremium) {
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+      const aiQueriesCount = await prisma.whatsAppLog.count({
+        where: {
+          waId,
+          direction: "OUTBOUND",
+          message: { contains: "Sentill Africa Says" },
+          createdAt: { gte: todayStart },
+        },
+      });
+
+      if (aiQueriesCount >= FREE_AI_LIMIT) {
+        return sendPremiumConversionMessage(waId, user?.name ?? "Investor", aiQueriesCount);
+      }
+
+      // Show remaining prompts
+      const remaining = FREE_AI_LIMIT - aiQueriesCount;
+      await sendWhatsAppMessage(waId, `🧠 *Sentill Africa* is thinking... _(${remaining} free question${remaining !== 1 ? "s" : ""} left today)_`);
+    } else {
+      await sendWhatsAppMessage(waId, "🧠 *Sentill Africa* is thinking...");
+    }
 
     const answer = await askGeminiBot(question, {
       name: user?.name ?? "Investor",
@@ -384,7 +412,24 @@ async function handleGeminiQuestion(waId: string, question: string, userId: stri
 // Guest AI handler — for users who haven't registered/logged in
 async function handleGeminiQuestionGuest(waId: string, question: string) {
   try {
-    await sendWhatsAppMessage(waId, "🧠 *Sentill Africa* is thinking...");
+    // Check daily AI usage even for guests (by waId)
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const aiQueriesCount = await prisma.whatsAppLog.count({
+      where: {
+        waId,
+        direction: "OUTBOUND",
+        message: { contains: "Sentill Africa Says" },
+        createdAt: { gte: todayStart },
+      },
+    });
+
+    if (aiQueriesCount >= FREE_AI_LIMIT) {
+      return sendPremiumConversionMessage(waId, "Investor", aiQueriesCount);
+    }
+
+    const remaining = FREE_AI_LIMIT - aiQueriesCount;
+    await sendWhatsAppMessage(waId, `🧠 *Sentill Africa* is thinking... _(${remaining} free question${remaining !== 1 ? "s" : ""} left today)_`);
 
     const answer = await askGeminiBot(question, {
       name: "Investor",
@@ -403,6 +448,54 @@ async function handleGeminiQuestionGuest(waId: string, question: string) {
       `⚠️ *AI temporarily unavailable*. Send *MENU* for options.`
     );
   }
+}
+
+// ── Premium conversion message — shown when free user hits 3-prompt limit ────
+async function sendPremiumConversionMessage(waId: string, name: string, queriesUsed: number) {
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://sentill.africa";
+
+  await sendWhatsAppMessage(
+    waId,
+    `🔒 *Daily AI Limit Reached, ${name}!*\n\n` +
+    `You've used all *${FREE_AI_LIMIT} free AI questions* for today.\n\n` +
+    `━━━━━━━━━━━━━━━━━━\n` +
+    `⚡ *UPGRADE TO SENTILL PRO*\n` +
+    `Unlock *unlimited AI-powered* wealth intelligence:\n` +
+    `━━━━━━━━━━━━━━━━━━\n\n` +
+    `✅ *UNLIMITED Sentill Africa AI* — Ask anything, anytime\n` +
+    `✅ *Portfolio Tracker* — Log & monitor all investments\n` +
+    `✅ *Real-time Price & Yield Alerts*\n` +
+    `✅ *KRA Tax-Loss Harvesting AI*\n` +
+    `✅ *Sentill Alpha AI Engine* — Deep market analysis\n` +
+    `✅ *NSE Candlestick Charts + RSI/MACD*\n` +
+    `✅ *Chama/Club Dashboard*\n` +
+    `✅ *Financial Goal Planning*\n` +
+    `✅ *Priority 24/7 Support*\n` +
+    `✅ *Downloadable PDF Analytics*\n` +
+    `✅ *Estate Vault & Beneficiary Automations*\n\n` +
+    `━━━━━━━━━━━━━━━━━━\n` +
+    `💰 *PRICING — Cheapest in Kenya:*\n\n` +
+    `📱 *1 Week*  — KES 99  _(≈ KES 14/day)_\n` +
+    `📅 *1 Month* — KES 349 _(≈ KES 12/day — Save 12%)_\n` +
+    `🏆 *3 Months* — KES 999 _(≈ KES 11/day — Save 24%)_\n\n` +
+    `━━━━━━━━━━━━━━━━━━\n` +
+    `🎯 *Less than a cup of coffee per day* for institutional-grade wealth intelligence.\n\n` +
+    `Your AI questions reset daily at midnight — but Pro users get *unlimited* access forever.\n\n` +
+    `🌐 Subscribe: ${appUrl}/packages`
+  );
+
+  // Send interactive buttons for quick action
+  try {
+    await sendInteractiveButtons(
+      waId,
+      `⚡ *Choose your Pro plan:*`,
+      [
+        { id: "WEEKLY_7_DAYS",     title: "📱 1 Week — KES 99" },
+        { id: "MONTHLY_30_DAYS",   title: "📅 1 Month — KES 349" },
+        { id: "QUARTERLY_90_DAYS", title: "🏆 3 Months — KES 999" },
+      ]
+    );
+  } catch { /* buttons optional */ }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -668,7 +761,7 @@ async function startLogAsset(waId: string, ctx: SessionContext, userId: string) 
       waId,
       `📊 *Log Investment*\n\n` +
       `Asset tracking is a *Pro feature*.\n\n` +
-      `⚡ Send *SUBSCRIBE* to start your 7-day trial (KES 100) or go Pro.`
+      `⚡ Send *SUBSCRIBE* to upgrade — starting at *KES 99 for 7 days*.`
     );
   }
 
@@ -1004,7 +1097,7 @@ async function handlePortfolio(waId: string, userId: string) {
     return sendWhatsAppMessage(
       waId,
       `📊 *Portfolio Tracker*\n\nThis is a *Pro feature*.\n\n` +
-      `⚡ Send *SUBSCRIBE* to upgrade — starting at *KES 100 for 7 days*.`
+      `⚡ Send *SUBSCRIBE* to upgrade — starting at *KES 99 for 7 days*.`
     );
   }
 
@@ -1194,12 +1287,11 @@ async function handleSubscriptionStatus(waId: string, userId: string) {
     waId,
     `🔓 *Sentil Free Plan*\n\n` +
     `👤 ${user.name}\n\n` +
-    `✅ Live market rates\n✅ Investment browser\n✅ AI Q&A\n✅ Daily WhatsApp brief\n` +
     `❌ Portfolio tracker\n❌ Sentill Africa Oracle\n❌ Goal planning\n\n` +
     `⚡ *Upgrade to Pro:*\n` +
-    `• Trial (7 days) — *KES 100*\n` +
-    `• Monthly — *KES 499/month*\n` +
-    `• Annual — *KES 4,990/year*\n\n` +
+    `• 1 Week — *KES 99*\n` +
+    `• 1 Month — *KES 349*\n` +
+    `• 3 Months — *KES 999*\n\n` +
     `Send *SUBSCRIBE* to upgrade.`
   );
 }
@@ -1225,24 +1317,21 @@ async function sendSubscriptionPlans(waId: string, userId?: string) {
   const isRenewal = user?.isPremium ?? false;
   const action = isRenewal ? "Renew" : "Upgrade to";
 
-  const hadTrial = await prisma.payment.findFirst({
-    where: { userId, plan: "TRIAL_7_DAYS", status: "SUCCESS" },
-  });
-
   await sendInteractiveButtons(
     waId,
-    `⚡ *${action} Sentil Pro*\n\n` +
+    `⚡ *${action} Sentill Pro*\n\n` +
     `Unlock full intelligence:\n` +
-    `📊 Portfolio tracking\n🧠 Sentill Africa Oracle deep insights\n🎯 Goal planning\n\n` +
-    (!hadTrial ? `🆓 *Trial:* KES 100 / 7 days\n` : ``) +
-    `📱 *Monthly:* KES 499/month\n` +
-    `📅 *Annual:* KES 4,990/year _(save 2 months!)_\n\n` +
+    `📊 Portfolio tracking\n🧠 Unlimited Sentill AI Oracle\n🎯 Goal planning\n📉 KRA Tax AI\n\n` +
+    `💰 *Pricing:*\n` +
+    `📱 *1 Week* — KES 99 _(KES 14/day)_\n` +
+    `📅 *1 Month* — KES 349 _(KES 12/day — Save 12%)_\n` +
+    `🏆 *3 Months* — KES 999 _(KES 11/day — Save 24%)_\n\n` +
     `Choose a plan:`,
     [
-      ...(hadTrial ? [] : [{ id: "TRIAL_7_DAYS", title: "🆓 Trial — KES 100" }]),
-      { id: "PRO_MONTHLY", title: "📱 Monthly — KES 499" },
-      { id: "PRO_ANNUAL",  title: "📅 Annual — KES 4,990" },
-    ].slice(0, 3),
+      { id: "WEEKLY_7_DAYS",     title: "📱 1 Week — KES 99" },
+      { id: "MONTHLY_30_DAYS",   title: "📅 1 Month — KES 349" },
+      { id: "QUARTERLY_90_DAYS", title: "🏆 3 Months — KES 999" },
+    ],
     userId
   );
 }
@@ -1260,16 +1349,15 @@ async function handleSelectPlan(
   const planInfo = PLANS[plan];
   await updateSession(waId, "SUB_CONFIRM", { ...ctx, plan }, userId);
 
-  const isTrial = plan === "TRIAL_7_DAYS";
   return sendWhatsAppMessage(
     waId,
-    `${isTrial ? "🆓" : "⚡"} *Confirm ${isTrial ? "Trial" : "Subscription"}*\n\n` +
+    `⚡ *Confirm Subscription*\n\n` +
     `Plan: *${planInfo.label}*\n` +
     `Duration: *${planInfo.days} day${planInfo.days > 1 ? "s" : ""}*\n` +
     `Amount: *${formatKES(planInfo.amount)}*\n` +
     `${planInfo.description}\n\n` +
     `💳 Payment via *Paystack* (M-Pesa / Card).\n` +
-    `_Sentil does not hold your money._\n\n` +
+    `_Sentill does not hold your money._\n\n` +
     `Reply *YES* to get your secure payment link, or *NO* to cancel.`
   );
 }
