@@ -177,21 +177,28 @@ export function verifyWebhookSignature(
 ): boolean {
   const appSecret = process.env.WHATSAPP_APP_SECRET;
   if (!appSecret) {
-    console.warn("[WhatsApp] WHATSAPP_APP_SECRET not set — skipping verification");
+    // No secret configured — allow all (development/initial setup)
     return true;
   }
   if (!signatureHeader) return false;
 
-  const expectedSig = crypto
-    .createHmac("sha256", appSecret)
-    .update(rawBody)
-    .digest("hex");
+  try {
+    const expectedSig = crypto
+      .createHmac("sha256", appSecret)
+      .update(rawBody)
+      .digest("hex");
 
-  const received = signatureHeader.replace("sha256=", "");
-  return crypto.timingSafeEqual(
-    Buffer.from(expectedSig, "hex"),
-    Buffer.from(received, "hex")
-  );
+    const received = signatureHeader.replace("sha256=", "");
+
+    // timingSafeEqual requires equal buffer length — guard this
+    const expectedBuf = Buffer.from(expectedSig, "hex");
+    const receivedBuf = Buffer.from(received, "hex");
+    if (expectedBuf.length !== receivedBuf.length) return false;
+
+    return crypto.timingSafeEqual(expectedBuf, receivedBuf);
+  } catch {
+    return false;
+  }
 }
 
 // ── OTP utilities ─────────────────────────────────────────────────────────────

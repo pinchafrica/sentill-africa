@@ -31,7 +31,7 @@ export default function SovereignNotifications() {
                  <Bot className="w-4 h-4" />
               </div>
               <div>
-                 <p className="text-[10px] font-black uppercase tracking-widest leading-none">Sentil AI</p>
+                 <p className="text-[10px] font-black uppercase tracking-widest leading-none">Sentill Africa</p>
                  <p className="text-[9px] font-medium opacity-70">Market Briefing</p>
               </div>
             </div>

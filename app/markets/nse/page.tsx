@@ -372,7 +372,7 @@ export default function NSEPage() {
           <div className="absolute inset-0 bg-slate-900/50 z-10 transition-colors group-hover:bg-slate-900/40" />
           <img 
             src="/images/african-american-entrepreneur-businessman-working-2026-03-09-09-18-43-utc.jpg"
-            alt="Sentil AI Recommendation"
+            alt="Sentill Africa Recommendation"
             className="absolute inset-0 w-full h-full object-cover object-[center_30%] group-hover:scale-105 transition-transform duration-[1500ms]"
           />
           <div className="relative z-20 p-8 md:p-14 flex flex-col md:flex-row items-center justify-between gap-8 h-full">

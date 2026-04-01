@@ -1,6 +1,6 @@
 /**
  * lib/whatsapp-gemini.ts
- * Sentil AI conversational layer for the Sentil WhatsApp bot.
+ * Sentill Africa conversational layer for the Sentil WhatsApp bot.
  * 24/7 AI-driven answers to any investment question using Gemini 2.0 Flash.
  * API key loaded from encrypted DB (admin dashboard) → env fallback.
  */
@@ -59,13 +59,13 @@ async function callGemini(prompt: string): Promise<string> {
   try {
     apiKey = await getGeminiApiKey();
   } catch (keyErr) {
-    console.error("[Sentil AI] getGeminiApiKey failed:", keyErr);
+    console.error("[Sentill Africa] getGeminiApiKey failed:", keyErr);
   }
   
   // Fallback directly to env var if DB lookup failed
   if (!apiKey) {
     apiKey = process.env.GEMINI_API_KEY ?? null;
-    if (apiKey) console.log("[Sentil AI] Using env GEMINI_API_KEY fallback");
+    if (apiKey) console.log("[Sentill Africa] Using env GEMINI_API_KEY fallback");
   }
   
   if (!apiKey) {
@@ -73,7 +73,7 @@ async function callGemini(prompt: string): Promise<string> {
   }
 
   const url = getGeminiUrl(apiKey);
-  console.log("[Sentil AI] Calling Gemini...", url.substring(0, 80));
+  console.log("[Sentill Africa] Calling Gemini...", url.substring(0, 80));
 
   const res = await fetch(url, {
     method: "POST",
@@ -91,14 +91,14 @@ async function callGemini(prompt: string): Promise<string> {
 
   if (!res.ok) {
     const err = await res.text();
-    console.error("[Sentil AI] Gemini HTTP error:", res.status, err.substring(0, 200));
+    console.error("[Sentill Africa] Gemini HTTP error:", res.status, err.substring(0, 200));
     throw new Error(`Gemini API error: ${res.status}`);
   }
 
   const data = await res.json();
   const text = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
   if (!text) {
-    console.error("[Sentil AI] Empty Gemini response:", JSON.stringify(data).substring(0, 200));
+    console.error("[Sentill Africa] Empty Gemini response:", JSON.stringify(data).substring(0, 200));
     throw new Error("Empty Gemini response");
   }
   return text;
@@ -113,10 +113,10 @@ export async function askGeminiBot(
     getMarketContext(),
   ]);
 
-  const systemPrompt = `You are Sentil AI, an expert wealth intelligence assistant for Kenyan investors.
+  const systemPrompt = `You are Sentill Africa, an expert wealth intelligence assistant for Kenyan investors.
 You are replying via WhatsApp — give *detailed, comprehensive answers* (up to 500 words). Use plain text.
 Use bullet points (•) and bold (*word*) for WhatsApp formatting. No markdown headers (#).
-Never mention Gemini, Google, or any AI provider name — you are simply "Sentil AI".
+Never mention Gemini, Google, or any AI provider name — you are simply "Sentill Africa".
 You are available 24 hours a day, 7 days a week to help with any investment question.
 
 User: ${user.name} | Plan: ${user.isPremium ? "Pro" : "Free"}
@@ -141,9 +141,9 @@ Answer this question concisely:`;
     }
     return text;
   } catch (err) {
-    console.error("[Sentil AI] Error:", err);
+    console.error("[Sentill Africa] Error:", err);
     return (
-      `🤖 Sentil AI is temporarily unavailable. Try:\n\n` +
+      `🤖 Sentill Africa is temporarily unavailable. Try:\n\n` +
       `• *MARKETS* — live rates\n` +
       `• *PORTFOLIO* — your assets\n` +
       `• *INVEST* — browse options\n\n` +

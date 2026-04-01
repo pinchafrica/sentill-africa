@@ -109,7 +109,7 @@ export default function CortexButler() {
                   <Bot className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-black uppercase tracking-tighter">Sentil AI Assistant</h3>
+                  <h3 className="text-lg font-black uppercase tracking-tighter">Sentill Africa Assistant</h3>
                   <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest">AI Assistant Ready</p>
                 </div>
               </div>
@@ -168,7 +168,7 @@ export default function CortexButler() {
                   <input 
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
-                    placeholder="Ask Sentil AI Assistant..."
+                    placeholder="Ask Sentill Africa Assistant..."
                     className="w-full px-6 py-4 bg-white border-2 border-slate-100 rounded-2xl text-[10px] font-bold text-slate-900 focus:outline-none focus:border-blue-600 shadow-sm"
                   />
                   <button 

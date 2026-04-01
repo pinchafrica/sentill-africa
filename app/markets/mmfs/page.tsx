@@ -263,7 +263,7 @@ export default function MMFPage() {
           setAiError("upgrade_required");
         } else {
           setAiError("");
-          setAiInsights(data.response || "Sentil AI is currently offline.");
+          setAiInsights(data.response || "Sentill Africa is currently offline.");
         }
       } catch (err) {
         setAiError("");
@@ -842,7 +842,7 @@ export default function MMFPage() {
               <Zap className="w-5 h-5 text-indigo-400" />
             </div>
             <div>
-              <h2 className="text-sm font-black uppercase tracking-widest">Sentil AI · MMF Intelligence</h2>
+              <h2 className="text-sm font-black uppercase tracking-widest">Sentill Africa · MMF Intelligence</h2>
               <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Real-time Neural Analysis</p>
             </div>
           </div>
@@ -863,7 +863,7 @@ export default function MMFPage() {
                {isAiLoading ? (
                  <div className="flex items-center gap-3 py-4">
                    <div className="w-5 h-5 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />
-                   <span className="text-slate-400 text-sm font-medium italic">Sentil AI is processesing MMF data...</span>
+                   <span className="text-slate-400 text-sm font-medium italic">Sentill Africa is processesing MMF data...</span>
                  </div>
                ) : (
                  <div className="bg-slate-950/50 p-6 rounded-2xl border border-white/5 text-sm text-slate-200 leading-relaxed font-medium whitespace-pre-wrap">

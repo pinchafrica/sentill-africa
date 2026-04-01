@@ -5,7 +5,7 @@
  * Features:
  *  • Investment browser (MMF/T-Bill/SACCO/Bond/NSE) with interactive buttons
  *  • Asset logging via WhatsApp chat
- *  • Sentil AI for any investment question
+ *  • Sentill Africa for any investment question
  *  • Paystack Subscribe/Renew with direct checkout links
  *  • Registration, Login (OTP), Portfolio, Goals, Watchlist
  */
@@ -342,7 +342,7 @@ export async function processIncomingMessage(
 
   return sendWhatsAppMessage(
     waId,
-    `🧠 *Sentil AI is here for you 24/7!*\n\n` +
+    `🧠 *Sentill Africa is here for you 24/7!*\n\n` +
     `Just type any question about investing, or use these commands:\n\n` +
     `• *MENU* — main menu\n` +
     `• *MARKETS* — live rates\n` +
@@ -353,7 +353,7 @@ export async function processIncomingMessage(
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Sentil AI handler
+// Sentill Africa handler
 // ─────────────────────────────────────────────────────────────────────────────
 
 async function handleGeminiQuestion(waId: string, question: string, userId: string) {
@@ -363,7 +363,7 @@ async function handleGeminiQuestion(waId: string, question: string, userId: stri
       select: { name: true, isPremium: true },
     });
 
-    await sendWhatsAppMessage(waId, "🧠 *Sentil AI* is thinking...");
+    await sendWhatsAppMessage(waId, "🧠 *Sentill Africa* is thinking...");
 
     const answer = await askGeminiBot(question, {
       name: user?.name ?? "Investor",
@@ -371,7 +371,7 @@ async function handleGeminiQuestion(waId: string, question: string, userId: stri
       isPremium: user?.isPremium ?? false,
     });
 
-    return sendWhatsAppMessage(waId, `🧠 *Sentil AI Says:*\n\n${answer}`);
+    return sendWhatsAppMessage(waId, `🧠 *Sentill Africa Says:*\n\n${answer}`);
   } catch (err) {
     console.error("[Bot] Gemini AI error:", err);
     return sendWhatsAppMessage(
@@ -384,7 +384,7 @@ async function handleGeminiQuestion(waId: string, question: string, userId: stri
 // Guest AI handler — for users who haven't registered/logged in
 async function handleGeminiQuestionGuest(waId: string, question: string) {
   try {
-    await sendWhatsAppMessage(waId, "🧠 *Sentil AI* is thinking...");
+    await sendWhatsAppMessage(waId, "🧠 *Sentill Africa* is thinking...");
 
     const answer = await askGeminiBot(question, {
       name: "Investor",
@@ -394,7 +394,7 @@ async function handleGeminiQuestionGuest(waId: string, question: string) {
 
     return sendWhatsAppMessage(
       waId,
-      `🧠 *Sentil AI Says:*\n\n${answer}\n\n━━━━━━━━━━━━━━━━\n💡 *Register* for personalized insights!\nSend *REGISTER* to create your free account.`
+      `🧠 *Sentill Africa Says:*\n\n${answer}\n\n━━━━━━━━━━━━━━━━\n💡 *Register* for personalized insights!\nSend *REGISTER* to create your free account.`
     );
   } catch (err) {
     console.error("[Bot] Guest Gemini error:", err);
@@ -577,7 +577,7 @@ async function handleBrowseProviderAction(waId: string, input: string, ctx: Sess
       }, userId);
 
       // Show thinking indicator then get AI summary
-      await sendWhatsAppMessage(waId, "🧠 *Sentil AI* is analysing this fund...");
+      await sendWhatsAppMessage(waId, "🧠 *Sentill Africa* is analysing this fund...");
       const aiSummary = await generateInvestmentSummary(
         selected.name, selected.type, selected.currentYield,
         selected.riskLevel, selected.minimumInvest ?? null
@@ -595,7 +595,7 @@ async function handleBrowseProviderAction(waId: string, input: string, ctx: Sess
         (selected.minimumInvest ? `💵 *Min. Invest:* ${selected.minimumInvest}\n` : ``) +
         `⚖️ *Regulated by:* ${regulated}\n` +
         `💧 *Liquidity:* ${liquidity}\n\n` +
-        `🧠 *Sentil AI Says:*\n${aiSummary}\n\n` +
+        `🧠 *Sentill Africa Says:*\n${aiSummary}\n\n` +
         `━━━━━━━━━━━━━━━━\n` +
         `*LOG* — track this  |  *WATCH* — save it\n` +
         `*BACK* — other ${ctx.category ?? "funds"}  |  *COMPARE* — vs another`;
@@ -1392,7 +1392,7 @@ async function sendMainMenu(waId: string, userId?: string) {
       `*STATUS* — subscription details\n` +
       `*SUBSCRIBE* | *RENEW* — upgrade/renew\n` +
       `*HELP* — full command list\n\n` +
-      `💡 _Or just type any question — Sentil AI is always here to help!_`,
+      `💡 _Or just type any question — Sentill Africa is always here to help!_`,
       userId
     );
   }
@@ -1423,7 +1423,7 @@ async function sendHelp(waId: string) {
     `*COMPARE <fund1> vs <fund2>* — AI comparison\n` +
     `*TIPS* — get today's AI investment tip\n\n` +
     `*── AI ──*\n` +
-    `*ASK <question>* — ask Sentil AI anything\n` +
+    `*ASK <question>* — ask Sentill Africa anything\n` +
     `_Example: ASK best fund for KES 50,000?_\n\n` +
     `*── Portfolio (Pro) ──*\n` +
     `*PORTFOLIO* — your tracked assets\n` +
@@ -1445,7 +1445,7 @@ async function sendHelp(waId: string) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 async function handleCompare(waId: string, query: string, userId: string) {
-  await sendWhatsAppMessage(waId, "🧠 *Sentil AI* is comparing funds...");
+  await sendWhatsAppMessage(waId, "🧠 *Sentill Africa* is comparing funds...");
 
   // Parse "Fund A vs Fund B" or just list top 2
   let name1 = "", name2 = "";
@@ -1501,7 +1501,7 @@ async function handleCompare(waId: string, query: string, userId: string) {
     `*${p2.name}*\n` +
     `📈 ${p2.currentYield.toFixed(2)}% | ⚡ ${p2.riskLevel} | 💵 Min: ${p2.minimumInvest ?? "Check provider"}\n\n` +
     `━━━━━━━━━━━━━━━━\n` +
-    `🧠 *Sentil AI Verdict:*\n${comparison}`;
+    `🧠 *Sentill Africa Verdict:*\n${comparison}`;
 
   await sendWhatsAppMessage(waId, msg);
 
@@ -1519,7 +1519,7 @@ async function handleCompare(waId: string, query: string, userId: string) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 async function handleTip(waId: string, userId: string) {
-  await sendWhatsAppMessage(waId, "🧠 *Sentil AI* generating your tip...");
+  await sendWhatsAppMessage(waId, "🧠 *Sentill Africa* generating your tip...");
 
   const [user, topMMF, rates] = await Promise.all([
     prisma.user.findUnique({
@@ -1545,7 +1545,7 @@ async function handleTip(waId: string, userId: string) {
 
   await sendWhatsAppMessage(
     waId,
-    `💡 *Sentil AI Tip — ${today}*\n\n${tip}\n\n` +
+    `💡 *Sentill Africa Tip — ${today}*\n\n${tip}\n\n` +
     `• *INVEST* — act on this\n• *ASK* — go deeper\n• *COMPARE* — compare options`
   );
 }
@@ -1627,7 +1627,7 @@ async function handleSetGoal(waId: string, rawInput: string, userId: string) {
       `📅 Deadline: *${deadline.toLocaleDateString("en-KE", { day: "numeric", month: "long", year: "numeric" })}*\n` +
       `⏱ ${monthsLeft} months | *${formatKES(monthlyNeeded)}/month needed*\n\n` +
       `━━━━━━━━━━━━━━━━\n` +
-      `🧠 *Sentil AI Savings Plan:*\n${plan}\n\n` +
+      `🧠 *Sentill Africa Savings Plan:*\n${plan}\n\n` +
       `• *INVEST* — start investing now\n• *GOALS* — view all goals\n• *LOG* — track an investment`
     );
   } catch (err) {
