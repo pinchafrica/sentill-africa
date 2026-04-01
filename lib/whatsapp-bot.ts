@@ -450,10 +450,8 @@ async function handleGeminiQuestionGuest(waId: string, question: string) {
   }
 }
 
-// ── Premium conversion message — shown when free user hits 3-prompt limit ────
+// ── Premium conversion message — shown when free user hits 10-prompt limit ────
 async function sendPremiumConversionMessage(waId: string, name: string, queriesUsed: number) {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://sentill.africa";
-
   await sendWhatsAppMessage(
     waId,
     `🔒 *Daily AI Limit Reached, ${name}!*\n\n` +
@@ -462,11 +460,11 @@ async function sendPremiumConversionMessage(waId: string, name: string, queriesU
     `⚡ *UPGRADE TO SENTILL PRO*\n` +
     `Unlock *unlimited AI-powered* wealth intelligence:\n` +
     `━━━━━━━━━━━━━━━━━━\n\n` +
-    `✅ *UNLIMITED Sentill Africa AI* — Ask anything, anytime\n` +
+    `✅ *UNLIMITED Sentill Africa* — Ask anything, anytime\n` +
     `✅ *Portfolio Tracker* — Log & monitor all investments\n` +
     `✅ *Real-time Price & Yield Alerts*\n` +
     `✅ *KRA Tax-Loss Harvesting AI*\n` +
-    `✅ *Sentill Alpha AI Engine* — Deep market analysis\n` +
+    `✅ *Sentill Alpha Engine* — Deep market analysis\n` +
     `✅ *NSE Candlestick Charts + RSI/MACD*\n` +
     `✅ *Chama/Club Dashboard*\n` +
     `✅ *Financial Goal Planning*\n` +
@@ -481,7 +479,7 @@ async function sendPremiumConversionMessage(waId: string, name: string, queriesU
     `━━━━━━━━━━━━━━━━━━\n` +
     `🎯 *Less than a cup of coffee per day* for institutional-grade wealth intelligence.\n\n` +
     `Your AI questions reset daily at midnight — but Pro users get *unlimited* access forever.\n\n` +
-    `🌐 Subscribe: ${appUrl}/packages`
+    `👉 *Reply SUBSCRIBE to upgrade now!*`
   );
 
   // Send interactive buttons for quick action
