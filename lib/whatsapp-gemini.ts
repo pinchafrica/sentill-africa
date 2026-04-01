@@ -53,12 +53,29 @@ async function getMarketContext(): Promise<string> {
 }
 
 async function callGemini(prompt: string): Promise<string> {
-  const apiKey = await getGeminiApiKey();
+  // Robust API key resolution with multiple fallbacks
+  let apiKey: string | null = null;
+  
+  try {
+    apiKey = await getGeminiApiKey();
+  } catch (keyErr) {
+    console.error("[Sentil AI] getGeminiApiKey failed:", keyErr);
+  }
+  
+  // Fallback directly to env var if DB lookup failed
+  if (!apiKey) {
+    apiKey = process.env.GEMINI_API_KEY ?? null;
+    if (apiKey) console.log("[Sentil AI] Using env GEMINI_API_KEY fallback");
+  }
+  
   if (!apiKey) {
     throw new Error("GEMINI_API_KEY not configured — add via Admin Dashboard or env");
   }
 
-  const res = await fetch(getGeminiUrl(apiKey), {
+  const url = getGeminiUrl(apiKey);
+  console.log("[Sentil AI] Calling Gemini...", url.substring(0, 80));
+
+  const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -74,13 +91,16 @@ async function callGemini(prompt: string): Promise<string> {
 
   if (!res.ok) {
     const err = await res.text();
-    console.error("[Sentil AI] Gemini HTTP error:", err);
+    console.error("[Sentil AI] Gemini HTTP error:", res.status, err.substring(0, 200));
     throw new Error(`Gemini API error: ${res.status}`);
   }
 
   const data = await res.json();
   const text = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
-  if (!text) throw new Error("Empty Gemini response");
+  if (!text) {
+    console.error("[Sentil AI] Empty Gemini response:", JSON.stringify(data).substring(0, 200));
+    throw new Error("Empty Gemini response");
+  }
   return text;
 }
 
