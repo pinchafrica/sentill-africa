@@ -80,10 +80,10 @@ const BROKERS = [
   },
   {
     id: "ziidi",
-    name: "Ziidi Trader",
-    short: "Ziidi",
+    name: "NSE Mobile Platforms",
+    short: "Mobile",
     type: "Retail App",
-    desc: "A modern, mobile-first stock trading application designed to make purchasing NSE shares accessible to the diaspora and local retail investors.",
+    desc: "Modern, mobile-first stock trading apps designed to make purchasing NSE shares accessible to everyday Kenyan investors. Many accept M-Pesa from KES 100.",
     icon: Smartphone,
     color: "from-rose-500 to-rose-700",
     accent: "bg-rose-600",

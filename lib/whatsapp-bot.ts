@@ -115,9 +115,9 @@ async function handleNSEStocks(waId: string, userId?: string) {
   msg += `🟢 BUY signal  🟡 WATCH  (no signal = HOLD)\n\n`;
   msg += `💡 *Type any ticker for deep AI analysis:*\n`;
   msg += `_SCOM · EQTY · KCB · COOP · NCBA · EABL_\n\n`;
-  msg += `📱 *Trade on Ziidi Trader:*\n`;
-  msg += `M-Pesa → Financial Services → Ziidi → Trade Shares\n\n`;
-  msg += `_Send *ZIIDI* for the Ziidi Trader beginner's guide_`;
+  msg += `📱 *How to buy NSE stocks:*\n`;
+  msg += `Use your mobile broker app or M-Pesa investing platforms\n\n`;
+  msg += `_Send *NSE GUIDE* for the beginner's investing guide_`;
 
   return sendWhatsAppMessage(waId, msg);
 }
@@ -161,43 +161,44 @@ async function handleNSEStockLookup(waId: string, symbol: string, userId?: strin
   msg += `🧠 *Sentill Africa Analysis:*\n\n${aiText}\n\n`;
   msg += `━━━━━━━━━━━━━━━━━━\n`;
   msg += `📱 *To buy ${symbol}:*\n`;
-  msg += `M-Pesa → Ziidi → Trade Shares → Search *${symbol}* → Enter amount\n\n`;
+  msg += `Open your NSE broker app → Search *${symbol}* → Enter amount → Confirm\n`;
+  msg += `_(Many brokers accept M-Pesa from KES 100)_\n\n`;
   msg += `_⚠️ This is not financial advice. Invest responsibly._`;
 
   return sendWhatsAppMessage(waId, msg);
 }
 
-async function handleZiidiTraderGuide(waId: string) {
+async function handleNSEBeginnersGuide(waId: string) {
   const msg =
-    `📱 *ZIIDI TRADER — BEGINNER'S GUIDE*\n` +
-    `_Buy NSE stocks directly from M-Pesa_\n\n` +
+    `📊 *NSE STOCKS — BEGINNER'S GUIDE*\n` +
+    `_Buy Kenyan company shares from your phone_\n\n` +
     `━━━━━━━━━━━━━━━━━━\n\n` +
-    `*How to access:*\n` +
-    `M-Pesa → Financial Services → Ziidi → Trade Shares\n\n` +
-    `✅ No broker account needed\n` +
-    `✅ Minimum investment: *KES 100*\n` +
-    `✅ Uses your M-Pesa balance directly\n` +
-    `✅ Dividends paid to M-Pesa\n` +
-    `✅ Commission: ~1.8% per trade\n\n` +
+    `*How to buy NSE stocks:*\n` +
+    `Use any licensed NSE broker or mobile investing app.\n` +
+    `Many now accept M-Pesa with a minimum of *KES 100*.\n\n` +
+    `✅ No physical paperwork needed (digital KYC)\n` +
+    `✅ Start from as little as KES 100\n` +
+    `✅ Dividends paid to M-Pesa or bank account\n` +
+    `✅ Commission: ~1.5–2% per trade (varies by broker)\n\n` +
     `━━━━━━━━━━━━━━━━━━\n` +
-    `🏆 *Beginner's Starter Portfolio:*\n` +
-    `_(for someone starting with KES 5,000–10,000)_\n\n` +
+    `🏆 *Sentill Beginner Portfolio:*\n` +
+    `_(for KES 5,000–10,000 first-time investors)_\n\n` +
     `1️⃣ *KCB Group (KCB)* — 40% of budget\n` +
     `   _Cheapest big bank, highest dividend on NSE (~6.8%)_\n\n` +
     `2️⃣ *Equity Group (EQTY)* — 40% of budget\n` +
     `   _Kenya's most profitable bank, pan-Africa growth_\n\n` +
     `3️⃣ *Safaricom (SCOM)* — 20% of budget\n` +
-    `   _Monopoly on M-Pesa, you already use their product_\n\n` +
+    `   _Dominant telco & M-Pesa, you use it every day_\n\n` +
     `━━━━━━━━━━━━━━━━━━\n` +
     `⚠️ *Key rules for beginners:*\n` +
-    `• Don't invest money you need in the next 12 months\n` +
-    `• NSE stocks are for 3–5 year+ horizons\n` +
-    `• Dividends are taxed 5% (WHT) automatically\n` +
+    `• Only invest money you won't need for 3–5 years\n` +
+    `• NSE stocks can go up AND down — diversify\n` +
+    `• Dividends have 5% WHT deducted automatically\n` +
     `• Settlement takes T+3 (3 business days)\n\n` +
     `━━━━━━━━━━━━━━━━━━\n` +
-    `💡 *Get AI analysis on any NSE stock:*\n` +
-    `Just type the ticker: _SCOM · EQTY · KCB · COOP · EABL_\n\n` +
-    `_Sentill advises. Ziidi Trader executes. 🚀_`;
+    `🧠 *Get AI analysis on any NSE stock:*\n` +
+    `Type any ticker: _SCOM · EQTY · KCB · COOP · EABL_\n\n` +
+    `_Sentill Africa — research smarter, invest better. 🚀_`;
 
   return sendWhatsAppMessage(waId, msg);
 }
@@ -517,7 +518,7 @@ export async function processIncomingMessage(
     }
     if (input === "RATES" || input === "R") return handleMarkets(waId);
     if (input === "SPECIAL") return handleSpecialFunds(waId);
-    if (["ZIIDI", "ZIIDI TRADER", "ZIIDI GUIDE", "ZIIDITRADER"].includes(input)) return handleZiidiTraderGuide(waId);
+    if (["NSE GUIDE", "STOCKS GUIDE", "HOW TO BUY STOCKS", "BUY STOCKS", "ZIIDI", "ZIIDI GUIDE"].includes(input)) return handleNSEBeginnersGuide(waId);
     if (["STOCKS", "NSE", "SHARES", "NSE LIVE", "EQUITY", "EQUITIES"].includes(input)) return handleNSEStocks(waId, undefined);
     if (NSE_SYMBOLS[input]) return handleNSEStockLookup(waId, input, undefined);
     if (input.startsWith("CHART") || input.startsWith("GRAPH")) return handleChartCommand(waId, input, undefined);
@@ -539,7 +540,7 @@ export async function processIncomingMessage(
   if (input === "MARKETS"   || input === "M" || input === "RATES" || input === "R") return handleMarkets(waId);
   if (input === "GOALS"     || input === "G") return handleGoals(waId, userId);
   if (input === "WATCHLIST" || input === "W") return handleWatchlist(waId, userId);
-  if (["ZIIDI", "ZIIDI TRADER", "ZIIDI GUIDE", "ZIIDITRADER"].includes(input)) return handleZiidiTraderGuide(waId);
+  if (["NSE GUIDE", "STOCKS GUIDE", "HOW TO BUY STOCKS", "BUY STOCKS", "ZIIDI", "ZIIDI GUIDE"].includes(input)) return handleNSEBeginnersGuide(waId);
   if (["STOCKS", "NSE", "SHARES", "NSE LIVE", "EQUITY", "EQUITIES"].includes(input)) return handleNSEStocks(waId, userId);
   if (["SPECIAL", "SPECIAL FUNDS", "UNIT TRUST", "PENSION", "OFFSHORE", "DOLLAR FUND", "TRADE"].includes(input)) return handleSpecialFunds(waId);
   // NSE ticker lookup — e.g. "SCOM", "EQTY", "KCB"
@@ -1553,12 +1554,12 @@ async function handleSpecialFunds(waId: string) {
   const msg =
     `✨ *SPECIAL INVESTMENT CATEGORIES*\n\n` +
     `━━━━━━━━━━━━━━━━━━\n` +
-    `📱 *SAFARICOM ZIIDI*\n` +
-    `_Kenya's simplest way to invest via M-Pesa_\n\n` +
-    `• *Ziidi Invest* — access top MMFs from KES 100\n` +
-    `• *Ziidi Trader* — buy NSE stocks from KES 100\n` +
-    `• Access: M-Pesa → Financial Services → Ziidi\n` +
-    `• Dividends & returns go back to M-Pesa ✅\n\n` +
+    `📱 *INVEST VIA M-PESA*\n` +
+    `_Kenya's easiest entry — invest directly from your phone_\n\n` +
+    `• *MMFs via M-Pesa* — access top funds from KES 100\n` +
+    `• *NSE Stocks via M-Pesa* — buy shares from KES 100\n` +
+    `• Dividends & returns paid back to M-Pesa ✅\n` +
+    `• Zero paperwork — digital KYC only\n\n` +
     `━━━━━━━━━━━━━━━━━━\n` +
     `📦 *UNIT TRUSTS*\n` +
     `_Invest in NSE stocks or bonds via a fund manager_\n\n` +
@@ -1585,15 +1586,14 @@ async function handleSpecialFunds(waId: string) {
     `• *Ndovu (ETF-linked)* — *8-15%* _(global ETFs, S&P 500)_\n` +
     `• *Old Mutual International* — *5-8% USD*\n\n` +
     `━━━━━━━━━━━━━━━━━━\n` +
-    `📊 *NSE STOCK BROKERS*\n` +
+    `📊 *LICENSED NSE BROKERS*\n` +
     `_Buy Safaricom, Equity, KCB shares on the NSE_\n\n` +
-    `• *Safaricom Ziidi Trader* — from KES 100, via M-Pesa\n` +
-    `• *Genghis Capital* — online broker, from KES 1,000\n` +
+    `• *Genghis Capital* — online, from KES 1,000\n` +
     `• *NCBA Securities* — bank-linked, full NSE access\n` +
-    `• *AIB-AXYS Africa* — retail-friendly mobile app\n\n` +
-    `Ask any question:\n` +
-    `_e.g. *ASK how does Ziidi Trader work?*_\n\n` +
-    `_ℹ️ Sentill is an intelligence hub — invest via your provider._`;
+    `• *AIB-AXYS Africa* — retail-friendly mobile app\n` +
+    `• *Dyer & Blair* — established, ideal for larger amounts\n\n` +
+    `_Type any ticker for AI analysis: SCOM · EQTY · KCB_\n\n` +
+    `_ℹ️ Sentill researches. You invest via your chosen broker._`;
 
   return sendWhatsAppMessage(waId, msg);
 }

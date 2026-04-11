@@ -187,7 +187,7 @@ const menuData = {
           { title: "Equity Trading", desc: "Tier 1 Retail Platform", href: "/markets/trading/equity", icon: Users, color: "text-blue-800" },
           { title: "KCB Capital", desc: "Corporate Advisory Hub", href: "/markets/trading/kcb", icon: Briefcase, color: "text-emerald-600" },
           { title: "NCBA Inv Bank", desc: "High Net-Worth Trading", href: "/markets/trading/ncba", icon: Star, color: "text-purple-600" },
-          { title: "Ziidi Trader", desc: "Retail Mobile Execution", href: "/markets/trading/ziidi", icon: Rocket, color: "text-rose-600" }
+          { title: "NSE Mobile", desc: "Retail Mobile Execution", href: "/markets/trading", icon: Rocket, color: "text-rose-600" }
         ]
       }
     ]
