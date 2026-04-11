@@ -100,7 +100,7 @@ export default function CortexButler() {
             initial={{ opacity: 0, scale: 0.8, y: 20, transformOrigin: "bottom right" }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.8, y: 20 }}
-            className="absolute bottom-20 right-0 w-[400px] h-[600px] max-h-[85vh] bg-white/95 backdrop-blur-2xl border border-slate-200 rounded-[3rem] shadow-[0_40px_80px_-15px_rgba(0,0,0,0.2)] overflow-hidden flex flex-col"
+            className="fixed bottom-24 right-4 sm:absolute sm:bottom-20 sm:right-0 w-[calc(100vw-2rem)] sm:w-[400px] h-[75vh] sm:h-[600px] max-h-[85vh] bg-white/95 backdrop-blur-2xl border border-slate-200 rounded-[2rem] sm:rounded-[3rem] shadow-[0_40px_80px_-15px_rgba(0,0,0,0.2)] overflow-hidden flex flex-col"
           >
             {/* Header */}
             <div className="bg-slate-950 p-8 text-white flex justify-between items-center">

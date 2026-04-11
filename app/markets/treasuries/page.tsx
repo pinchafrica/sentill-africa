@@ -159,21 +159,22 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 export default function TreasuriesPage() {
   const [selectedBill, setSelectedBill] = useState(TBILLS[2]);
   const [principal, setPrincipal] = useState(500000);
-  const [activeTab, setActiveTab] = useState<"overview" | "calculator" | "auctions" | "compare">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "calculator" | "auctions" | "compare">("calculator");
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const { setAssetModalOpen, setPrefilledAsset, setChatOpen } = useAIStore();
 
   const calc = useMemo(() => {
-    const annualReturn = principal * (selectedBill.auctionYield / 100);
+    const safeP = Math.max(principal || 0, 0);
+    const annualReturn = safeP * (selectedBill.auctionYield / 100);
     const grossReturn = annualReturn * (selectedBill.duration / 12);
     const tax = grossReturn * 0.15;
     const netReturn = grossReturn - tax;
-    const purchasePrice = principal - grossReturn;
-    const effectiveRate = (netReturn / purchasePrice) * (12 / selectedBill.duration) * 100;
+    const purchasePrice = safeP - grossReturn;
+    const effectiveRate = purchasePrice > 0 ? (netReturn / purchasePrice) * (12 / selectedBill.duration) * 100 : 0;
     const compoundYears = Array.from({ length: 5 }, (_, i) => {
       const yr = i + 1;
-      const gross = principal * Math.pow(1 + selectedBill.auctionYield / 100, yr) - principal;
-      const net = principal * Math.pow(1 + selectedBill.netYield / 100, yr) - principal;
+      const gross = safeP * Math.pow(1 + selectedBill.auctionYield / 100, yr) - safeP;
+      const net = safeP * Math.pow(1 + selectedBill.netYield / 100, yr) - safeP;
       return { year: `Yr ${yr}`, gross: Math.round(gross), net: Math.round(net) };
     });
     return { grossReturn, tax, netReturn, purchasePrice, effectiveRate, compoundYears };
@@ -233,17 +234,19 @@ export default function TreasuriesPage() {
 
       {/* ── TAB BAR ── */}
       <div className="bg-white border-b border-slate-200 sticky top-[176px] lg:top-[108px] z-20 shadow-sm">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex gap-1 overflow-x-auto no-scrollbar">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="flex gap-0 overflow-x-auto scrollbar-none">
             {([
-              { key: "overview", label: "Overview & Charts" },
-              { key: "calculator", label: "Return Calculator" },
-              { key: "auctions", label: "Auction Calendar" },
-              { key: "compare", label: "Instrument Comparison" },
+              { key: "calculator", label: "🧮 Calculator" },
+              { key: "overview",   label: "📊 Charts" },
+              { key: "auctions",   label: "📅 Auctions" },
+              { key: "compare",    label: "⚖️ Compare" },
             ] as const).map(t => (
               <button key={t.key} onClick={() => setActiveTab(t.key)}
-                className={`px-6 py-4 text-[10px] font-black uppercase tracking-widest whitespace-nowrap border-b-2 transition-all ${
-                  activeTab === t.key ? "border-emerald-500 text-emerald-600" : "border-transparent text-slate-400 hover:text-slate-700"
+                className={`px-4 sm:px-6 py-4 text-[10px] font-black uppercase tracking-widest whitespace-nowrap border-b-2 transition-all flex-shrink-0 ${
+                  activeTab === t.key
+                    ? "border-emerald-500 text-emerald-600 bg-emerald-50/60"
+                    : "border-transparent text-slate-400 hover:text-slate-700 hover:bg-slate-50"
                 }`}>
                 {t.label}
               </button>

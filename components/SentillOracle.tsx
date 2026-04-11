@@ -24,7 +24,7 @@ export default function SentillOracle() {
   };
 
   return (
-    <div className="fixed bottom-28 right-6 z-[180] flex flex-col items-end gap-3">
+    <div className="fixed bottom-[168px] right-5 sm:bottom-28 sm:right-6 z-[180] flex flex-col items-end gap-3">
       <AnimatePresence>
         {isOpen && (
           <motion.div
