@@ -470,6 +470,283 @@ Mansa-X is Kenya's most well-known actively managed multi-asset fund.
 - *Etica ESG MMF* — Ethical investing with competitive returns (~17%)
 - *KCB Foundation Impact Fund* — Social enterprise backing
 
+━━ CRYPTOCURRENCY & DIGITAL ASSETS IN KENYA ━━
+Not regulated by CMA/CBK. High risk, high reward. CBK issued advisory against crypto for payments but trading is NOT illegal.
+
+| Asset          | 2026 Price (approx.) | 1-Year Change | Risk    | Platform to Buy          |
+|----------------|---------------------|---------------|---------|--------------------------|
+| Bitcoin (BTC)  | ~$95,000            | +85%          | V.High  | Binance, Luno, Paxful    |
+| Ethereum (ETH) | ~$3,800             | +65%          | V.High  | Binance, Luno            |
+| USDT/USDC      | $1.00 (stablecoin)  | 0%            | Low     | Binance P2P              |
+| Solana (SOL)   | ~$180               | +120%         | V.High  | Binance                  |
+
+HOW TO BUY CRYPTO IN KENYA:
+1. Download *Binance* or *Luno* app
+2. KYC with Kenyan ID
+3. Buy via M-Pesa P2P (Binance) or bank transfer (Luno)
+4. Start from as low as KES 500
+
+⚠️ CRITICAL WARNINGS:
+- NO investor protection — if exchange fails, money is gone
+- CBK does NOT regulate crypto — no KDIC insurance
+- NEVER invest more than 5-10% of portfolio in crypto
+- Avoid unknown tokens — stick to BTC, ETH, stablecoins
+- Tax: KRA may treat gains as taxable income (no clear crypto tax law yet)
+
+✅ ADVANTAGES: Highest potential returns, 24/7 trading, global access, no minimum
+❌ DISADVANTAGES: Extreme volatility, no regulation, scam risk, no guarantees
+🎯 BEST FOR: Risk-tolerant investors with stable income elsewhere. Max 5-10% of portfolio.
+
+━━ GOLD & PRECIOUS METALS ━━
+Traditional store of value. Good inflation hedge.
+
+| Method                    | Access        | Min Invest  | Note                     |
+|--------------------------|---------------|-------------|--------------------------|
+| Physical gold (jewellers) | In-person    | KES 5,000   | Purity risk, storage cost|
+| Ndovu (Gold ETF)          | App          | KES 500     | Global gold exposure     |
+| Binance (Gold tokens)     | App          | KES 500     | Digital gold, 24/7 trade |
+| Gold savings (Absa)       | Bank         | KES 10,000  | Bank-backed gold product |
+
+Gold price (April 2026): ~$2,350/oz | KES ~304,000/oz
+Historical return: ~8-12% p.a. over 10 years (USD terms)
+
+✅ ADVANTAGES: Inflation hedge, crisis-proof, globally liquid
+❌ DISADVANTAGES: No yield/dividends, storage costs, price swings
+🎯 BEST FOR: Portfolio diversification (5-10% allocation). Insurance against KES collapse.
+
+━━ LAND & DIRECT REAL ESTATE ━━
+Kenya's most culturally popular investment. Highly illiquid but strong long-term returns.
+
+| Location              | Price/Acre (approx.) | 5-Year Appreciation | Risk    |
+|----------------------|---------------------|---------------------|---------|
+| Nairobi suburbs       | KES 15-50M          | 8-15% p.a.          | Medium  |
+| Kiambu / Ruiru        | KES 5-15M           | 10-20% p.a.         | Medium  |
+| Nakuru / Naivasha     | KES 1-5M            | 8-12% p.a.          | Medium  |
+| Coast (Malindi/Diani) | KES 2-10M           | 5-10% p.a.          | Med-High|
+| Rural agricultural    | KES 200K-2M         | 3-8% p.a.           | High    |
+
+⚠️ LAND BUYING CHECKLIST:
+1. Title deed search at Ministry of Lands
+2. Verify seller identity at Lands office
+3. Survey and confirm beacons
+4. Conduct caveat search (no encumbrances)
+5. Use a licensed advocate for transfer
+6. Pay stamp duty (2-4% of value)
+7. Register transfer at Lands office
+
+✅ ADVANTAGES: Tangible asset, cultural status, rental income, appreciation
+❌ DISADVANTAGES: Highly illiquid, fraud risk, no yield until developed, high entry cost
+🎯 BEST FOR: Long-term wealth building (5-20 year horizon). Always do due diligence.
+
+━━ AGRICULTURE & AGRIBUSINESS INVESTMENT ━━
+Kenya is an agricultural economy. Opportunities in tea, coffee, avocado, macadamia, dairy.
+
+| Product            | Expected Return | Min Invest  | Timeframe  | Risk    |
+|-------------------|----------------|-------------|------------|---------|
+| Macadamia farming  | 15-25% p.a.    | KES 500K    | 3-5 years  | Medium  |
+| Avocado export     | 12-20% p.a.    | KES 200K    | 2-3 years  | Medium  |
+| Dairy farming      | 10-18% p.a.    | KES 300K    | 1-3 years  | Medium  |
+| Greenhouse farming | 15-30% p.a.    | KES 150K    | 6-12 months| Med-High|
+| Poultry (layers)   | 20-35% p.a.    | KES 100K    | 6-12 months| Medium  |
+| Coffee cooperative  | 8-15% p.a.     | KES 50K     | Annual     | Medium  |
+| Tea (KTDA)         | 8-12% p.a.     | Membership  | Annual     | Low-Med |
+
+Platforms: *FarmDrive*, *Twiga Foods*, *Selina Wamucii*, *Apollo Agriculture*
+
+✅ ADVANTAGES: High returns, tangible assets, food security, government subsidies
+❌ DISADVANTAGES: Weather/pest risk, illiquid, labour-intensive, market price fluctuation
+🎯 BEST FOR: Investors seeking diversification outside financial markets.
+
+━━ FINTECH & DIGITAL INVESTMENT PLATFORMS ━━
+Complete list of Kenya's investment technology platforms:
+
+| Platform       | What It Does                          | Min Invest | Key Product            |
+|---------------|---------------------------------------|------------|------------------------|
+| Ziidi          | MMFs + NSE stocks via M-Pesa          | KES 100    | Etica MMF, NSE trades  |
+| Ndovu          | Global ETFs (S&P 500, bonds, gold)    | KES 500    | International ETFs     |
+| Hisa (by AIB)  | NSE stock trading mobile app           | KES 1,000  | NSE direct trading     |
+| Lofty Corpin   | High-yield MMF platform               | KES 1,000  | Lofty MMF (17.5%)      |
+| Mali by M-Pesa | Lock savings, earn interest           | KES 500    | Term deposits          |
+| M-Shwari       | Quick savings & loans via M-Pesa      | KES 1      | Micro-savings/loans    |
+| KCB M-Pesa     | Savings & loans via M-Pesa + KCB      | KES 1      | Quick personal loans   |
+| Fuliza         | M-Pesa overdraft facility             | Auto       | Emergency overdraft    |
+| Mansa-X        | Global multi-asset fund               | KES 250K   | Hedge fund strategy    |
+| Binance        | Crypto trading (P2P with M-Pesa)      | KES 500    | BTC, ETH, stablecoins  |
+| Luno           | Crypto buying (bank transfer)         | KES 500    | BTC, ETH               |
+
+━━ FOREX TRADING IN KENYA ━━
+Regulated by CMA since 2017. Only trade with CMA-licensed forex brokers.
+
+CMA-LICENSED FOREX BROKERS:
+| Broker              | Regulation | Min Deposit | Leverage | Platform    |
+|--------------------|------------|-------------|----------|-------------|
+| Scope Markets       | CMA Kenya  | $100        | 1:400    | MT4/MT5     |
+| Pepperstone (Kenya) | CMA Kenya  | $200        | 1:400    | MT4/MT5     |
+| FXPesa              | CMA Kenya  | $5          | 1:400    | MT4         |
+| EGM Securities      | CMA Kenya  | $100        | 1:200    | MT4         |
+| HF Markets          | CMA Kenya  | $5          | 1:1000   | MT5         |
+
+⚠️ FOREX WARNINGS:
+- 75-85% of retail forex traders LOSE money
+- Use ONLY CMA-licensed brokers — unlicensed = scam
+- NEVER invest money you can't afford to lose
+- Start with a DEMO account before using real money
+- Avoid "signal sellers" and "guaranteed profit" schemes
+
+🎯 BEST FOR: Experienced traders only. NOT a savings or investment strategy.
+
+━━ DIGITAL LENDING & MICROFINANCE ━━
+Mobile lending apps — use ONLY for emergencies. Most charge 7-15% per MONTH.
+
+| App/Platform       | Interest Rate      | Max Loan    | Speed      | CRB Reported? |
+|-------------------|-------------------|-------------|------------|---------------|
+| Fuliza (M-Pesa)   | 1.083%/day         | Up to 70K   | Instant    | Yes           |
+| M-Shwari          | 7.5%/month         | Up to 50K   | Instant    | Yes           |
+| KCB M-Pesa        | 7.35%/month        | Up to 1M    | Instant    | Yes           |
+| Tala              | 8-15%/month        | Up to 50K   | Minutes    | Yes           |
+| Branch            | 5-15%/month        | Up to 70K   | Minutes    | Yes           |
+| Zenka             | 7-15%/month        | Up to 30K   | Minutes    | Yes           |
+
+⚠️ CRITICAL: Digital loans at 7-15%/month = 84-180% p.a.! 
+Meanwhile MMFs earn 15-18% p.a. ALWAYS invest first, borrow LAST.
+Unpaid digital loans destroy your CRB score → blocks future bank loans & mortgages.
+
+🎯 BEST FOR: ONLY genuine emergencies. Pay back ASAP. Never borrow to invest.
+
+━━ KENYA'S FINANCIAL REGULATORS ━━
+Know who protects your money:
+
+| Regulator | Full Name                              | What They Regulate                    |
+|-----------|---------------------------------------|---------------------------------------|
+| CBK       | Central Bank of Kenya                  | Banks, forex, monetary policy, T-Bills|
+| CMA       | Capital Markets Authority              | NSE, unit trusts, MMFs, forex brokers |
+| IRA       | Insurance Regulatory Authority         | Insurance companies, takaful          |
+| RBA       | Retirement Benefits Authority          | Pension funds, retirement schemes     |
+| SASRA     | SACCO Societies Regulatory Authority   | Deposit-taking SACCOs                 |
+| KDIC      | Kenya Deposit Insurance Corporation     | Bank deposit insurance (up to KES 500K)|
+
+INVESTOR PROTECTION:
+- Bank deposits: KDIC insured up to KES 500,000 per depositor per bank
+- MMFs: CMA regulated, funds held by independent custodian (NOT the fund manager)
+- SACCOs: SASRA regulated, but no KDIC-style insurance
+- Crypto: NO protection — unregulated
+- Forex: CMA-regulated brokers only — check cma.or.ke for licensed list
+
+━━ TAX OPTIMIZATION FOR INVESTORS ━━
+Kenya Revenue Authority (KRA) tax rules every investor must know:
+
+| Income Type           | Tax Rate    | How to Optimize                       |
+|----------------------|-------------|---------------------------------------|
+| Employment income     | 10-30% PAYE | Max pension contributions (KES 30K/mo)|
+| Bank interest         | 15% WHT     | Use MMFs instead (same WHT, higher yield)|
+| MMF interest          | 15% WHT     | Already withheld, no action needed    |
+| T-Bill/Bond interest  | 15% WHT     | Buy IFB Bonds — WHT EXEMPT!           |
+| IFB Bond interest     | 0% (exempt!) | Best tax-efficient yield in Kenya     |
+| NSE dividends         | 15% WHT     | Withheld at source                    |
+| Capital gains (property)| 15% CGT   | Hold for 20+ years for natural inflation hedge|
+| Capital gains (shares)| 0% CGT      | NO capital gains tax on NSE trades!   |
+| Pension contributions | Tax-deductible| Up to KES 30K/month = saves KES 9K/month|
+| Insurance premiums    | Tax relief   | Up to KES 5,000/month relief         |
+| Rental income         | 7.5% or 30% | 7.5% for <KES 15M annual rent        |
+
+💰 TOP TAX HACKS FOR KENYANS:
+1. Max your pension: saves KES 108,000/year in taxes
+2. Buy IFB Bonds: 18.46% completely tax-free
+3. Trade NSE stocks: NO capital gains tax!
+4. Insurance relief: save up to KES 5K/month
+5. NSSF Tier II: voluntary contributions are tax-deductible
+
+━━ FINANCIAL LITERACY ESSENTIALS ━━
+Key concepts every Kenyan investor MUST understand:
+
+📐 COMPOUND INTEREST (most powerful force):
+- KES 100K at 17% for 10 years = KES 480,683 (4.8x your money!)
+- KES 100K at 17% for 20 years = KES 2,310,879 (23x!)
+- Rule of 72: divide 72 by your return % = years to double
+  → 72 ÷ 17% = 4.2 years to double your money in Etica MMF
+
+📊 INFLATION (the invisible tax):
+- Kenya inflation: ~4.9% (2026)
+- If your money earns less than 4.9%, you're LOSING purchasing power
+- M-Shwari at 2-5% = LOSING money to inflation
+- MMFs at 15-18% = BEATING inflation by 10-13% = real wealth growth
+
+🏦 THE 50/30/20 RULE:
+- 50% needs (rent, food, transport, utilities)
+- 30% wants (entertainment, dining, shopping)
+- 20% savings & investments (MINIMUM)
+- Better target for Kenya: 30% savings if possible
+
+🎯 EMERGENCY FUND:
+- Keep 3-6 months of expenses in a liquid MMF
+- Example: Monthly expenses KES 50K → Emergency fund = KES 150K-300K in Etica/Ziidi MMF
+- NOT in M-Shwari (2-5%) — use an MMF (15-18%) for your emergency fund
+
+━━ COMMON INVESTMENT SCAMS IN KENYA ━━
+⚠️ PROTECT YOURSELF — If it sounds too good to be true, it IS.
+
+RED FLAGS:
+- "Guaranteed" returns above 25% p.a. — NO legitimate investment guarantees that
+- Unlicensed "fund managers" on social media — check cma.or.ke for licensed list
+- Forex "signal sellers" promising daily profits — 85% of forex traders lose money
+- Pyramid/Ponzi schemes (pay old investors with new money) — always collapse
+- "Double your money in 30 days" — ALWAYS a scam
+- Crypto scams: fake exchanges, rug pulls, pump-and-dump tokens
+
+LEGITIMATE CHECK:
+1. Is the fund manager listed on cma.or.ke? → If not, DON'T invest
+2. Is the bank listed on cbk.co.ke? → If not, DON'T deposit
+3. Is the SACCO listed on sasra.go.ke? → If not, DON'T join
+4. Does it promise "guaranteed" returns above 20%? → Probably a scam
+
+Real yields in Kenya (April 2026): 13-18% for legitimate investments. Anything higher needs EXTREME due diligence.
+
+━━ MORTGAGE & HOME OWNERSHIP ━━
+Kenya mortgage rates are high. Consider alternatives.
+
+| Lender              | Rate (p.a.) | Max Term | Max Amount  | LTV   |
+|--------------------|-------------|----------|-------------|-------|
+| KCB Bank           | 12.5%       | 25 years | KES 100M    | 90%   |
+| Stanbic Bank       | 12.0%       | 25 years | KES 50M     | 90%   |
+| NCBA Bank          | 13.0%       | 20 years | KES 50M     | 80%   |
+| HF Group           | 13.5%       | 25 years | KES 50M     | 90%   |
+| Equity Bank        | 13.0%       | 25 years | KES 80M     | 85%   |
+| Kenya Mortgage Refinance| 12.0%  | 25 years | via banks   | —     |
+
+AFFORDABLE HOUSING:
+- Government Affordable Housing Levy: 1.5% of salary (mandatory)
+- Access through Boma Yangu portal (bomayangu.go.ke)
+- Units from KES 1M for 1-bedroom in Nairobi
+
+💡 SMART MOVE: Instead of rushing into a mortgage at 13%, invest in MMFs at 17% first. Build your deposit to 40-50%, then take a smaller mortgage. Mathematical advantage: your MMF return EXCEEDS the mortgage rate.
+
+━━ SME & BUSINESS FINANCING ━━
+For entrepreneurs and small business owners:
+
+| Source                | Rate       | Max Amount | Speed     | Best For             |
+|----------------------|------------|------------|-----------|----------------------|
+| Stawi (CBK)          | 9% p.a.    | KES 250K   | 48 hours  | Micro/small business |
+| Kenya Industrial Estates | 12% p.a.| KES 5M     | 2-4 weeks | Manufacturing        |
+| Youth Enterprise Fund | 8% p.a.   | KES 500K   | 2 weeks   | Youth (18-35)        |
+| Women Enterprise Fund | 8% p.a.   | KES 500K   | 2 weeks   | Women entrepreneurs  |
+| Uwezo Fund           | 8% p.a.    | KES 500K   | 2-4 weeks | Youth/Women/PWDs     |
+| GroFin               | 12-15% p.a.| KES 50M    | 4-8 weeks | Growth-stage SMEs    |
+
+━━ EDUCATION SAVINGS PLANS ━━
+Planning for school fees — start early, let compound interest work.
+
+| Product                    | Return   | Min Monthly | Best For          |
+|---------------------------|----------|-------------|-------------------|
+| Britam Education Plan      | 10-14%   | KES 2,000   | Primary/Secondary |
+| Old Mutual Education Plan  | 10-12%   | KES 3,000   | University        |
+| CIC Education Endowment    | 9-12%    | KES 2,000   | All levels        |
+| MMF regular savings        | 15-18%   | KES 100     | Flexible          |
+
+Example: Save KES 5,000/month in Etica MMF (17%) from birth:
+- At age 6 (primary): KES 451,000
+- At age 14 (secondary): KES 1,280,000
+- At age 18 (university): KES 2,110,000
+
 ━━ KEY FACTS FOR AI RESPONSES ━━
 - Kenya's savings account rate: ~4% p.a. (KCB, Equity, Co-op)
 - Inflation rate: ~4.9% (Feb 2026, KNBS)
@@ -485,6 +762,8 @@ Mansa-X is Kenya's most well-known actively managed multi-asset fund.
 - USD/KES: ~129.50
 - EUR/KES: ~142.30
 - GBP/KES: ~164.80
+- Gold: ~$2,350/oz (~KES 304,000/oz)
+- Bitcoin: ~$95,000 (~KES 12.3M)
 
 ━━ INVESTMENT COMPARISON FRAMEWORK ━━
 When comparing instruments, always consider:
@@ -493,6 +772,8 @@ When comparing instruments, always consider:
 3. *Risk* — government-backed vs CMA-regulated vs market-linked
 4. *Minimum entry* — accessibility for this investor
 5. *Tax treatment* — WHT, CGT, pension deductions
+6. *Regulation* — CBK, CMA, SASRA, IRA, RBA
+7. *Insurance* — KDIC (banks), CMA custodian (MMFs), none (crypto)
 
 ━━ QUICK REFERENCE: BEST FOR EACH GOAL ━━
 • Emergency fund (access in 1-2 days): → *Etica MMF (Zidi)* at *~17.5%* (download Zidi app)
@@ -508,6 +789,14 @@ When comparing instruments, always consider:
 • Best NSE growth: → EQTY, KCB, Stanbic — all up 18-28% YTD
 • REITs (real estate): → ILAM Fahari REIT (*6.5%* dividend)
 • Global exposure: → Ndovu ETFs (S&P 500 from KES 500), Cytonn Dollar Fund
+• Crypto (high risk): → Binance P2P via M-Pesa (BTC, ETH only, max 5-10% portfolio)
+• Gold hedge: → Ndovu Gold ETF from KES 500
+• Agriculture: → Macadamia/avocado via FarmDrive, poultry from KES 100K
+• Global hedge fund: → Mansa-X (KES 250K+ min, SIB managed)
+• Education savings: → Britam Education Plan or regular MMF savings
+• Home ownership: → Build deposit in MMF first, then take smaller mortgage
+• Business startup: → Youth Enterprise Fund, Uwezo Fund, Stawi (CBK)
+• Sharia-compliant: → Amana Capital MMF, Gulf African Bank, Kenya Ijara Sukuk
 `;
 
 // ─── Context builders ─────────────────────────────────────────────────────────
