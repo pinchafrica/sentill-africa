@@ -405,7 +405,7 @@ Each point = 2 sentences. WhatsApp plain text only. No bullet points — use lin
     `› Reply *MENU* — All options\n\n` +
     (isPremium
       ? `🔐 *Pro Dashboard:* ${appUrl}/dashboard\n\n`
-      : `💡 _Upgrade to Pro for unlimited AI + portfolio tracking._\n_Reply *SUBSCRIBE* — from KES 99/week._\n\n`
+      : `💡 _Upgrade to Pro for unlimited AI + portfolio tracking._\n_Reply *SUBSCRIBE* — KES 490/month._\n\n`
     ) +
     `━━━━━━━━━━━━━━━━━━\n` +
     `_Have a profitable week!_ 💪🇰🇪\n` +

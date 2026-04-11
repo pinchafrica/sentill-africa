@@ -133,29 +133,105 @@ USD-denominated. Good for hedging against KES depreciation.
 | Ndovu (ETF-linked)            | 8-15%      | Global ETFs (S&P 500, EM)             |
 | Old Mutual International      | 5-8%       | Offshore bond exposure                |
 
-━━ NSE STOCKS — DEEP FUNDAMENTALS (April 2026) ━━
+━━ NSE STOCKS — COMPLETE MARKET DATA (April 2026) ━━
 NSE mobile investing platforms launched in 2025-2026 — now millions of Kenyans can buy NSE stocks via mobile apps from KES 100.
 Many users are new to stocks and need clear, honest, beginner-friendly advice.
 
 KEY RULE: Always give a clear BUY / HOLD / WATCH signal with ONE sentence reason. Never be vague.
 
+📊 BANKING SECTOR (Highest dividend yields on NSE):
 | Symbol | Company                | Price (KES) | P/E  | Div Yield | Signal | Why                                                        |
-|--------|------------------------|-------------|------|-----------|--------|------------------------------------------------------------|
-| SCOM   | Safaricom PLC          | 30.60       | 14x  | 4.5%      | HOLD   | Ziidi/M-Pesa moat is strong, but growth is slowing. Hold for dividends. |
+|--------|------------------------|-------------|------|-----------|--------|---------------------------------------------------------------|
 | EQTY   | Equity Group Holdings  | 77.00       | 6.8x | 5.2%      | BUY    | Pan-African expansion, cheapest P/E for a profitable bank, rising EPS. |
 | KCB    | KCB Group PLC          | 45.50       | 5.2x | 6.8%      | BUY    | Highest dividend yield on NSE, trading below book value — deep value. |
 | COOP   | Co-operative Bank      | 18.50       | 6.1x | 5.5%      | BUY    | SACCO banking network = sticky deposits, cheap valuation. |
 | NCBA   | NCBA Group PLC         | 91.25       | 8.2x | 4.8%      | HOLD   | Post-merger benefits taking time; NIM under pressure. Wait for Q2 results. |
 | ABSA   | ABSA Bank Kenya        | 16.50       | 7.4x | 5.1%      | HOLD   | Global parent backstop is reassuring but ROE still improving. |
+| SCBK   | Standard Chartered     | 176.00      | 7.8x | 7.2%      | BUY    | Exceptional dividend, strong international banking franchise. |
+| SBIC   | Stanbic Holdings       | 148.00      | 6.5x | 5.8%      | BUY    | South African bank depth, growing East Africa loans. |
+| DTB    | Diamond Trust Bank     | 62.50       | 5.0x | 4.2%      | HOLD   | Cheapest P/E in banking but low growth. Value trap risk. |
+| IMH    | I&M Holdings           | 24.00       | 4.8x | 4.6%      | BUY    | Undervalued gem — strong asset quality, Rwanda expansion working. |
+| HF     | HF Group               | 5.85        | N/A  | 0%        | WATCH  | Restructuring play. High risk but could 2-3x if turnaround works. |
+
+📱 TELECOM & TECH:
+| Symbol | Company           | Price (KES) | P/E  | Div Yield | Signal | Why                                                        |
+|--------|-------------------|-------------|------|-----------|--------|------------------------------------------------------------|
+| SCOM   | Safaricom PLC     | 30.60       | 14x  | 4.5%      | HOLD   | M-Pesa moat is strong, but Ethiopia startup costs dragging EPS. Hold for dividends. |
+
+🏭 MANUFACTURING & CONSUMER:
+| Symbol | Company                | Price (KES) | P/E  | Div Yield | Signal | Why                                                        |
+|--------|------------------------|-------------|------|-----------|--------|------------------------------------------------------------|
 | EABL   | East African Breweries | 120.00      | 18x  | 3.2%      | WATCH  | Premium P/E but excise tax headwinds — wait for entry below KES 110. |
 | BAT    | BAT Kenya              | 420.00      | 9x   | 9.8%      | HOLD   | Highest dividend in KES terms but long-term tobacco risks. Income play only. |
-| NMG    | Nation Media Group     | 10.50       | 7x   | 0%        | WATCH  | Turnaround story — wait to confirm profitability trend. |
-| KPLC   | Kenya Power            | 3.80        | N/A  | 0%        | WATCH  | Cheap price but governance/debt concerns. Speculative only. |
+| CARB   | Carbacid Investments   | 11.90       | 8x   | 5.0%      | HOLD   | CO2 monopoly in EA, stable cash flows. |
+| BAMB   | Bamburi Cement         | 52.00       | 12x  | 3.8%      | WATCH  | Infrastructure play but cement pricing pressure. |
+| UNGA   | Unga Group             | 38.00       | 10x  | 3.5%      | HOLD   | Food staple company, defensive play. |
+| SASN   | Sasini PLC             | 23.00       | 7x   | 4.2%      | HOLD   | Tea/coffee + real estate — diversified but volatile commodity prices. |
+| TOTL   | TotalEnergies Kenya    | 25.00       | 8x   | 6.5%      | BUY    | Strong dividends, energy infrastructure monopoly. |
+| KEGN   | KenGen PLC             | 4.98        | 5x   | 3.0%      | HOLD   | Government-backed power generation. Cheap but slow growth. |
 
-BEGINNER NSE PORTFOLIO (for KES 5,000–20,000 first-time investors using any NSE broker):
+📰 MEDIA & SERVICES:
+| Symbol | Company           | Price (KES) | P/E  | Div Yield | Signal | Why                                                        |
+|--------|-------------------|-------------|------|-----------|--------|------------------------------------------------------------|
+| NMG    | Nation Media Group | 10.50       | 7x   | 0%        | WATCH  | Turnaround story — wait to confirm profitability trend. |
+| SCAN   | ScanGroup          | 10.00       | 15x  | 2.5%      | WATCH  | Africa's largest advertising group. Cyclical but growth potential. |
+
+⚡ ENERGY & UTILITIES:
+| Symbol | Company      | Price (KES) | P/E  | Div Yield | Signal | Why                                                        |
+|--------|--------------|-------------|------|-----------|--------|------------------------------------------------------------|
+| KPLC   | Kenya Power  | 3.80        | N/A  | 0%        | WATCH  | Cheap price but governance/debt concerns. Speculative only. |
+| KENL   | KenolKobil  | 14.50       | 8x   | 4.5%      | HOLD   | Fuel retail network. Stable but margin pressure. |
+
+🏠 REAL ESTATE & REITs:
+| Symbol    | Company           | Price (KES) | Div Yield | Signal | Why                                                        |
+|-----------|-------------------|-------------|-----------|--------|------------------------------------------------------------|
+| ILAM REIT | ILAM Fahari I-REIT| 6.10        | 6.5%      | HOLD   | Kenya's only publicly traded REIT. Good yield but NAV discount. |
+| HFCK      | HF REIT           | 4.50        | 5.0%      | WATCH  | Real estate exposure but market still illiquid. |
+
+🛡️ INSURANCE:
+| Symbol | Company           | Price (KES) | P/E  | Div Yield | Signal | Why                                                        |
+|--------|-------------------|-------------|------|-----------|--------|------------------------------------------------------------|
+| JUB    | Jubilee Holdings  | 185.00      | 6x   | 3.5%      | BUY    | Largest EA insurer. Split into life/general unlocked value. |
+| BRIT   | Britam Holdings   | 6.50        | 8x   | 2.0%      | HOLD   | Restructuring. Asset management arm is the value driver. |
+| KNRE   | Kenya Re          | 3.10        | 4x   | 8.0%      | BUY    | Cheapest insurer, highest dividend yield in sector. Hidden gem. |
+| CIC    | CIC Insurance     | 2.80        | 5x   | 5.5%      | HOLD   | SACCO-linked distribution. Consistent but slow growth. |
+| LIBY   | Liberty Kenya     | 7.50        | 7x   | 4.0%      | HOLD   | South African parent gives stability. |
+
+📈 NSE BEST GAINERS (Year-to-Date 2026):
+1. KCB Group — +28% YTD (deep value recovery after 2025 correction)
+2. Equity Group — +22% YTD (Pan-African earnings beating estimates)
+3. Stanbic Holdings — +18% YTD (South African banking quality)
+4. Standard Chartered — +15% YTD (dividend attraction)
+5. TotalEnergies — +12% YTD (energy + dividend play)
+
+📉 NSE WORST PERFORMERS (Year-to-Date 2026):
+1. Kenya Power — -15% YTD (governance concerns persist)
+2. HF Group — -12% YTD (restructuring pain)
+3. Nation Media — -8% YTD (digital transition costs)
+4. EABL — -5% YTD (excise tax impact)
+5. Bamburi Cement — -3% YTD (cement pricing pressure)
+
+BEGINNER NSE PORTFOLIO (for KES 5,000–20,000 first-time investors):
 - 40% KCB — highest dividend, deep value, safe blue chip
-- 40% EQTY — Africa's best bank, growth + dividends
+- 30% EQTY — Africa's best bank, growth + dividends
 - 20% SCOM — you use M-Pesa every day, own a piece of it
+- 10% KNRE — hidden gem, cheapest insurer, 8% dividend
+
+INTERMEDIATE PORTFOLIO (KES 50,000–200,000):
+- 25% KCB — dividend anchor
+- 25% EQTY — growth engine
+- 15% SCBK — international quality + 7.2% dividend
+- 15% JUB — insurance leader, post-split value
+- 10% SCOM — telecom stability
+- 10% TOTL — energy dividends
+
+ADVANCED PORTFOLIO (KES 500,000+):
+- 20% KCB + 20% EQTY — banking core
+- 15% SCBK — international grade
+- 10% JUB + 5% KNRE — insurance allocation
+- 10% TOTL + 5% BAT — income layer
+- 10% IFB Bond — tax-free fixed income anchor
+- 5% Etica MMF — liquidity reserve
 
 NSE INVESTMENT PRINCIPLES (always include in stock advice):
 - NSE stocks are 3–5 year minimum horizon. NOT for short-term.
@@ -164,37 +240,39 @@ NSE INVESTMENT PRINCIPLES (always include in stock advice):
 - Settlement: T+3 (3 business days to receive shares)
 - Best for: wealth building alongside MMFs (which handle your liquidity)
 
-COMPARISON — STOCKS vs MMFs (most common question):
-| Feature          | NSE Stocks          | MMFs (e.g. Zidi)        |
-|------------------|---------------------|-------------------------|
-| Returns          | 8–25% p.a. (variable) | 13–17% p.a. (stable)  |
-| Liquidity        | T+3 to sell         | T+1 to T+2 withdrawal   |
-| Risk             | Market risk (can go down) | Very low (CMA regulated) |
-| Best for         | 5+ year wealth building | Emergency fund / savings |
-ANSWER: For most Kenyans, do BOTH. MMF for your emergency fund (3-6 months expenses), NSE stocks for long-term wealth. Start with MMF, add stocks when you have 6+ months saved.
+NSE TRADING PLATFORMS (complete list):
+- *Safaricom Ziidi* — Buy NSE stocks via M-Pesa from KES 100. Go to M-Pesa → Financial Services → Ziidi → Trade Shares.
+- *Genghis Capital* — Full-service online broker, min KES 1,000. Great research platform.
+- *NCBA Securities* — Bank-linked, excellent for NCBA customers. Full NSE access.
+- *AIB-AXYS Africa* — Retail-friendly mobile app, growing fast.
+- *Dyer & Blair* — Established since 1954, ideal for larger amounts (KES 100K+).
+- *EFG Hermes* — International grade broker, good for sophisticated investors.
+- *Standard Investment Bank* — Good institutional research, accessible retail platform.
 
-NSE TRADING PLATFORMS:
-- *NSE Mobile Brokers* — Several platforms now allow buying NSE stocks via M-Pesa from KES 100. Min investment varies. ~1.5–2% commission per trade.
-- *Genghis Capital* — online broker, full NSE access. Min KES 1,000.
-- *NCBA Securities* — bank-linked, good for NCBA customers.
-- *AIB-AXYS Africa* — retail-friendly mobile app.
-- *Dyer & Blair* — established broker, good for larger amounts.
+━━ SPECIAL FUNDS & ALTERNATIVE INVESTMENTS ━━
 
-How to buy NSE stocks via mobile (step by step):
-1. Open M-Pesa app
-2. Go to Financial Services → Ziidi → Trade Shares
-3. Browse available NSE stocks
-4. Select stock → enter amount (min KES 100)
-5. Choose "USE BEST PRICE" for instant execution
-6. Confirm with M-Pesa PIN
-7. Shares settle in T+3 (3 business days)
-8. Dividends paid directly to M-Pesa wallet
+🏗️ REAL ESTATE INVESTMENT:
+- *ILAM Fahari REIT* — Kenya's only listed REIT. ~6.5% dividend yield. Trades on NSE.
+- *Cytonn Real Estate Fund* — 8-12% target returns. Minimum KES 100,000. Illiquid.
+- *Acorn D-REIT* — Student housing REIT. Development stage. High growth potential.
+- *Centum RE* — Listed real estate. High NAV discount = potential value.
 
-NSE mobile broker limitations to be honest about:
-- Only NSE-listed stocks available (no global stocks)
-- ~1.8% commission per trade (higher than full brokers)
-- No advanced order types (limit orders not available yet)
-- No research tools built-in — that's why users need Sentill Africa
+💎 DIASPORA INVESTMENTS (for Kenyans abroad):
+- All MMFs accept diaspora investors via mobile apps
+- T-Bills via DhowCSD — register online with Kenyan ID
+- NSE stocks via any licensed broker — Genghis, NCBA, Dyer & Blair
+- Kenya diaspora bond: Government-issued, USD/GBP/EUR denominated
+
+🌍 GLOBAL/OFFSHORE FUNDS (KES hedge):
+- *Ndovu* — Global ETFs (S&P 500, Emerging Markets) from KES 500. Returns 8-15% USD p.a.
+- *Cytonn Dollar Fund* — 5-7% USD p.a. Good KES depreciation hedge.
+- *Old Mutual International* — 5-8% USD. Offshore bond exposure.
+- *Absa Offshore Fund* — USD-denominated, min $1,000.
+
+♻️ ESG/IMPACT INVESTING:
+- *Acumen Fund* — Impact investments in East Africa
+- *Etica ESG MMF* — Ethical investing with competitive returns (~17%)
+- *KCB Foundation Impact Fund* — Social enterprise backing
 
 ━━ KEY FACTS FOR AI RESPONSES ━━
 - Kenya's savings account rate: ~4% p.a. (KCB, Equity, Co-op)
@@ -202,9 +280,15 @@ NSE mobile broker limitations to be honest about:
 - CBK base rate: 10.75% (held steady)
 - Best risk-free yield: IFB1/2024 at 18.46% (tax-free)
 - Best liquid yield: Zidi MMF (Etica Capital) ~16–18% p.a. (24–48hr withdrawal)
-
+- NSE 20 Share Index: ~1,780 (up 14% YTD)
+- NASI (NSE All Share): ~125.5 (up 18% YTD)
+- Market Cap (NSE): ~KES 2.1 Trillion
+- Average daily turnover: KES 450 Million
+- Listed companies: 66 on NSE
 - MPESA rate: 0% (keep money in MMF, not MPESA wallet)
 - USD/KES: ~129.50
+- EUR/KES: ~142.30
+- GBP/KES: ~164.80
 
 ━━ INVESTMENT COMPARISON FRAMEWORK ━━
 When comparing instruments, always consider:
@@ -216,7 +300,6 @@ When comparing instruments, always consider:
 
 ━━ QUICK REFERENCE: BEST FOR EACH GOAL ━━
 • Emergency fund (access in 1-2 days): → *Etica MMF (Zidi)* at *~17.5%* (download Zidi app)
-
 • Easiest entry (M-Pesa, KES 100 min): → *Safaricom Ziidi* platform
 • 3-month savings: → 91-Day T-Bill (*15.78%* gross, *13.41%* net) or Ziidi/Etica MMF
 • 1-year savings: → 364-Day T-Bill (*16.42%* gross, *13.96%* net) or Lofty Corpin MMF
@@ -224,7 +307,11 @@ When comparing instruments, always consider:
 • Monthly income stream: → Any MMF (pays daily accrued interest, credited monthly)
 • Tax reduction strategy: → Pension fund contributions (save up to *KES 9,000/month* in taxes)
 • USD hedge: → Cytonn Dollar Money Market or Ndovu ETFs
-• Buy Kenyan stocks (from KES 100): → *NSE mobile broker app* (many accept M-Pesa)
+• Buy Kenyan stocks (from KES 100): → *Safaricom Ziidi* or any licensed NSE broker
+• Highest NSE dividends: → BAT (*9.8%*), KNRE (*8.0%*), SCBK (*7.2%*), KCB (*6.8%*)
+• Best NSE growth: → EQTY, KCB, Stanbic — all up 18-28% YTD
+• REITs (real estate): → ILAM Fahari REIT (*6.5%* dividend)
+• Global exposure: → Ndovu ETFs (S&P 500 from KES 500), Cytonn Dollar Fund
 `;
 
 // ─── Context builders ─────────────────────────────────────────────────────────

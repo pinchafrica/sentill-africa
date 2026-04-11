@@ -212,11 +212,8 @@ export async function GET(req: Request) {
             `✅ Daily AI market briefs\n` +
             `✅ Goal planning engine\n\n` +
             `━━━━━━━━━━━━━━━━━━\n` +
-            `💰 *Renew from just KES 99:*\n\n` +
-            `📱 1 Week — *KES 99*\n` +
-            `📅 1 Month — *KES 349* _(save 12%)_\n` +
-            `🏆 3 Months — *KES 999* _(save 24%)_\n` +
-            `🌟 Annual — *KES 2,999* _(save 36%)_\n\n` +
+            `💎 *Renew Sentill Pro — KES 490/month*\n\n` +
+            `One plan. Every feature. ≈ KES 16/day.\n\n` +
             `Reply *RENEW* or visit:\nhttps://sentill.africa/packages`,
             user.id
           );
