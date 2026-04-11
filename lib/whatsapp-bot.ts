@@ -705,7 +705,18 @@ async function handleGeminiQuestion(waId: string, question: string, userId: stri
     console.error("[Bot] Gemini AI error:", err);
     return sendWhatsAppMessage(
       waId,
-      `⚠️ *AI temporarily unavailable*.\n\nPlease try again in a moment, or use:\n• *MENU* — main menu\n• *MARKETS* — live rates\n• *INVEST* — browse investments`
+      `🧠 *Sentill Africa Says:*\n\n` +
+      `I'm processing a LOT of intelligence right now! ⚡\n\n` +
+      `While I reload, here's your quick cheat sheet:\n` +
+      `▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰\n\n` +
+      `🏆 *Top Yields Right Now:*\n` +
+      `• *IFB Bond* — *18.46%* WHT-free\n` +
+      `• *Etica MMF (Zidi)* — *~17.5%* liquid\n` +
+      `• *Lofty Corpin MMF* — *17.50%*\n\n` +
+      `📲 *Easiest way to start:*\n` +
+      `M-Pesa → Financial Services → *Ziidi* → Invest from KES 100\n\n` +
+      `💬 Try your question again! I'm ready.\n\n` +
+      `_S-Tier Institutional Wealth Intelligence_ 🇰🇪\n_sentill.africa_`
     );
   }
 }
@@ -760,7 +771,15 @@ async function handleGeminiQuestionGuest(waId: string, question: string) {
     console.error("[Bot] Guest Gemini error:", err);
     return sendWhatsAppMessage(
       waId,
-      `⚠️ *AI temporarily unavailable*. Send *MENU* for options.`
+      `🧠 *Sentill Africa Says:*\n\n` +
+      `I'm crunching the latest market data! ⚡\n\n` +
+      `Here's your quick guide while I reload:\n` +
+      `▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰\n\n` +
+      `🏆 *Start here:*\n` +
+      `• Open M-Pesa → Financial Services → *Ziidi*\n` +
+      `• Invest from KES 100 — earn *16-17%* p.a.\n\n` +
+      `💬 Try your question again! I'll be right back.\n\n` +
+      `_S-Tier Institutional Wealth Intelligence_ 🇰🇪\n_sentill.africa_`
     );
   }
 }

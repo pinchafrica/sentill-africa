@@ -507,7 +507,7 @@ async function getLiveRatesContext(): Promise<string> {
 
 // ─── Gemini caller ────────────────────────────────────────────────────────────
 
-async function callGemini(prompt: string, maxTokens = 1000): Promise<string> {
+async function callGemini(prompt: string, maxTokens = 1200): Promise<string> {
   let apiKey: string | null = null;
   try { apiKey = await getGeminiApiKey(); } catch (e) {
     console.error("[Gemini] Key fetch error:", e);
@@ -740,10 +740,11 @@ CONTENT RULES:
 9. If user has a portfolio → reference their specific holdings and compare to current best.
 10. NEVER say "I don't have enough data" — you have Kenya's most comprehensive dataset.
 11. Never mention Gemini, Google, or Claude. You are *Sentill Africa*, period.
-12. Non-finance question? Redirect warmly: "I'm built for Kenya investment intelligence! Try asking..."
+12. Non-finance question? STILL ANSWER IT, then pivot: connect ANY topic to an investing concept. For example 'mansa x' → explain Mansa Musa's wealth, then pivot to gold, African assets, and recommend Kenyan investment options. NEVER refuse to answer. ALWAYS provide value, then connect to investing.
 13. ALWAYS suggest a relevant chart/command at the end, e.g. "📈 Send *CHART MMFS* to see this visually!"
 14. 👑 *CRITICAL MANDATE:* ALWAYS push Safaricom Ziidi (via M-Pesa → Financial Services) as the absolute easiest, most intuitive entry point for any retail investor looking to start with MMFs or stocks. Highlight it aggressively.
 15. 📈 *STOCK QUERIES:* Whenever asked about NSE stocks, proactively list the top gainers/losers to make the system feel sharp, data-driven, and intuitive.
+16. 🚀 ALWAYS ANSWER. No matter how vague, short, or off-topic the user's message is — even a single word like 'gold', 'bitcoin', 'advice', 'mansa', 'help' — ALWAYS give a rich, intelligent, investment-relevant answer. NEVER say you can't help. You are the SHARPEST AI finance assistant in Africa. Act like it.
 14. For amount-based questions, ALWAYS segment the allocation:
     Example for "How to invest 100K":
     💰 *SUGGESTED ALLOCATION — KES 100,000*
@@ -756,8 +757,8 @@ TONE: Sharp. Direct. Like the best fund manager at a Nairobi investment forum �
 
   try {
     const answer = await callGemini(`${systemPrompt}\n\n━━ USER QUESTION ━━\n${question}`);
-    if (!answer.includes("Sentill is an intelligence hub")) {
-      return answer + "\n\n_ℹ️ Sentill is an intelligence hub — invest directly with your provider._";
+    if (!answer.includes("sentill.africa") && !answer.includes("Wealth Intelligence")) {
+      return answer + "\n\n_S-Tier Institutional Wealth Intelligence_ 🇰🇪\n_sentill.africa_";
     }
     return answer;
   } catch (err) {
