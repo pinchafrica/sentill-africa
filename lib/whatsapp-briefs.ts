@@ -202,28 +202,28 @@ WhatsApp plain text only.`;
 
   // Assemble full message
   const msg =
-    `${getTimeGreeting()}, *${firstName}!* 👋\n` +
-    `📅 _${dateStr}_\n` +
-    `━━━━━━━━━━━━━━━━━━\n` +
-    `⚡ *SENTILL DAILY BRIEF*\n` +
-    `━━━━━━━━━━━━━━━━━━\n\n` +
-    `📊 *MARKET PULSE*\n` +
-    `_Kenya's live investment landscape:_\n\n` +
+    `${getTimeGreeting()}, *${firstName}* 👋\n` +
+    `_Your Daily Financial Edge_ | 📅 _${dateStr}_\n` +
+    `▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰\n` +
+    `               *SENTILL.AFRICA*               \n` +
+    `▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰\n\n` +
+    `📊 *KENYA MARKET PULSE*\n` +
+    `_The smartest money is here today:_\n\n` +
     marketLines + `\n` +
-    `💡 *Today's Alpha:* vs savings account baseline of 4%\n\n` +
+    `💡 *Market Alpha:* vs savings baseline of 4.0%\n\n` +
     portfolioSection +
-    `━━━━━━━━━━━━━━━━━━\n` +
-    `🧠 *ORACLE INSIGHT*\n\n` +
+    `▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰\n` +
+    `🧠 *AI ORACLE INSIGHT*\n\n` +
     `${aiInsight}\n\n` +
     premiumTip +
-    `━━━━━━━━━━━━━━━━━━\n` +
-    `⚡ *QUICK ACTIONS*\n\n` +
-    `› Reply *RATES* — See all live yields\n` +
-    `› Reply *CALC 100000* — Instant projections\n` +
-    `› Reply *COMPARE* — Find your best MMF\n` +
-    `› Reply *MENU* — Full options\n\n` +
+    `▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰\n` +
+    `⚡ *COMMAND CENTER*\n\n` +
+    `› Reply *RATES* — Full market table\n` +
+    `› Reply *CALC 100000* — Instant projection\n` +
+    `› Reply *STOCKS* — NSE Gainers & Losers\n` +
+    `› Reply *MENU* — Main options\n\n` +
     `_${appUrl}_\n` +
-    `_Sentill — Wealth Intelligence for Kenya_ 🇰🇪`;
+    `_S-Tier Institutional Wealth Intelligence_ 🇰🇪`;
 
   return msg;
 }
@@ -373,43 +373,42 @@ Each point = 2 sentences. WhatsApp plain text only. No bullet points — use lin
   });
 
   const msg =
-    `🗓️ *SENTILL WEEKLY INTELLIGENCE*\n` +
+    `▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰\n` +
+    `         *WEEKLY INTELLIGENCE*        \n` +
+    `▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰\n` +
     `_${weekStr}_\n\n` +
-    `━━━━━━━━━━━━━━━━━━\n` +
-    `👋 Hey *${firstName}* — here's your full\nweekly market intelligence report:\n\n` +
-    `━━━━━━━━━━━━━━━━━━\n` +
+    `👋 Hey *${firstName}* — here's your advanced\nweekly market intelligence report:\n\n` +
+    `▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰\n` +
     `🏆 *WEEKLY YIELD LEAGUE*\n` +
     `_Kenya's top instruments this week:_\n\n` +
     leagueTable + `\n` +
     (portfolio.totalInvested > 0
-      ? `━━━━━━━━━━━━━━━━━━\n` +
+      ? `▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰\n` +
         `📁 *YOUR PORTFOLIO WEEK*\n\n` +
         `💼 *Holdings:* ${formatKES(portfolio.totalInvested)}\n` +
         `📈 *Blended yield:* *${portfolio.avgYield.toFixed(2)}%* — ${gradeYield(portfolio.avgYield)}\n` +
         `💸 *Weekly earnings:* ~${formatKES(Math.round(portfolio.projectedAnnual / 52))}\n` +
         `🔋 *Annual projection:* ~${formatKES(Math.round(portfolio.projectedAnnual))}\n` +
         `🏦 *Your yield vs savings:* *${yieldDelta(portfolio.avgYield)} alpha*\n\n`
-      : `━━━━━━━━━━━━━━━━━━\n` +
+      : `▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰\n` +
         `📁 *PORTFOLIO:* _Nothing tracked yet._\n` +
         `_Add your investments → ${appUrl}/dashboard/assets_\n\n`
     ) +
-    `━━━━━━━━━━━━━━━━━━\n` +
+    `▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰\n` +
     `🧠 *ORACLE WEEKLY ANALYSIS*\n\n` +
     `${weeklyAnalysis}\n\n` +
-    `━━━━━━━━━━━━━━━━━━\n` +
-    `⚡ *THIS WEEK'S QUICK COMMANDS*\n\n` +
-    `› Reply *RATES* — Full live yield table\n` +
-    `› Reply *CALC 100000* — Run projections\n` +
-    `› Reply *PORTFOLIO* — Your breakdown\n` +
-    `› Reply *COMPARE* — Best fund for you\n` +
-    `› Reply *MENU* — All options\n\n` +
+    `▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰\n` +
+    `⚡ *COMMAND CENTER*\n\n` +
+    `› Reply *RATES* — Full market table\n` +
+    `› Reply *CALC 100000* — Instant projection\n` +
+    `› Reply *STOCKS* — NSE Gainers & Losers\n` +
+    `› Reply *MENU* — Main options\n\n` +
     (isPremium
       ? `🔐 *Pro Dashboard:* ${appUrl}/dashboard\n\n`
       : `💡 _Upgrade to Pro for unlimited AI + portfolio tracking._\n_Reply *SUBSCRIBE* — KES 490/month._\n\n`
     ) +
-    `━━━━━━━━━━━━━━━━━━\n` +
-    `_Have a profitable week!_ 💪🇰🇪\n` +
-    `_Sentill Africa — Wealth Intelligence_`;
+    `_S-Tier Institutional Wealth Intelligence_ 🇰🇪\n` +
+    `_sentill.africa_`;
 
   return msg;
 }

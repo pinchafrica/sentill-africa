@@ -554,9 +554,8 @@ function getSmartFallback(question: string): string {
   if (q.includes("mmf") || q.includes("money market") || q.includes("best fund") || q.includes("liquid") || q.includes("chart") || q.includes("graph")) {
     return (
       `🏆 *Best MMFs in Kenya — April 2026*\n` +
-      `━━━━━━━━━━━━━━━━━━\n\n` +
+      `▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰\n\n` +
       `1️⃣ *Etica MMF (Zidi)* — *~17.5%* p.a.\n` +
-
       `   Min: KES 100 · Via M-Pesa (Zidi app)\n\n` +
       `2️⃣ *Lofty Corpin MMF* — *17.50%* p.a.\n` +
       `   Min: KES 1,000 · Strong boutique fund\n\n` +
@@ -569,7 +568,8 @@ function getSmartFallback(question: string): string {
       `💡 All MMFs: T+1 liquidity · CMA regulated · WHT 15%\n` +
       `📊 Send *CHART MMFS* for a visual bar chart!\n` +
       `🧮 Send *CALC 100000* for your personal projection.\n\n` +
-      `_ℹ️ Sentill is an intelligence hub — invest directly with your provider._`
+      `_S-Tier Institutional Wealth Intelligence_ 🇰🇪\n` +
+      `_sentill.africa_`
     );
   }
 
@@ -577,7 +577,7 @@ function getSmartFallback(question: string): string {
   if (q.includes("t-bill") || q.includes("tbill") || q.includes("treasury bill") || q.includes("dhow") || q.includes("cbk")) {
     return (
       `🏛️ *Kenya Treasury Bills — April 2026*\n` +
-      `━━━━━━━━━━━━━━━━━━\n\n` +
+      `▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰\n\n` +
       `• *91-Day T-Bill* — *15.85%* gross · *13.47%* net\n` +
       `• *182-Day T-Bill* — *16.10%* gross · *13.69%* net\n` +
       `• *364-Day T-Bill* — *16.45%* gross · *13.98%* net\n\n` +
@@ -589,7 +589,8 @@ function getSmartFallback(question: string): string {
       `3. Minimum: KES 50,000\n` +
       `4. Auction every Monday (CBK)\n\n` +
       `📊 Send *CHART TBILLS* for the yield curve!\n\n` +
-      `_ℹ️ Sentill is an intelligence hub — invest directly with your provider._`
+      `_S-Tier Institutional Wealth Intelligence_ 🇰🇪\n` +
+      `_sentill.africa_`
     );
   }
 
@@ -597,7 +598,7 @@ function getSmartFallback(question: string): string {
   if (q.includes("sacco") || q.includes("dividend") || q.includes("cooperative")) {
     return (
       `🤝 *Top SACCOs Kenya 2026 — Dividend Yields*\n` +
-      `━━━━━━━━━━━━━━━━━━\n\n` +
+      `▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰\n\n` +
       `1️⃣ *Tower SACCO* — *20.0%* dividend\n` +
       `2️⃣ *Police SACCO* — *17.0%* dividend\n` +
       `3️⃣ *Stima SACCO* — *15.0%* dividend\n` +
@@ -609,7 +610,8 @@ function getSmartFallback(question: string): string {
       `• Deposits earn stable dividends annually\n` +
       `• Loans available at 12–14% p.a. (member only)\n\n` +
       `📊 Send *CHART SACCOS* for a visual comparison!\n\n` +
-      `_ℹ️ Sentill is an intelligence hub — invest directly with your provider._`
+      `_S-Tier Institutional Wealth Intelligence_ 🇰🇪\n` +
+      `_sentill.africa_`
     );
   }
 
@@ -617,20 +619,20 @@ function getSmartFallback(question: string): string {
   if (q.includes("compare") || q.includes("vs") || q.includes("better") || q.includes("which")) {
     return (
       `📊 *Kenya Investment Yields — Quick Compare*\n` +
-      `━━━━━━━━━━━━━━━━━━\n\n` +
+      `▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰\n\n` +
       `🏆 IFB Bond — *18.46%* WHT-free (best overall)\n` +
-      `💰 Etica MMF (Zidi) — *~17.5%* liquid (best MMF)\n` +
-
+      `💰 Etica MMF (Zidi) — *~17.5%* p.a. (best MMF)\n` +
       `🏦 Tower SACCO — *20.0%* dividend (illiquid)\n` +
       `📈 364-Day T-Bill — *16.45%* gross / *13.98%* net\n` +
-      `🏛️ Fixed Coupon Bond — *14-16%* gross (long-term)\n\n` +
+      `🏛️ Fixed Coupon Bond — *14-16%* gross (long term)\n\n` +
       `💡 *Best picks by goal:*\n` +
       `• Emergency fund → Etica MMF (withdraw in 1 day)\n` +
       `• Wealth building → IFB Bond (tax-free, 6+ yrs)\n` +
       `• Steady dividends → Tower SACCO\n` +
       `• Capital safety → 91-Day T-Bill (CBK backed)\n\n` +
       `📊 Send *CHART COMPARE* for a visual bar chart!\n\n` +
-      `_ℹ️ Sentill is an intelligence hub — invest directly with your provider._`
+      `_S-Tier Institutional Wealth Intelligence_ 🇰🇪\n` +
+      `_sentill.africa_`
     );
   }
 
@@ -638,28 +640,27 @@ function getSmartFallback(question: string): string {
   if (q.includes("calc") || q.includes("how much") || q.includes("project") || q.includes("grow") || q.includes("return") || q.includes("invest")) {
     return (
       `🧮 *Quick Investment Guide*\n` +
-      `━━━━━━━━━━━━━━━━━━\n\n` +
+      `▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰\n\n` +
       `Send *CALC [amount]* for your personal projection!\n\n` +
       `*Example projections (KES 100,000):*\n` +
       `• Etica MMF / Zidi (~17.5%) → KES 117,500/yr gross\n` +
-
       `• IFB Bond (18.46%) → KES 118,460/yr tax-free ✅\n` +
       `• T-Bill 364d (16.45%) → KES 113,983/yr net\n` +
       `• Tower SACCO (20%) → KES 120,000/yr (illiquid)\n\n` +
       `📊 You'll also get a growth chart image!\n` +
       `Try: *CALC 100000* or *CALC 500000 18.46 10*\n\n` +
-      `_ℹ️ Sentill is an intelligence hub — invest directly with your provider._`
+      `_S-Tier Institutional Wealth Intelligence_ 🇰🇪\n` +
+      `_sentill.africa_`
     );
   }
 
   // Generic fallback
   return (
     `🧠 *Sentill Africa — Kenya Investment Intelligence*\n` +
-    `━━━━━━━━━━━━━━━━━━\n\n` +
+    `▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰\n\n` +
     `🏆 *Top returns right now:*\n` +
     `• IFB Bond — *18.46%* WHT-free\n` +
     `• Etica MMF (Zidi) — *~17.5%* p.a. (download Zidi app)\n` +
-
     `• Lofty Corpin MMF — *17.50%* liquid\n\n` +
     `📊 *Quick commands:*\n` +
     `• *CHART MMFS* — bar chart of all MMF yields\n` +
@@ -668,7 +669,8 @@ function getSmartFallback(question: string): string {
     `• *CALC 100000* — your projection + chart\n` +
     `• *RATES* — live market rates\n` +
     `• *INVEST* — browse all funds\n\n` +
-    `_ℹ️ Sentill is an intelligence hub — invest directly with your provider._`
+    `_S-Tier Institutional Wealth Intelligence_ 🇰🇪\n` +
+    `_sentill.africa_`
   );
 }
 
@@ -700,7 +702,7 @@ USER: ${user.name} | Plan: ${user.isPremium ? "Pro ⚡" : "Free (10 AI questions
 
 STRUCTURE (ALWAYS segment your answers like this):
 1. Start with a *bold headline* summarizing the answer in 1 line
-2. Use ━━━━━━━━━━━━━━━━ as visual separators between sections
+2. Use ▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰ as visual separators between sections. Make it feel ultra-premium.
 3. Break your answer into clearly labelled sections using emoji headers:
    • 🏆 *TOP PICK* or 📊 *THE DATA* — for the main answer/ranking
    • 💡 *KEY INSIGHT* — one specific insight the user should know
@@ -708,7 +710,9 @@ STRUCTURE (ALWAYS segment your answers like this):
    • 🎯 *WHAT TO DO* — clear actionable next step
    • 📈 *CHART TIP* — suggest a relevant Sentill command (CHART MMFS, CALC 100000, etc.)
 4. If showing rankings, use numbered format: 1️⃣ 2️⃣ 3️⃣ with *bold yields*
-5. End EVERY response with: _ℹ️ Sentill is an intelligence hub — invest directly with your provider._
+5. End EVERY response with:
+   _S-Tier Institutional Wealth Intelligence_ 🇰🇪
+   _sentill.africa_
 
 FORMAT (WhatsApp-native):
 • Use *bold* for fund names, yields, key numbers e.g. *Etica MMF (Zidi)* — *~17.5%*
