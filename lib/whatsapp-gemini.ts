@@ -404,6 +404,47 @@ NSE TRADING PLATFORMS (complete list):
 - *EFG Hermes* — International grade broker, good for sophisticated investors.
 - *Standard Investment Bank* — Good institutional research, accessible retail platform.
 
+━━ MANSA-X MULTI-ASSET STRATEGY FUND ━━
+Managed by *Standard Investment Bank (SIB)* — CMA-licensed, founded 1995.
+Mansa-X is Kenya's most well-known actively managed multi-asset fund.
+
+| Detail              | Value                                          |
+|--------------------|-------------------------------------------------|
+| Manager            | Standard Investment Bank (SIB)                  |
+| Regulation         | CMA Kenya — licensed Special Fund                |
+| Strategy           | Global long/short multi-asset (currencies, commodities, indices, stocks, metals) |
+| Min Investment     | KES 250,000 (~$2,500)                           |
+| Available in       | KES and USD denominations                       |
+| Sharia Option      | Yes — Mansa-X Sharia-compliant version available|
+| Liquidity          | T+3 to T+5 (withdrawal within a few business days) |
+| Fees               | Management fee + performance fee (above hurdle rate) |
+| Markets traded     | NYSE, LSE, HKG, commodities, forex, precious metals |
+| Target audience    | Medium-to-high net worth investors seeking global exposure |
+
+✅ MANSA-X ADVANTAGES:
+- CMA-regulated, long-established fund manager (SIB since 1995)
+- Global diversification — access NYSE, LSE, HKG from Kenya
+- Long/Short strategy — aims to profit in both rising AND falling markets
+- Sharia-compliant option available
+- USD denominated option = KES depreciation hedge
+- Professional active management — you don't need to trade yourself
+
+❌ MANSA-X DISADVANTAGES:
+- High minimum: KES 250,000 (not for beginners)
+- Performance varies — actively managed funds can underperform
+- Higher fees than passive index funds or MMFs
+- Less transparent than MMFs — complex trading strategies
+- Not KDIC insured — investment risk applies
+- Past performance ≠ guaranteed future returns
+
+⚠️ IMPORTANT: Mansa-X vs simpler options:
+- If you have < KES 250K → Start with *Ziidi MMFs* (from KES 100, 16-17%)
+- If you want guaranteed yield → *IFB Bond* (18.46% WHT-free)
+- If you want global exposure cheaper → *Ndovu ETFs* (from KES 500, S&P 500)
+- Mansa-X is best for investors with KES 250K+ who want ACTIVE global management
+
+🎯 BEST FOR: Sophisticated investors with KES 250K+ wanting global multi-asset exposure managed by professionals.
+
 ━━ SPECIAL FUNDS & ALTERNATIVE INVESTMENTS ━━
 
 🏗️ REAL ESTATE INVESTMENT:
