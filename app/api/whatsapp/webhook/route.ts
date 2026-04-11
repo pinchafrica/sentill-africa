@@ -59,15 +59,16 @@ export async function POST(req: NextRequest) {
       console.error("[WhatsApp] Failed to log raw webhook:", logErr);
     }
 
-    // Skip signature verification — WHATSAPP_APP_SECRET is not configured
-    // and was previously blocking messages silently
     const appSecret = process.env.WHATSAPP_APP_SECRET;
-    if (appSecret) {
-      const sig = req.headers.get("x-hub-signature-256");
-      if (!verifyWebhookSignature(rawBody, sig)) {
-        console.error(`[WhatsApp][${timestamp}] Invalid webhook signature — BLOCKED`);
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-      }
+    if (!appSecret) {
+      console.error(`[WhatsApp][${timestamp}] CRITICAL: WHATSAPP_APP_SECRET is missing. Cannot verify webhook signature.`);
+      return NextResponse.json({ error: "Server Configuration Error" }, { status: 500 });
+    }
+
+    const sig = req.headers.get("x-hub-signature-256");
+    if (!verifyWebhookSignature(rawBody, sig)) {
+      console.error(`[WhatsApp][${timestamp}] Invalid webhook signature — BLOCKED ALIEN PAYLOAD`);
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const body = JSON.parse(rawBody);
