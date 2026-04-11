@@ -5,8 +5,20 @@
       "schedule": "0 7 * * *"
     },
     {
-      "path": "/api/cron/whatsapp-daily",
+      "path": "/api/cron/whatsapp-daily?slot=MORNING",
       "schedule": "0 4 * * *"
+    },
+    {
+      "path": "/api/cron/whatsapp-daily?slot=MIDDAY",
+      "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/api/cron/whatsapp-daily?slot=EVENING",
+      "schedule": "0 15 * * *"
+    },
+    {
+      "path": "/api/cron/whatsapp-daily?slot=WEEKLY",
+      "schedule": "30 4 * * 1"
     }
   ]
 }

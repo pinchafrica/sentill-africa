@@ -1,12 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowLeft, Mail, Lock, CheckCircle, ArrowRight, Zap, Target, AlertCircle, Eye, EyeOff } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { ArrowLeft, Mail, Lock, CheckCircle, ArrowRight, Zap, Target, AlertCircle, Eye, EyeOff, Crown, Sparkles } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const planParam = searchParams.get("plan"); // e.g. 'premium', 'pro', 'quarterly'
+  const hasPlan = !!planParam;
+
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     firstName: "",
@@ -49,7 +53,12 @@ export default function RegisterPage() {
           return;
         }
 
-        router.push("/dashboard?registered=true");
+        // If came from packages page with a plan, redirect there to complete payment
+        if (hasPlan) {
+          router.push(`/packages?registered=true&plan=${planParam}`);
+        } else {
+          router.push("/dashboard?registered=true");
+        }
       } catch (e) {
         setError("Network error. Please try again.");
         setIsLoading(false);
@@ -123,7 +132,13 @@ export default function RegisterPage() {
         </div>
 
         <div className="w-full max-w-md animate-in fade-in slide-in-from-bottom-8 duration-700">
-          <div className="mb-10 text-center lg:text-left">
+        <div className="mb-10 text-center lg:text-left">
+            {hasPlan && (
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-50 border border-emerald-200 rounded-full mb-4">
+                <Crown className="w-3.5 h-3.5 text-emerald-600" />
+                <span className="text-[9px] font-black text-emerald-700 uppercase tracking-widest">Pro plan selected — complete sign up to unlock</span>
+              </div>
+            )}
             <h2 className="text-3xl md:text-4xl font-black text-slate-900 uppercase tracking-tight font-heading mb-2">Create Account.</h2>
             <p className="text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-widest">Step {step} of 2 · {step === 1 ? "Personal Info" : "Security Details"}</p>
           </div>

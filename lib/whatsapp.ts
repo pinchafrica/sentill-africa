@@ -120,6 +120,123 @@ export async function sendInteractiveButtons(
   });
 }
 
+// ── Image message (for chart PNGs) ────────────────────────────────────────────
+
+export async function sendImageMessage(
+  to: string,
+  imageUrl: string,
+  caption: string,
+  userId?: string
+): Promise<void> {
+  const phoneNumberId = getPhoneNumberId();
+  const token = getAccessToken();
+
+  const payload = {
+    messaging_product: "whatsapp",
+    recipient_type: "individual",
+    to,
+    type: "image",
+    image: { link: imageUrl, caption },
+  };
+
+  const res = await fetch(`${WA_API_BASE}/${phoneNumberId}/messages`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) console.error("[WhatsApp] Image send failed:", await res.text());
+
+  await prisma.whatsAppLog.create({
+    data: {
+      waId: to, userId: userId ?? null, direction: "OUTBOUND",
+      message: `[image] ${caption}`, msgType: "image", status: res.ok ? "SENT" : "FAILED",
+    },
+  });
+}
+
+// ── Interactive List Message (scrollable menu up to 10 rows) ───────────────────
+
+export async function sendListMessage(
+  to: string,
+  headerText: string,
+  bodyText: string,
+  buttonLabel: string,
+  sections: { title: string; rows: { id: string; title: string; description?: string }[] }[],
+  userId?: string
+): Promise<void> {
+  const phoneNumberId = getPhoneNumberId();
+  const token = getAccessToken();
+
+  const payload = {
+    messaging_product: "whatsapp",
+    recipient_type: "individual",
+    to,
+    type: "interactive",
+    interactive: {
+      type: "list",
+      header: { type: "text", text: headerText },
+      body: { text: bodyText },
+      action: { button: buttonLabel, sections },
+    },
+  };
+
+  const res = await fetch(`${WA_API_BASE}/${phoneNumberId}/messages`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) console.error("[WhatsApp] List send failed:", await res.text());
+
+  await prisma.whatsAppLog.create({
+    data: {
+      waId: to, userId: userId ?? null, direction: "OUTBOUND",
+      message: `[list] ${headerText}`, msgType: "interactive", status: res.ok ? "SENT" : "FAILED",
+    },
+  });
+}
+
+// ── Interactive CTA URL Button (deep-link to Sentill pages) ───────────────────
+
+export async function sendCTAButton(
+  to: string,
+  bodyText: string,
+  buttonText: string,
+  url: string,
+  userId?: string
+): Promise<void> {
+  const phoneNumberId = getPhoneNumberId();
+  const token = getAccessToken();
+
+  const payload = {
+    messaging_product: "whatsapp",
+    recipient_type: "individual",
+    to,
+    type: "interactive",
+    interactive: {
+      type: "cta_url",
+      body: { text: bodyText },
+      action: { name: "cta_url", parameters: { display_text: buttonText, url } },
+    },
+  };
+
+  const res = await fetch(`${WA_API_BASE}/${phoneNumberId}/messages`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) console.error("[WhatsApp] CTA send failed:", await res.text());
+
+  await prisma.whatsAppLog.create({
+    data: {
+      waId: to, userId: userId ?? null, direction: "OUTBOUND",
+      message: `[cta] ${buttonText}: ${url}`, msgType: "interactive", status: res.ok ? "SENT" : "FAILED",
+    },
+  });
+}
+
 // ── Template sender ────────────────────────────────────────────────────────────
 
 export async function sendWhatsAppTemplate(

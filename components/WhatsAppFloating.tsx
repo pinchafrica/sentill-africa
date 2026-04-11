@@ -42,7 +42,7 @@ export default function WhatsAppFloating() {
           initial={{ opacity: 0, scale: 0.5, y: 50 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.5, y: 50 }}
-          className="fixed bottom-6 right-6 z-[190] flex flex-col items-end gap-3"
+          className="fixed bottom-24 right-5 z-[195] flex flex-col items-end gap-3 sm:bottom-6 sm:right-6"
         >
           {/* Expanded Quick Actions Panel */}
           <AnimatePresence>

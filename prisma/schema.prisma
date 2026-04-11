@@ -51,11 +51,18 @@ model AlertPreference {
   whatsappEnabled Boolean  @default(false)
   whatsappNumber  String?
   
-  // Frequency
-  frequency       String   @default("WEEKLY") // DAILY, WEEKLY, MONTHLY
+  // Frequency: DAILY | WEEKLY | MARKET_ALERTS_ONLY | NONE
+  frequency       String   @default("DAILY")
+  weeklyDay       String   @default("MONDAY")   // Which day for WEEKLY frequency
+  lastWeeklySent  DateTime?                      // Track last weekly send to avoid duplicates
   
-  // Targets (Comma-separated slugs or "ALL")
-  portfolioAlerts String   @default("ALL")
+  // Alert types
+  portfolioAlerts    String   @default("ALL")   // Comma-separated slugs or "ALL"
+  watchlistAlerts    Boolean  @default(true)    // Notify when watchlist fund yields change
+  marketMoversAlerts Boolean  @default(false)   // Alert on big market moves
+  
+  // Thresholds
+  yieldThreshold     Float?                     // Alert when any MMF crosses this % (e.g. 18.0)
   
   // Intelligence
   aiOracleAlerts  Boolean  @default(true)
@@ -63,6 +70,7 @@ model AlertPreference {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }
+
 
 model Provider {
   id            String           @id @default(cuid())

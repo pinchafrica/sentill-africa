@@ -4,18 +4,18 @@ import { useState, useMemo } from "react";
 import { ArrowRight, TrendingUp, ShieldCheck } from "lucide-react";
 
 const MMF_FUNDS = [
-  { name: "Etica Wealth MMF", gross: 17.55, wht: true },
+  { name: "IFB1/2024 (Tax-Free)", gross: 18.50, wht: false },
+  { name: "CIC Money Market", gross: 15.90, wht: true },
   { name: "Zidi High Yield MMF", gross: 18.20, wht: true },
   { name: "Lofty Corban MMF", gross: 16.80, wht: true },
   { name: "Kuza MMF", gross: 16.50, wht: true },
   { name: "Sanlam Pesa MMF", gross: 14.78, wht: true },
-  { name: "CIC Money Market", gross: 15.90, wht: true },
+  { name: "Etica Wealth MMF", gross: 17.55, wht: true },
   { name: "GenCap Hela MMF", gross: 16.20, wht: true },
+  { name: "Britam MMF", gross: 14.20, wht: true },
+  { name: "Old Mutual MMF", gross: 14.00, wht: true },
   { name: "NCBA Loop MMF", gross: 12.10, wht: true },
   { name: "KCB Wealth MMF", gross: 11.40, wht: true },
-  { name: "Old Mutual MMF", gross: 14.00, wht: true },
-  { name: "Britam MMF", gross: 14.20, wht: true },
-  { name: "IFB1/2024 (Tax-Free)", gross: 18.50, wht: false },
   { name: "FXD1/2024/10 Bond", gross: 16.40, wht: true },
 ];
 

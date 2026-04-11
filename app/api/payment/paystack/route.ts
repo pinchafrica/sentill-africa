@@ -4,8 +4,14 @@ import { prisma } from "@/lib/prisma";
 const PAYSTACK_SECRET = process.env.PAYSTACK_SECRET_KEY ?? "";
 
 const PLANS = {
-  PRO_MONTHLY: { amount: 99900, label: "Sentill Pro – Monthly", duration: 30 },
-  PRO_ANNUAL: { amount: 799900, label: "Sentill Pro – Annual (Save 33%)", duration: 365 },
+  // Current plans
+  WEEKLY_7_DAYS:     { amount: 9900,   label: "Sentill Pro – 1 Week",          duration: 7   },
+  MONTHLY_30_DAYS:   { amount: 34900,  label: "Sentill Pro – 1 Month",          duration: 30  },
+  QUARTERLY_90_DAYS: { amount: 99900,  label: "Sentill Pro – 3 Months",         duration: 90  },
+  ANNUAL_365_DAYS:   { amount: 299900, label: "Sentill Pro – Annual (Save 30%)", duration: 365 },
+  // Legacy
+  PRO_MONTHLY:       { amount: 99900,  label: "Sentill Pro – Monthly",          duration: 30  },
+  PRO_ANNUAL:        { amount: 799900, label: "Sentill Pro – Annual",           duration: 365 },
 };
 
 export async function POST(req: NextRequest) {

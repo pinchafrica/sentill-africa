@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { Zap, Activity, Calculator, CalendarDays, X, Sparkles, Brain, TrendingUp, BarChart3 } from "lucide-react";
 import Link from "next/link";
+import { useAIStore } from "@/lib/store";
 
 const ORACLE_BALLOONS = [
   { id: "mmf", title: "Best MMF Rates", desc: "Live yields updated daily", icon: TrendingUp, color: "from-emerald-500 to-emerald-600", href: "/markets/mmfs" },
@@ -15,9 +16,15 @@ const ORACLE_BALLOONS = [
 
 export default function SentillOracle() {
   const [isOpen, setIsOpen] = useState(false);
+  const { setChatOpen } = useAIStore();
+
+  const openAIChat = () => {
+    setIsOpen(false);
+    setChatOpen(true);
+  };
 
   return (
-    <div className="fixed bottom-6 left-6 z-[100] flex flex-col items-start gap-3">
+    <div className="fixed bottom-28 right-6 z-[180] flex flex-col items-end gap-3">
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -76,22 +83,21 @@ export default function SentillOracle() {
               ))}
             </div>
 
-            {/* Footer */}
+            {/* Footer — opens CortexButler AI chat */}
             <div className="p-3 pt-0">
-              <Link
-                href="/dashboard/advisor"
-                onClick={() => setIsOpen(false)}
+              <button
+                onClick={openAIChat}
                 className="w-full flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-blue-900/30"
               >
                 <Brain className="w-3.5 h-3.5" />
                 Ask Oracle AI
-              </Link>
+              </button>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Oracle FAB Button - LEFT SIDE */}
+      {/* Oracle FAB Button - stacked above WhatsApp */}
       <motion.button
         onClick={() => setIsOpen(!isOpen)}
         whileHover={{ scale: 1.05 }}

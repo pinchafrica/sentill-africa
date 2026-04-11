@@ -140,3 +140,57 @@ export function buildPremiumActivatedEmail(name: string, plan: string): string {
 </body>
 </html>`;
 }
+
+export function buildLoginCredentialsEmail(name: string, email: string, password: string): string {
+  return `
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background:#f8fafc;font-family:Inter,system-ui,sans-serif">
+  <div style="max-width:600px;margin:0 auto;padding:40px 20px">
+    <div style="background:linear-gradient(135deg,#0f172a,#1e3a5f);border-radius:24px;padding:40px;margin-bottom:24px;text-align:center">
+      <div style="width:64px;height:64px;background:rgba(16,185,129,0.2);border-radius:16px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:20px">
+        <span style="font-size:32px">🔐</span>
+      </div>
+      <h1 style="color:#ffffff;font-size:26px;font-weight:900;margin:0 0 8px;letter-spacing:-0.5px">Your Website Login is Ready!</h1>
+      <p style="color:#94a3b8;font-size:14px;margin:0">Access the full Sentill Africa dashboard</p>
+    </div>
+    <div style="background:#ffffff;border-radius:24px;padding:32px;margin-bottom:24px;border:1px solid #e2e8f0">
+      <p style="color:#64748b;font-size:14px;line-height:1.7;margin:0 0 20px">Hi ${name},</p>
+      <p style="color:#64748b;font-size:14px;line-height:1.7;margin:0 0 24px">You registered via WhatsApp — here are your website login credentials so you can access the full Sentill Africa dashboard, advanced analytics, and portfolio tools.</p>
+      
+      <div style="background:linear-gradient(135deg,#f0fdf4,#ecfdf5);border:2px solid #86efac;border-radius:16px;padding:24px;margin-bottom:24px">
+        <p style="font-size:10px;font-weight:900;color:#059669;text-transform:uppercase;letter-spacing:3px;margin:0 0 16px">Your Login Credentials</p>
+        <div style="margin-bottom:12px">
+          <p style="font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:1px;margin:0 0 4px">Email</p>
+          <p style="font-size:18px;font-weight:900;color:#0f172a;margin:0;font-family:monospace;background:#ffffff;padding:10px 14px;border-radius:8px;border:1px solid #d1fae5">${email}</p>
+        </div>
+        <div>
+          <p style="font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:1px;margin:0 0 4px">Temporary Password</p>
+          <p style="font-size:22px;font-weight:900;color:#059669;margin:0;font-family:monospace;background:#ffffff;padding:10px 14px;border-radius:8px;border:1px solid #d1fae5;letter-spacing:2px">${password}</p>
+        </div>
+      </div>
+
+      <a href="https://www.sentill.africa/auth/login" style="display:block;padding:16px;background:linear-gradient(135deg,#059669,#10b981);color:#ffffff;text-decoration:none;font-weight:900;font-size:14px;text-align:center;border-radius:12px;letter-spacing:0.05em;margin-bottom:16px">LOGIN TO SENTILL AFRICA →</a>
+
+      <div style="display:flex;align-items:center;gap:8px;padding:12px;background:#fef3c7;border-radius:10px;border:1px solid #fde68a;margin-bottom:20px">
+        <span style="font-size:16px">⚠️</span>
+        <p style="color:#92400e;font-size:12px;font-weight:700;margin:0">Please change your password after first login for security.</p>
+      </div>
+
+      <div style="border-top:1px solid #e2e8f0;padding-top:20px">
+        <p style="font-size:12px;font-weight:800;color:#0f172a;margin:0 0 8px">🌐 What you get on the website:</p>
+        <div style="display:grid;gap:6px">
+          <p style="color:#64748b;font-size:12px;margin:0">📊 Advanced portfolio charts & analytics</p>
+          <p style="color:#64748b;font-size:12px;margin:0">🧠 Full AI Oracle with deep market analysis</p>
+          <p style="color:#64748b;font-size:12px;margin:0">📈 Real-time NSE stock charts with RSI/MACD</p>
+          <p style="color:#64748b;font-size:12px;margin:0">🏦 30+ MMF, Bond, SACCO comparisons</p>
+          <p style="color:#64748b;font-size:12px;margin:0">📱 Portfolio sync across WhatsApp & Web</p>
+        </div>
+      </div>
+    </div>
+    <p style="color:#94a3b8;font-size:11px;text-align:center;margin:0">© 2025 Sentill Africa · <a href="https://www.sentill.africa" style="color:#10b981;font-weight:700">www.sentill.africa</a> · Need help? WhatsApp us at +254 703 469 525</p>
+  </div>
+</body>
+</html>`;
+}

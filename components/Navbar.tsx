@@ -4,10 +4,12 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronDown, Menu, X, Lock, FileText, ChevronRight, User, Phone, LogOut, ArrowRight, Activity, ShieldCheck, Mail, Building2, Landmark, Briefcase, Users, LayoutDashboard, Globe, Zap, Cpu, LineChart, Calculator, MapPin, Database, Server, Smartphone, Layout, ArrowUpRight, Scale, PieChart, TrendingUp, Handshake, BrainCircuit, MessageSquare, Plus, CheckCircle, Flame, Target, Star, ShieldAlert, BadgeCheck, Bell, Sparkles, Rocket, Info, UserPlus, Leaf } from "lucide-react";
+
 import { motion, AnimatePresence } from "framer-motion";
 
 
 const menuData = {
+
   bonds: {
     label: "Treasury Bonds",
     href: "/markets/bonds",
@@ -80,7 +82,7 @@ const menuData = {
           { title: "Kuza Momentum Special Fund", desc: "18–22% p.a. · Growth & Income Hybrid", href: "/markets/special/kuza-momentum", icon: TrendingUp, color: "text-blue-600" },
           { title: "Oak Special Fund", desc: "16–20% p.a. · Wealth Preservation", href: "/markets/special/oak", icon: Landmark, color: "text-emerald-700" },
           { title: "Avocap Africa Special Fund", desc: "20–26% p.a. · EA Frontier Markets", href: "/markets/special/avocap", icon: Globe, color: "text-indigo-600" },
-          { title: "Etica Special Fund", desc: "25–32% p.a. · Institutional Alpha", href: "/markets/special/etica-special", icon: Star, color: "text-emerald-500" }
+          { title: "Zidi Alpha Pool", desc: "18–22% p.a. · Institutional Rotation", href: "/markets/special/zidi-alpha", icon: Star, color: "text-indigo-500" },
         ]
       },
       {
@@ -313,62 +315,84 @@ export default function Navbar() {
                 <AnimatePresence>
                   {activeMenu === key && (
                     <motion.div
-                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      initial={{ opacity: 0, y: 8, scale: 0.97 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      exit={{ opacity: 0, y: 8, scale: 0.97 }}
+                      transition={{ duration: 0.15 }}
                       className={menu.isMega 
-                        ? "fixed top-[105px] left-1/2 -translate-x-1/2 w-[98%] max-w-[1480px] z-[100] cursor-default" 
-                        : "absolute top-full pt-4 left-1/2 -translate-x-1/2 w-[320px] z-[100] cursor-default"
+                        ? "fixed top-[105px] left-1/2 -translate-x-1/2 w-[97%] max-w-[1400px] z-[100] cursor-default" 
+                        : "absolute top-full pt-3 left-1/2 -translate-x-1/2 w-[300px] z-[100] cursor-default"
                       }
                     >
-                      <div className={`bg-white rounded-[2.5rem] p-8 border border-slate-200 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.15)] relative overflow-hidden backdrop-blur-xl max-h-[85vh] overflow-y-auto`}>
-                        {menu.isMega && <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-br from-blue-50/50 via-white to-transparent pointer-events-none" />}
-                        
+                      <div className="bg-white rounded-2xl border border-slate-200 shadow-[0_12px_40px_-10px_rgba(0,0,0,0.12)] relative overflow-hidden backdrop-blur-xl">
+                        {menu.isMega && <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 via-white to-transparent pointer-events-none" />}
+
                         {!menu.isMega ? (
-                          <div className="grid grid-cols-1 gap-2 relative z-10 text-left">
+                          <div className="p-3 grid grid-cols-1 gap-0.5 relative z-10">
                             {menu.items.map((item: any, i: number) => (
-                              <Link key={i} href={item.href} onClick={() => setActiveMenu(null)} className="flex items-center gap-4 p-4 rounded-2xl hover:bg-slate-50 transition-all group/item border border-transparent hover:border-slate-100">
-                                <item.icon className={`w-5 h-5 ${item.color} transition-transform group-hover/item:-translate-y-0.5`} />
-                                <div className="flex flex-col">
-                                  <span className="text-[11px] font-black uppercase text-slate-950 tracking-wider font-heading">{item.title}</span>
-                                  <span className="text-[10px] text-slate-400 font-bold uppercase mt-0.5">{item.desc}</span>
+                              <Link key={i} href={item.href} onClick={() => setActiveMenu(null)}
+                                className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 transition-all group/item"
+                              >
+                                <item.icon className={`w-4 h-4 ${item.color} shrink-0`} />
+                                <div>
+                                  <p className="text-[10px] font-black uppercase text-slate-900 tracking-wide leading-none">{item.title}</p>
+                                  <p className="text-[9px] text-slate-400 font-semibold mt-0.5">{item.desc}</p>
                                 </div>
-                                <ChevronRight className="w-3 h-3 text-slate-300 ml-auto opacity-0 group-hover/item:opacity-100 transition-all" />
                               </Link>
                             ))}
                           </div>
                         ) : (
-                          <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 relative z-10 text-left`}>
-                            {menu.sections.map((section: any, i: number) => (
-                              <div key={i} className="space-y-6">
-                                <h4 className="text-[10px] font-black text-blue-600 uppercase tracking-[0.2em] bg-blue-50/50 px-4 py-2 rounded-lg inline-block">{section.title}</h4>
-                                <div className="grid grid-cols-1 gap-2">
+                          <div className="p-4 relative z-10">
+                            {/* Section header bar */}
+                            <div className="flex items-center gap-3 mb-3 pb-2.5 border-b border-slate-100">
+                              <span className="text-[9px] font-black uppercase tracking-widest text-blue-600">{menu.label}</span>
+                              <span className="text-[8px] text-slate-400 font-bold">{menu.sections?.reduce((n: number, s: any) => n + s.items.length, 0)} options available</span>
+                              <Link href={menu.href || '#'} onClick={() => setActiveMenu(null)}
+                                className="ml-auto text-[9px] font-black text-blue-600 hover:text-blue-800 flex items-center gap-1 uppercase tracking-widest"
+                              >
+                                View All <ArrowRight className="w-2.5 h-2.5" />
+                              </Link>
+                            </div>
+
+                            {/* Columns: 2 sections → 2 cols, 3 → 3 cols, 4 → 4 cols */}
+                            <div
+                              className={
+                                menu.sections.length === 2 ? "grid grid-cols-2 gap-4" :
+                                menu.sections.length === 3 ? "grid grid-cols-3 gap-4" :
+                                "grid grid-cols-2 lg:grid-cols-4 gap-3"
+                              }
+                            >
+                              {menu.sections.map((section: any, i: number) => (
+                                <div key={i} className="space-y-1">
+                                  {/* Section label */}
+                                  <div className="px-2 py-1.5 mb-1">
+                                    <span className="text-[8px] font-black uppercase tracking-[0.15em] text-slate-400">{section.title}</span>
+                                  </div>
+                                  {/* Items */}
                                   {section.items.map((item: any, j: number) => (
-                                    <Link key={j} href={item.href} onClick={() => setActiveMenu(null)} className="flex items-center gap-4 p-4 rounded-2xl hover:bg-slate-50 transition-all group/subitem border border-transparent hover:border-blue-100/50">
-                                      <div className={`w-10 h-10 rounded-xl ${item.color} bg-white flex items-center justify-center shadow-sm border border-slate-100 transition-all group-hover/subitem:scale-110`}>
-                                         <item.icon className="w-5 h-5" />
+                                    <Link key={j} href={item.href} onClick={() => setActiveMenu(null)}
+                                      className="flex items-center gap-2.5 px-2 py-2 rounded-xl hover:bg-slate-50 transition-all group/subitem border border-transparent hover:border-slate-100"
+                                    >
+                                      <div className={`w-7 h-7 rounded-lg ${item.color} bg-slate-50 flex items-center justify-center shrink-0 transition-all group-hover/subitem:bg-white group-hover/subitem:shadow-sm border border-slate-100`}>
+                                        <item.icon className="w-3.5 h-3.5" />
                                       </div>
-                                      <div>
-                                         <p className="text-[11px] font-black uppercase text-slate-950 tracking-wide">{item.title}</p>
-                                         <p className="text-[10px] text-slate-400 font-bold uppercase">{item.desc}</p>
+                                      <div className="min-w-0">
+                                        <p className="text-[10px] font-black text-slate-900 leading-tight truncate">{item.title}</p>
+                                        <p className="text-[8.5px] text-slate-400 font-semibold leading-tight truncate mt-0.5">{item.desc}</p>
                                       </div>
-                                      <ChevronRight className="w-3 h-3 text-slate-300 ml-auto opacity-0 group-hover/subitem:opacity-100 transition-all" />
                                     </Link>
                                   ))}
+                                  {/* View all link per section */}
+                                  {section.viewAllHref && (
+                                    <Link href={section.viewAllHref} onClick={() => setActiveMenu(null)}
+                                      className="flex items-center gap-1.5 px-2 py-1.5 text-[8.5px] font-black uppercase tracking-widest text-blue-500 hover:text-blue-700 transition-colors"
+                                    >
+                                      <ArrowRight className="w-2.5 h-2.5" /> View All
+                                    </Link>
+                                  )}
                                 </div>
-                                {section.items.length >= 5 && (
-                                  <Link
-                                    href={section.viewAllHref || menu.href || "#"}
-                                    onClick={() => setActiveMenu(null)}
-                                    className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-blue-100 bg-blue-50/60 hover:bg-blue-100 text-[9px] font-black uppercase tracking-widest text-blue-600 hover:text-blue-800 transition-all group/viewall w-full"
-                                  >
-                                    <ArrowRight className="w-3 h-3" />
-                                    View All {section.title}
-                                    <ChevronRight className="w-3 h-3 ml-auto opacity-0 group-hover/viewall:opacity-100 transition-all" />
-                                  </Link>
-                                )}
-                              </div>
-                            ))}
+                              ))}
+                            </div>
                           </div>
                         )}
                       </div>
@@ -383,16 +407,7 @@ export default function Navbar() {
           {/* Right Pillar: Action Buttons */}
           <div className="flex items-center justify-end gap-3 text-right">
 
-            {/* WhatsApp Contact Button */}
-            <a
-              href="https://wa.me/254703469525?text=Hello%20Sentill%2C%20I'd%20like%20to%20learn%20more%20about%20investment%20options%20in%20Kenya."
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hidden sm:flex items-center gap-1.5 px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-[9px] font-black rounded-full uppercase tracking-widest transition-all shadow-sm whitespace-nowrap group/wa"
-            >
-              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-              WhatsApp
-            </a>
+
 
             {/* Notification Bell */}
             <div className="relative group/bell">
@@ -422,7 +437,7 @@ export default function Navbar() {
                         <span className="text-[9px] font-black uppercase tracking-widest text-amber-600 bg-amber-100/50 px-2 py-0.5 rounded">Yield Update</span>
                         <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">1h ago</span>
                       </div>
-                      <p className="text-[10px] font-medium text-slate-700 leading-relaxed">Etica MMF 7-day yield increased from 17.5% to 18.2%.</p>
+                      <p className="text-[10px] font-medium text-slate-700 leading-relaxed">91-Day T-Bill yield rose to 15.82%. Consider shifting short-term capital.</p>
                     </div>
                   </div>
                   <button className="w-full mt-3 py-3 text-[9px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-900 transition-colors">

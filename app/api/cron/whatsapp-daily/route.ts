@@ -1,228 +1,254 @@
 /**
  * app/api/cron/whatsapp-daily/route.ts
- * Daily WhatsApp broadcast — fires at 07:00 EAT (04:00 UTC).
- * Sends personalized AI portfolio briefs to:
- *  1. All opted-in verified users in the database
- *  2. VIP recipients (guaranteed daily delivery regardless of DB status)
+ * Multi-frequency WhatsApp broadcast dispatcher.
+ * 
+ * Fires at:
+ *   07:00 EAT (04:00 UTC) → DAILY + TWICE_DAILY + THREE_DAILY  → morning brief
+ *   12:00 EAT (09:00 UTC) → THREE_DAILY                         → midday pulse
+ *   18:00 EAT (15:00 UTC) → TWICE_DAILY + THREE_DAILY           → evening wrap
+ *   07:30 EAT (04:30 UTC) → WEEKLY (Mondays only)               → weekly intelligence
  *
- * Auth strategy:
- *  - Vercel Cron: sends `x-vercel-cron: 1` header automatically — allowed.
- *  - Manual trigger: must supply `Authorization: Bearer <CRON_SECRET>`.
+ * Also runs expiry notifications and auto-expiry cleanup.
+ *
+ * Auth:
+ *   - Vercel Cron: automatic via x-vercel-cron header
+ *   - Manual: Authorization: Bearer <CRON_SECRET>
+ *   - Manual with slot: ?slot=MORNING|MIDDAY|EVENING|WEEKLY
  */
 
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendWhatsAppMessage } from "@/lib/whatsapp";
-import { buildDailyWhatsAppBrief } from "@/lib/whatsapp-ai";
+import { buildBrief, BriefType } from "@/lib/whatsapp-briefs";
 
-// ── VIP Recipients ──────────────────────────────────────────────────────────
-// These people ALWAYS receive daily briefs, even if not registered in the app.
-// Format: { name, waId (phone number without +) }
+// ── VIP Recipients — always receive daily morning brief ──────────────────────
 const VIP_RECIPIENTS = [
-  { name: "Edwin",  waId: "254726260884" },
-  { name: "Robin",  waId: "254703469525" },
-  { name: "Winnie", waId: "254712345678" },
+  { name: "Edwin",  waId: "254726260884", isPremium: true  },
+  { name: "Robin",  waId: "254703469525", isPremium: true  },
 ];
 
+// ── Slot detection ────────────────────────────────────────────────────────────
+
+type Slot = "MORNING" | "MIDDAY" | "EVENING" | "WEEKLY";
+
+function detectSlot(req: Request): Slot {
+  const url = new URL(req.url);
+  const manual = url.searchParams.get("slot")?.toUpperCase() as Slot | undefined;
+  if (manual && ["MORNING", "MIDDAY", "EVENING", "WEEKLY"].includes(manual)) return manual;
+
+  const nowUTC = new Date();
+  const hourUTC = nowUTC.getUTCHours();
+  const minuteUTC = nowUTC.getUTCMinutes();
+  const dayOfWeek = nowUTC.getUTCDay(); // 0=Sunday, 1=Monday
+
+  // 04:30 UTC = 07:30 EAT → weekly (Monday only)
+  if (hourUTC === 4 && minuteUTC >= 30 && dayOfWeek === 1) return "WEEKLY";
+  // 04:00 UTC = 07:00 EAT → morning
+  if (hourUTC === 4) return "MORNING";
+  // 09:00 UTC = 12:00 EAT → midday
+  if (hourUTC === 9) return "MIDDAY";
+  // 15:00 UTC = 18:00 EAT → evening
+  if (hourUTC === 15) return "EVENING";
+
+  return "MORNING"; // default
+}
+
+function shouldReceiveSlot(frequency: string, slot: Slot): boolean {
+  switch (slot) {
+    case "MORNING":
+      return ["DAILY", "TWICE_DAILY", "THREE_DAILY"].includes(frequency);
+    case "MIDDAY":
+      return frequency === "THREE_DAILY";
+    case "EVENING":
+      return ["TWICE_DAILY", "THREE_DAILY"].includes(frequency);
+    case "WEEKLY":
+      return frequency === "WEEKLY";
+    default:
+      return false;
+  }
+}
+
+function slotToBriefType(slot: Slot): BriefType {
+  switch (slot) {
+    case "MIDDAY":  return "MIDDAY_PULSE";
+    case "EVENING": return "EVENING_WRAP";
+    case "WEEKLY":  return "WEEKLY_INTELLIGENCE";
+    default:        return "DAILY_MORNING";
+  }
+}
+
+// ── Main Handler ───────────────────────────────────────────────────────────────
+
 export async function GET(req: Request) {
-  // ── Auth: allow Vercel Cron OR manual call with correct secret ─────────────
+  // ── Auth ─────────────────────────────────────────────────────────────────────
   const isVercelCron = req.headers.get("x-vercel-cron") === "1";
   const authHeader   = (req.headers.get("authorization") ?? "").trim();
-  const cronSecret   = (process.env.CRON_SECRET ?? "").trim();
-  // Hardcoded fallback for when env var has encoding issues
-  const FALLBACK_SECRET = "sentil-cron-2026";
-  const isManualAuth = (cronSecret && authHeader === `Bearer ${cronSecret}`) ||
-                       authHeader === `Bearer ${FALLBACK_SECRET}`;
+  const cronSecret   = (process.env.CRON_SECRET ?? "sentil-cron-2026").trim();
+  const isManualAuth = authHeader === `Bearer ${cronSecret}` || authHeader === "Bearer sentil-cron-2026";
 
   if (!isVercelCron && !isManualAuth) {
-    console.warn("[Cron] Unauthorized — header:", authHeader?.slice(0, 20), "env:", cronSecret?.slice(0, 10));
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const authMethod = isVercelCron ? "vercel-cron" : "manual-secret";
-  console.log(`[Cron] WhatsApp daily broadcast starting... (auth: ${authMethod})`);
+  const slot = detectSlot(req);
+  const briefType = slotToBriefType(slot);
+  const authMethod = isVercelCron ? "vercel-cron" : "manual";
 
-  // ── 1. Fetch opted-in users from DB ─────────────────────────────────────────
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  console.log(`[Cron] 🚀 Slot: ${slot} | Brief: ${briefType} | Auth: ${authMethod}`);
+
+  // ── 1. Load opted-in DB users ────────────────────────────────────────────────
   let dbUsers: any[] = [];
   try {
     dbUsers = await prisma.$queryRaw`
-      SELECT u.id, u.name, u."whatsappId",
-             COALESCE(a."whatsappNumber", u."whatsappId") AS "resolvedWaId"
+      SELECT
+        u.id, u.name, u."whatsappId",
+        u."isPremium",
+        COALESCE(a.frequency, 'DAILY') AS frequency,
+        COALESCE(a."whatsappEnabled", true) AS "whatsappEnabled"
       FROM "User" u
       LEFT JOIN "AlertPreference" a ON a."userId" = u.id
       WHERE u."whatsappVerified" = true
         AND u."whatsappId" IS NOT NULL
         AND (a."whatsappEnabled" IS NULL OR a."whatsappEnabled" = true)
+        AND (a.frequency IS NULL OR a.frequency NOT IN ('NONE', 'MARKET_ALERTS_ONLY'))
     `;
-  } catch (dbErr) {
-    console.error("[Cron] DB error fetching opted-in users:", dbErr);
-    // Don't abort — still send to VIP recipients
+  } catch (err) {
+    console.error("[Cron] DB query failed:", err);
   }
 
-  // ── 2. Build combined recipient list (deduped by waId) ─────────────────────
-  const recipientMap = new Map<string, { name: string; userId?: string }>();
+  // ── 2. Filter by slot eligibility ────────────────────────────────────────────
+  const eligibleDbUsers = dbUsers.filter(u => shouldReceiveSlot(u.frequency ?? "DAILY", slot));
+  console.log(`[Cron] ${eligibleDbUsers.length}/${dbUsers.length} DB users eligible for ${slot}`);
 
-  // Add VIP recipients first (guaranteed)
-  for (const vip of VIP_RECIPIENTS) {
-    recipientMap.set(vip.waId, { name: vip.name });
+  // ── 3. Build deduplicated recipient list ─────────────────────────────────────
+  const recipientMap = new Map<string, { name: string; userId?: string; isPremium: boolean }>();
+
+  // VIPs always get morning brief
+  if (slot === "MORNING") {
+    for (const vip of VIP_RECIPIENTS) {
+      recipientMap.set(vip.waId, { name: vip.name, isPremium: vip.isPremium });
+    }
   }
 
-  // Add DB users (may override VIP entries with userId for portfolio context)
-  for (const user of dbUsers) {
-    const waId: string = user.whatsappId ?? user.resolvedWaId;
-    if (waId) {
-      recipientMap.set(waId, { name: user.name ?? "Investor", userId: user.id });
+  for (const u of eligibleDbUsers) {
+    if (u.whatsappId) {
+      recipientMap.set(u.whatsappId, {
+        name: u.name ?? "Investor",
+        userId: u.id,
+        isPremium: u.isPremium ?? false,
+      });
     }
   }
 
   const recipients = Array.from(recipientMap.entries());
-  console.log(`[Cron] Total recipients: ${recipients.length} (${VIP_RECIPIENTS.length} VIP + ${dbUsers.length} DB users, deduped)`);
+  console.log(`[Cron] Total recipients: ${recipients.length}`);
 
-  // ── 3. Send briefs ────────────────────────────────────────────────────────────
-  let sent = 0;
-  let failed = 0;
+  // ── 4. Send briefs ────────────────────────────────────────────────────────────
+  let sent = 0, failed = 0;
 
-  for (const [waId, { name, userId }] of recipients) {
+  for (const [waId, { name, userId, isPremium }] of recipients) {
     try {
-      const brief = await buildDailyWhatsAppBrief(name, userId ?? "guest");
+      const brief = await buildBrief(briefType, name, userId ?? "guest", isPremium);
       await sendWhatsAppMessage(waId, brief, userId);
-      console.log(`[Cron] ✅ Sent to ${name} (${waId})`);
       sent++;
-      // Rate limit: 60 msgs/min for Cloud API free tier
-      await new Promise((r) => setTimeout(r, 1100));
+      console.log(`[Cron] ✅ Sent ${briefType} to ${name} (${waId})`);
+      await new Promise(r => setTimeout(r, 1100)); // Rate limit
     } catch (err) {
-      console.error(`[Cron] ❌ Failed to send to ${name} (${waId}):`, err);
       failed++;
+      console.error(`[Cron] ❌ Failed: ${name} (${waId})`, err);
     }
   }
 
-  console.log(`[Cron] WhatsApp broadcast complete: ${sent} sent, ${failed} failed out of ${recipients.length} total`);
+  // ── 5. Weekly: mark lastWeeklySent ───────────────────────────────────────────
+  if (slot === "WEEKLY") {
+    for (const u of eligibleDbUsers) {
+      if (u.id) {
+        try {
+          await prisma.$executeRaw`
+            UPDATE "AlertPreference"
+            SET "lastWeeklySent" = NOW(), "updatedAt" = NOW()
+            WHERE "userId" = ${u.id} AND frequency = 'WEEKLY'
+          `;
+        } catch {}
+      }
+    }
+  }
 
-  // ── 4. Expiry Notifications — 2 days before subscription ends ──────────────
-  let expiryNotified = 0;
-  let autoExpired = 0;
+  // ── 6. Expiry notifications (morning only) ────────────────────────────────────
+  let expiryNotified = 0, autoExpired = 0;
 
-  try {
-    const twoDaysFromNow = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000);
-    const now = new Date();
+  if (slot === "MORNING") {
+    try {
+      const twoDaysFromNow = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000);
+      const now = new Date();
 
-    // Find Pro users expiring within 2 days who haven't been notified today
-    const expiringUsers = await prisma.user.findMany({
-      where: {
-        isPremium: true,
-        premiumExpiresAt: {
-          lte: twoDaysFromNow,
-          gte: now,
+      const expiringUsers = await prisma.user.findMany({
+        where: {
+          isPremium: true,
+          premiumExpiresAt: { lte: twoDaysFromNow, gte: now },
+          whatsappId: { not: null },
         },
-        whatsappId: { not: null },
-      },
-      select: {
-        id: true,
-        name: true,
-        whatsappId: true,
-        premiumExpiresAt: true,
-      },
-    });
-
-    for (const user of expiringUsers) {
-      if (!user.whatsappId || !user.premiumExpiresAt) continue;
-      const daysLeft = Math.ceil(
-        (new Date(user.premiumExpiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
-      );
-
-      const expiryDate = new Date(user.premiumExpiresAt).toLocaleDateString("en-KE", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
+        select: { id: true, name: true, whatsappId: true, premiumExpiresAt: true },
       });
 
-      try {
-        await sendWhatsAppMessage(
-          user.whatsappId,
-          `⚠️ *Sentill Pro Expiry Notice*\n\n` +
-          `Hi *${user.name?.split(" ")[0] ?? "Investor"}*,\n\n` +
-          `Your Sentill Pro subscription expires ${daysLeft <= 0 ? "today" : `in *${daysLeft} day${daysLeft !== 1 ? "s" : ""}*`} (${expiryDate}).\n\n` +
-          `━━━━━━━━━━━━━━━━━━\n` +
-          `Don't lose access to:\n\n` +
-          `✅ Unlimited AI wealth insights\n` +
-          `✅ Portfolio tracking & analytics\n` +
-          `✅ KRA Tax AI & goal planning\n` +
-          `✅ Daily AI market briefs\n` +
-          `✅ Priority support\n\n` +
-          `━━━━━━━━━━━━━━━━━━\n` +
-          `💰 *Renew now:*\n\n` +
-          `📱 1 Week — *KES 99*\n` +
-          `📅 1 Month — *KES 349* _(Save 12%)_\n` +
-          `🏆 3 Months — *KES 999* _(Save 24%)_\n\n` +
-          `Send *RENEW* to keep your Pro access.\n` +
-          `Or visit: https://sentill.africa/packages`,
-          user.id
-        );
-        expiryNotified++;
-        console.log(`[Cron] ⏰ Expiry reminder sent to ${user.name} (${daysLeft}d left)`);
-        await new Promise((r) => setTimeout(r, 1100));
-      } catch (err) {
-        console.error(`[Cron] ❌ Expiry notification failed for ${user.name}:`, err);
-      }
-    }
+      for (const user of expiringUsers) {
+        if (!user.whatsappId || !user.premiumExpiresAt) continue;
+        const daysLeft = Math.ceil((new Date(user.premiumExpiresAt).getTime() - Date.now()) / 86_400_000);
+        const expiryDate = new Date(user.premiumExpiresAt).toLocaleDateString("en-KE", { day: "numeric", month: "long", year: "numeric" });
+        const firstName = user.name?.split(" ")[0] ?? "Investor";
 
-    // Auto-disable expired subscriptions
-    const expiredUsers = await prisma.user.findMany({
-      where: {
-        isPremium: true,
-        premiumExpiresAt: { lt: now },
-      },
-      select: { id: true, name: true, whatsappId: true },
-    });
-
-    for (const user of expiredUsers) {
-      try {
-        await prisma.user.update({
-          where: { id: user.id },
-          data: { isPremium: false },
-        });
-        autoExpired++;
-        console.log(`[Cron] 🔄 Auto-expired: ${user.name}`);
-
-        // Send expired notification
-        if (user.whatsappId) {
+        try {
           await sendWhatsAppMessage(
             user.whatsappId,
-            `🔒 *Sentill Pro Expired*\n\n` +
-            `Hi *${user.name?.split(" ")[0] ?? "Investor"}*,\n\n` +
-            `Your Sentill Pro subscription has ended. Your free plan limits are now active:\n\n` +
-            `✅ 3 AI questions per day\n` +
-            `✅ Live market rates\n` +
-            `✅ Investment browser\n` +
-            `❌ Portfolio tracker — *locked*\n` +
-            `❌ Unlimited AI — *locked*\n` +
-            `❌ Goal planning — *locked*\n\n` +
+            `⚠️ *Sentill Pro Expiry Notice*\n\n` +
+            `Hi *${firstName}*,\n\n` +
+            `Your Sentill Pro subscription expires ${daysLeft <= 0 ? "*today* ⚡" : `in *${daysLeft} day${daysLeft !== 1 ? "s" : ""}* ⏳`}\n` +
+            `_(${expiryDate})_\n\n` +
             `━━━━━━━━━━━━━━━━━━\n` +
-            `⚡ *Reactivate Pro from just KES 99:*\n\n` +
-            `Send *SUBSCRIBE* to get back to full access.\n` +
-            `Or visit: https://sentill.africa/packages`,
+            `🔐 *Don't lose Pro access:*\n\n` +
+            `✅ Unlimited AI Oracle queries\n` +
+            `✅ Full portfolio tracker\n` +
+            `✅ KRA Tax optimiser\n` +
+            `✅ Daily AI market briefs\n` +
+            `✅ Goal planning engine\n\n` +
+            `━━━━━━━━━━━━━━━━━━\n` +
+            `💰 *Renew from just KES 99:*\n\n` +
+            `📱 1 Week — *KES 99*\n` +
+            `📅 1 Month — *KES 349* _(save 12%)_\n` +
+            `🏆 3 Months — *KES 999* _(save 24%)_\n` +
+            `🌟 Annual — *KES 2,999* _(save 36%)_\n\n` +
+            `Reply *RENEW* or visit:\nhttps://sentill.africa/packages`,
             user.id
           );
-          await new Promise((r) => setTimeout(r, 1100));
+          expiryNotified++;
+          await new Promise(r => setTimeout(r, 1100));
+        } catch (err) {
+          console.error(`[Cron] Expiry notify failed: ${user.name}`, err);
         }
-      } catch (err) {
-        console.error(`[Cron] ❌ Auto-expiry failed for ${user.name}:`, err);
       }
+
+      // Auto-disable expired subscriptions
+      const expired = await prisma.user.updateMany({
+        where: { isPremium: true, premiumExpiresAt: { lt: now } },
+        data: { isPremium: false },
+      });
+      autoExpired = expired.count;
+      if (autoExpired > 0) console.log(`[Cron] 🔄 Auto-expired ${autoExpired} subscriptions`);
+
+    } catch (err) {
+      console.error("[Cron] Expiry section failed:", err);
     }
-  } catch (err) {
-    console.error("[Cron] Expiry notification error:", err);
   }
 
-  console.log(`[Cron] Expiry: ${expiryNotified} reminded, ${autoExpired} auto-expired`);
+  console.log(`[Cron] ✅ ${slot} complete: ${sent} sent, ${failed} failed, ${expiryNotified} expiry notices, ${autoExpired} auto-expired`);
 
   return NextResponse.json({
     success: true,
+    slot,
+    briefType,
     sent,
     failed,
     total: recipients.length,
-    vipCount: VIP_RECIPIENTS.length,
-    dbUserCount: dbUsers.length,
     expiryNotified,
     autoExpired,
     authMethod,

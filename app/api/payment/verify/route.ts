@@ -49,6 +49,7 @@ export async function GET(req: NextRequest) {
         WEEKLY_7_DAYS: 7,
         MONTHLY_30_DAYS: 30,
         QUARTERLY_90_DAYS: 90,
+        ANNUAL_365_DAYS: 365,
         // Legacy
         TRIAL_7_DAYS: 7,
         TRIAL_3_DAYS: 3,

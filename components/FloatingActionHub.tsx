@@ -49,7 +49,7 @@ export default function FloatingActionHub() {
   ];
 
   return (
-    <div className="fixed bottom-8 left-8 z-[201] flex flex-col items-center gap-4">
+    <div className="fixed bottom-24 left-5 z-[201] flex flex-col items-center gap-4 sm:bottom-8 sm:left-8">
       {/* Sub-Actions Stack */}
       <AnimatePresence>
         {isExpanded && (

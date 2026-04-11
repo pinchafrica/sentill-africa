@@ -80,8 +80,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       title: "Administration",
       items: [
         { name: "Log History", href: "/dashboard/history", icon: History },
+        { name: "Notifications", href: "/dashboard/notifications", icon: Bell, badge: "NEW" },
         { name: "Alert Hub", href: "/dashboard/alerts", icon: Bell },
-        { name: "WhatsApp Hub", href: "/dashboard/whatsapp", icon: Smartphone, badge: "NEW" },
+        { name: "WhatsApp Hub", href: "/dashboard/whatsapp", icon: Smartphone },
         { name: "Chama Hub", href: "/resources/chamas", icon: Users, external: true },
         { name: "Sentill Academy", href: "/academy", icon: GraduationCap, badge: "FREE" },
       ]

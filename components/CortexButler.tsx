@@ -24,7 +24,7 @@ export default function CortexButler() {
 
   const marketPulse = [
     { label: "Sentiment", value: "BULLISH", color: "text-emerald-500" },
-    { label: "Top MMF", value: "Etica (17.5%)", color: "text-blue-500" },
+    { label: "Top MMF", value: "Zidi (18.2%)", color: "text-blue-500" },
     { label: "NSE Vol", value: "Normal", color: "text-slate-400" },
   ];
 
@@ -81,9 +81,9 @@ export default function CortexButler() {
   };
 
   return (
-    <div className="fixed bottom-8 right-8 z-[200]">
-      {/* Floating Trigger Button */}
-      {!isOpen && (
+    <div className="fixed bottom-6 right-6 z-[200]">
+      {/* CortexButler trigger is handled by SentillOracle — no extra FAB needed */}
+      {false && !isOpen && (
         <motion.button
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}

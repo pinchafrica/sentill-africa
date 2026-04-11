@@ -557,6 +557,7 @@ export default function MMFPage() {
                   <th className="px-4 py-4 text-center text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">CMA</th>
                   <th className="px-4 py-4 text-center text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Watch</th>
                   <th className="px-4 py-4 text-center text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Deep Dive</th>
+                  <th className="px-4 py-4 text-center text-[9px] font-black text-emerald-600 uppercase tracking-[0.2em]">Invest Now</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
@@ -653,6 +654,33 @@ export default function MMFPage() {
                             View →
                           </a>
                         </div>
+                      </td>
+                      <td className="px-4 py-5 text-center" onClick={e => e.stopPropagation()}>
+                        {(() => {
+                          const AFFILIATE: Record<string, string> = {
+                            "Etica Wealth MMF":     "https://eticacapital.com?ref=sentill",
+                            "Sanlam MMF":           "https://sanlam.co.ke/investments?ref=sentill",
+                            "Britam MMF":           "https://britam.com/personal/savings-investments?ref=sentill",
+                            "Equity MMF":           "https://equitygroupholdings.com?ref=sentill",
+                            "CIC MMF":              "https://cic.co.ke/products/unit-trusts?ref=sentill",
+                            "Co-op MMF":            "https://co-opbank.co.ke/personal/investments?ref=sentill",
+                            "ICEA Lion MMF":        "https://icealion.co.ke/unit-trust?ref=sentill",
+                            "Old Mutual MMF":       "https://oldmutual.co.ke/save-invest?ref=sentill",
+                            "NCBA MMF":             "https://ncbabank.com/personal/savings?ref=sentill",
+                            "Absa MMF":             "https://absa.co.ke/personal-banking/investments?ref=sentill",
+                            "KCB MMF":              "https://kcbgroup.com/personal/invest?ref=sentill",
+                          };
+                          const url = AFFILIATE[fund.name];
+                          return url ? (
+                            <a href={url} target="_blank" rel="noopener noreferrer"
+                              onClick={e => e.stopPropagation()}
+                              className="inline-flex items-center gap-1 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-[8px] font-black uppercase tracking-widest rounded-lg transition-all">
+                              Invest →
+                            </a>
+                          ) : (
+                            <span className="text-[8px] text-slate-300 font-bold">N/A</span>
+                          );
+                        })()}
                       </td>
                     </tr>
                   );

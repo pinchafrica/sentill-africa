@@ -1,34 +1,22 @@
 import { PrismaClient } from "@prisma/client";
-import * as fs from "fs";
-
-const prisma = new PrismaClient();
-
+const p = new PrismaClient();
 async function main() {
-  const users = await prisma.user.findMany({
-    select: {
-      id: true,
-      email: true,
-      name: true,
-      role: true,
-      isPremium: true,
-      createdAt: true,
-    },
-    orderBy: { createdAt: "desc" },
+  const users = await p.user.findMany({
+    select: { id: true, name: true, email: true, whatsappId: true, whatsappVerified: true, isPremium: true, createdAt: true },
+    orderBy: { createdAt: "asc" },
   });
-
-  let output = `\n=== REGISTERED USERS (${users.length} total) ===\n\n`;
-  users.forEach((u, i) => {
-    output += `[${i + 1}] ${u.name}\n`;
-    output += `    Email     : ${u.email}\n`;
-    output += `    Role      : ${u.role}\n`;
-    output += `    Premium   : ${u.isPremium}\n`;
-    output += `    Joined    : ${u.createdAt?.toISOString?.() ?? "N/A"}\n\n`;
+  console.log(`Total users: ${users.length}`);
+  for (const u of users) {
+    console.log(`${u.name} | ${u.email} | WA:${u.whatsappId || "none"} | V:${u.whatsappVerified} | Pro:${u.isPremium} | ${u.createdAt.toISOString().slice(0,10)}`);
+  }
+  const sessions = await p.whatsAppSession.findMany({
+    include: { user: { select: { name: true } } },
+    orderBy: { lastSeen: "desc" },
   });
-
-  fs.writeFileSync("scripts/users-output.txt", output);
-  console.log("Written to scripts/users-output.txt");
+  console.log(`\nSessions: ${sessions.length}`);
+  for (const s of sessions) {
+    console.log(`  WA:${s.waId} | ${s.user?.name || "unlinked"} | State:${s.state}`);
+  }
+  await p.$disconnect();
 }
-
-main()
-  .catch(console.error)
-  .finally(() => prisma.$disconnect());
+main();

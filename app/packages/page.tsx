@@ -102,6 +102,29 @@ const PACKAGES = [
     link: "/auth/register?plan=quarterly",
     planCode: "QUARTERLY_90_DAYS",
     amount: 999,
+  },
+  {
+    name: "Annual Pro",
+    price: "KES 2,999",
+    period: "/year",
+    description: "The full platform for serious investors. Lock in 12 months at our best ever rate — save 30%.",
+    color: "from-amber-900/60 to-slate-950 border-amber-500/30 text-amber-400",
+    badge: "🏆 Best Rate",
+    features: [
+      "Everything in 3-Month Pro",
+      "12 Months Full Pro Access",
+      "Annual Portfolio Strategy Call",
+      "Dedicated Account Manager",
+      "First Access to New Asset Classes",
+      "Annual Wealth Report PDF",
+      "KRA Tax Export (Full Year)",
+      "VIP WhatsApp Group Access"
+    ],
+    missing: [],
+    cta: "Go Annual — KES 2,999/yr",
+    link: "/auth/register?plan=annual",
+    planCode: "ANNUAL_365_DAYS",
+    amount: 2999,
   }
 ];
 
@@ -169,7 +192,7 @@ export default function PackagesPage() {
           </motion.div>
         </div>
 
-        <div className="max-w-7xl mx-auto grid md:grid-cols-2 lg:grid-cols-4 gap-6 items-start relative z-10">
+        <div className="max-w-7xl mx-auto grid md:grid-cols-3 lg:grid-cols-5 gap-5 items-start relative z-10">
           {PACKAGES.map((pkg, i) => (
             <motion.div
               key={i}
@@ -198,6 +221,11 @@ export default function PackagesPage() {
                     {pkg.period}
                   </span>
                 </div>
+                {pkg.planCode === "ANNUAL_365_DAYS" && (
+                  <p className="text-[10px] text-amber-400 font-bold mt-2">
+                    ≈ KES {Math.round(pkg.amount / 52)}/week · Save 30%
+                  </p>
+                )}
                 {pkg.amount > 0 && pkg.planCode === "QUARTERLY_90_DAYS" && (
                   <p className="text-[10px] text-emerald-400 font-bold mt-2">
                     ≈ KES {Math.round(pkg.amount / 13)}/week · Save 24%

@@ -232,7 +232,7 @@ export default function TreasuriesPage() {
       </div>
 
       {/* ── TAB BAR ── */}
-      <div className="bg-white border-b border-slate-200 sticky top-[108px] z-20 shadow-sm">
+      <div className="bg-white border-b border-slate-200 sticky top-[176px] lg:top-[108px] z-20 shadow-sm">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex gap-1 overflow-x-auto no-scrollbar">
             {([

@@ -14,12 +14,37 @@ import { prisma } from "./prisma";
 import {
   sendWhatsAppMessage,
   sendInteractiveButtons,
+  sendImageMessage,
+  sendListMessage,
+  sendCTAButton,
   generateOTP,
   formatKES,
   normalizePhone,
 } from "./whatsapp";
 import { askGeminiBot, generateInvestmentSummary } from "./whatsapp-gemini";
+import {
+  mmfYieldChartUrl,
+  tbillYieldCurveUrl,
+  saccoChartUrl,
+  compoundGrowthChartUrl,
+  investmentComparisonUrl,
+  parseCalcCommand,
+} from "./chart-generator";
+import { sendEmail, buildLoginCredentialsEmail } from "./email";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
+
+
+// ── Generate a secure random password ────────────────────────────────────────
+function generateSecurePassword(): string {
+  const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+  let password = '';
+  const bytes = crypto.randomBytes(10);
+  for (let i = 0; i < 10; i++) {
+    password += chars[bytes[i] % chars.length];
+  }
+  return password;
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Plans
@@ -74,6 +99,14 @@ interface SessionContext {
   logProviderId?: string;
   logProviderName?: string;
   logAmount?: number;
+  // Asset management
+  removeAssetId?: string;
+  removeAssetName?: string;
+  reallocateFromId?: string;
+  reallocateFromName?: string;
+  reallocateToId?: string;
+  reallocateToName?: string;
+  reallocateAmount?: number;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -189,6 +222,16 @@ export async function processIncomingMessage(
       );
     }
     if (buttonPayload === "LOGIN") return handleLoginRequest(waId);
+
+    // ── Frequency button payloads — work from ANY state (post-register or ALERTS menu) ──
+    if (["FREQ_DAILY", "FREQ_WEEKLY", "FREQ_MOVERS", "FREQ_OFF"].includes(buttonPayload)) {
+      if (session.state === "FREQ_AFTER_REGISTER") {
+        return handleFreqAfterRegister(waId, buttonPayload, ctx, session.userId ?? undefined);
+      }
+      if (session.userId) {
+        return handleAlertFreqSelect(waId, buttonPayload, ctx, session.userId ?? undefined);
+      }
+    }
   }
 
   // ── Route by session state ────────────────────────────────────────────────
@@ -211,6 +254,29 @@ export async function processIncomingMessage(
       return handleLogAssetAmount(waId, rawInput, ctx, session.userId ?? undefined);
     case "LOG_ASSET_CONFIRM":
       return handleLogAssetConfirm(waId, input, ctx, session.userId ?? undefined);
+    case "REMOVE_ASSET_SELECT":
+      return handleRemoveAssetSelect(waId, input, ctx, session.userId ?? undefined);
+    case "REMOVE_ASSET_CONFIRM":
+      return handleRemoveAssetConfirm(waId, input, ctx, session.userId ?? undefined);
+    case "REALLOCATE_FROM":
+      return handleReallocateFrom(waId, input, ctx, session.userId ?? undefined);
+    case "REALLOCATE_TO":
+      return handleReallocateTo(waId, buttonPayload ?? input, ctx, session.userId ?? undefined);
+    case "REALLOCATE_AMOUNT":
+      return handleReallocateAmount(waId, rawInput, ctx, session.userId ?? undefined);
+    case "REALLOCATE_CONFIRM":
+      return handleReallocateConfirm(waId, input, ctx, session.userId ?? undefined);
+    // Alert / Notification preference flows
+    case "ALERT_FREQ_SELECT":
+      return handleAlertFreqSelect(waId, buttonPayload ?? input, ctx, session.userId ?? undefined);
+    case "ALERT_THRESHOLD_INPUT":
+      return handleAlertThresholdInput(waId, rawInput, ctx, session.userId ?? undefined);
+    case "ALERT_WATCHLIST_ADD":
+      return handleWatchlistAdd(waId, input, ctx, session.userId ?? undefined);
+    case "ALERT_WATCHLIST_REMOVE":
+      return handleWatchlistRemove(waId, input, ctx, session.userId ?? undefined);
+    case "FREQ_AFTER_REGISTER":
+      return handleFreqAfterRegister(waId, buttonPayload ?? input, ctx, session.userId ?? undefined);
   }
 
   // ── IDLE — route by keyword ───────────────────────────────────────────────
@@ -238,51 +304,105 @@ export async function processIncomingMessage(
     return handleLoginRequest(waId);
   }
 
-  // Logged-in: numbers 1–6 navigate investment categories
-  if (session.userId && /^[1-6]$/.test(input)) {
-    await updateSession(waId, "BROWSE_PROVIDERS", ctx, session.userId);
-    return handleBrowseCategoryInput(waId, input, session.userId, ctx);
-  }
-
-  // Logged-out: 1=Register, 2=Login shortcuts
-  if (input === "1" && !session.userId) {
-    await updateSession(waId, "REGISTER_NAME", {});
-    return sendWhatsAppMessage(waId,
-      `🎉 Welcome to *Sentil Africa!*\n\nLet's create your *free account*.\n\nFirst, what is your *full name*?`
+  // Logged-in: numbered menu (1=Invest, 2=Markets, 3=AI, 4=Portfolio, 5=Goals)
+  // Also handle 6–9 for investment category browsing from sub-menus
+  if (session.userId) {
+    const uid = session.userId;
+    if (input === "1") return sendInvestmentCategories(waId, uid);
+    if (input === "2") return handleMarkets(waId);
+    if (input === "3") return sendWhatsAppMessage(waId,
+      `🧠 *Ask Sentill Africa anything!*\n\n` +
+      `Just type your question. For example:\n` +
+      `• _What is the best MMF in Kenya right now?_\n` +
+      `• _How much will KES 100K grow in 1 year?_\n` +
+      `• _Compare T-Bills vs Bonds_\n` +
+      `• _CALC 50000_ — quick projections\n\n` +
+      `_Go ahead, type your question..._`
     );
+    if (input === "4") return handlePortfolio(waId, uid);
+    if (input === "5") return handleGoals(waId, uid);
   }
-  if (input === "2" && !session.userId) return handleLoginRequest(waId);
 
+  // Guest: 1=Register, 2=Login, 3=Browse Investments, 4=Live Rates
   if (!session.userId) {
-    // If user typed a real question (>5 chars), route to AI even without login
-    if (rawInput.length > 5) {
-      return handleGeminiQuestionGuest(waId, rawInput);
+    if (input === "1") {
+      await updateSession(waId, "REGISTER_NAME", {});
+      return sendWhatsAppMessage(waId,
+        `🎉 *Create Your Free Sentill Account*\n\n` +
+        `It takes less than 2 minutes.\n\n` +
+        `You’ll be able to:\n` +
+        `• Get personalised investment advice\n` +
+        `• Track your portfolio\n` +
+        `• Receive daily market briefs\n\n` +
+        `First, what is your *full name*?`
+      );
     }
-    return sendInteractiveButtons(
-      waId,
-      `👋 *Welcome to Sentil Africa!*\n\n` +
-      `🌍 Kenya's premier wealth intelligence hub.\n\n` +
-      `📊 Compare MMFs, T-Bills, Bonds, SACCOs\n` +
-      `🧠 AI-powered investment insights — *available 24/7*\n` +
-      `📱 Manage everything via WhatsApp\n\n` +
-      `Get started:`,
-      [
-        { id: "REGISTER", title: "🆕 Create Account" },
-        { id: "LOGIN",    title: "🔐 Login" },
-      ]
-    );
+    if (input === "2") return handleLoginRequest(waId);
+    if (input === "3") return sendInvestmentCategories(waId, "guest");
+    if (input === "4") return handleMarkets(waId);
+    if (input === "RATES" || input === "R") return handleMarkets(waId);
+    if (input === "SPECIAL") return handleSpecialFunds(waId);
+    if (input.startsWith("CHART") || input.startsWith("GRAPH")) return handleChartCommand(waId, input, undefined);
+    if (input === "TABLE" || input === "RANKED") return handleTableCommand(waId, undefined);
+    if (input === "LIST" || input === "FUNDS" || input === "MMF LIST") return handleMMFListMenu(waId, undefined);
+    if (input.startsWith("CALC ") || input.startsWith("CALCULATE ")) return handleQuickCalc(waId, rawInput, undefined);
+
+    // If user typed a real question (>5 chars), route to AI even without login
+    if (rawInput.length > 5) return handleGeminiQuestionGuest(waId, rawInput);
+
+    // Default: show the clean numbered menu
+    return sendMainMenu(waId, undefined);
   }
 
   // ── Authenticated commands ────────────────────────────────────────────────
   const userId = session.userId!;
 
   if (input === "PORTFOLIO" || input === "P") return handlePortfolio(waId, userId);
-  if (input === "MARKETS"   || input === "M") return handleMarkets(waId);
+  if (input === "MARKETS"   || input === "M" || input === "RATES" || input === "R") return handleMarkets(waId);
   if (input === "GOALS"     || input === "G") return handleGoals(waId, userId);
   if (input === "WATCHLIST" || input === "W") return handleWatchlist(waId, userId);
+  if (["SPECIAL", "SPECIAL FUNDS", "UNIT TRUST", "PENSION", "OFFSHORE", "DOLLAR FUND",
+       "ZIIDI", "ZIIDI TRADER", "TRADER", "STOCKS", "NSE", "SHARES", "TRADE"].includes(input)) return handleSpecialFunds(waId);
   if (input === "STATUS"    || input === "S") return handleSubscriptionStatus(waId, userId);
   if (input === "HELP"      || input === "H") return sendHelp(waId);
   if (input === "LOGOUT")                     return handleLogout(waId);
+
+  // ── Notification & Alert Commands ──────────────────────────────────────────
+  if (["ALERTS", "NOTIFY", "NOTIFICATIONS", "FREQUENCY", "FREQ"].includes(input)) return handleAlertSettings(waId, userId);
+  if (["WATCH", "WATCHLIST ADD", "ADD WATCH"].includes(input)) return startWatchlistAdd(waId, ctx, userId);
+  if (["UNWATCH", "WATCHLIST REMOVE", "REMOVE WATCH"].includes(input)) return startWatchlistRemove(waId, ctx, userId);
+  if (input.startsWith("ALERT YIELD ") || input.startsWith("YIELD ALERT ")) return handleYieldAlertSet(waId, rawInput, userId);
+  // Inline freq shortcuts: FREQ DAILY / FREQ WEEKLY / FREQ OFF
+  if (input.startsWith("FREQ ")) return handleAlertFreqSelect(waId, input.replace("FREQ ", "FREQ_").replace(" ", ""), ctx, userId);
+
+  // ── Referral Program ────────────────────────────────────────────────────
+  if (["REFER", "REFERRAL", "INVITE", "INVITE FRIEND"].includes(input)) return handleRefer(waId, userId);
+
+  // ── Asset Tracker Pro Commands ──────────────────────────────────────────
+  if (["ASSETS", "MY ASSETS", "DASHBOARD", "ASSET"].includes(input)) return handleAssetsDashboard(waId, userId);
+  if (["REMOVE", "DELETE", "REMOVE ASSET"].includes(input)) return startRemoveAsset(waId, ctx, userId);
+  if (["REALLOCATE", "MOVE", "TRANSFER", "REBALANCE"].includes(input)) return startReallocate(waId, ctx, userId);
+  if (["PERFORMANCE", "PERF", "REPORT"].includes(input)) return handlePerformanceReport(waId, userId);
+  if (["EXPORT", "STATEMENT"].includes(input)) return handleExportStatement(waId, userId);
+  if (["SNAPSHOT", "SNAP"].includes(input)) return handleSnapshot(waId, userId);
+  if (["LEADERBOARD", "TOP", "BEST", "RANKING"].includes(input)) return handleLeaderboard(waId);
+  if (input.startsWith("CALC ") || input.startsWith("CALCULATE ")) return handleQuickCalc(waId, rawInput);
+  if (["MOVERS", "TRENDING", "HOT"].includes(input)) return handleMarketMovers(waId);
+
+  // ── CHART commands — send PNG charts as images ───────────────────────────
+  if (input.startsWith("CHART") || input.startsWith("GRAPH")) {
+    return handleChartCommand(waId, input, session.userId ?? undefined);
+  }
+
+  // ── TABLE command — ranked text table ────────────────────────────────────
+  if (input === "TABLE" || input === "TABLES" || input === "RANKED") {
+    return handleTableCommand(waId, session.userId ?? undefined);
+  }
+
+  // ── LIST command — interactive scrollable MMF picker ─────────────────────
+  if (input === "LIST" || input === "FUNDS" || input === "MMF LIST") {
+    return handleMMFListMenu(waId, session.userId ?? undefined);
+  }
 
   // Investment browser
   if (["INVEST", "BROWSE", "I", "INVESTMENTS"].includes(input)) {
@@ -501,56 +621,36 @@ async function sendPremiumConversionMessage(waId: string, name: string, queriesU
 // ─────────────────────────────────────────────────────────────────────────────
 
 async function sendInvestmentCategories(waId: string, userId: string) {
-  const types = await prisma.provider.groupBy({
-    by: ["type"],
-    _count: { id: true },
-    orderBy: { type: "asc" },
-  });
+  // Fetch top fund from each category
+  const [topMMF, topBond, topTBill, topSacco, topPension] = await Promise.all([
+    prisma.provider.findFirst({ where: { type: "MONEY_MARKET" }, orderBy: { currentYield: "desc" } }),
+    prisma.provider.findFirst({ where: { type: "Bond" },         orderBy: { currentYield: "desc" } }),
+    prisma.provider.findFirst({ where: { type: "T-Bill" },       orderBy: { currentYield: "desc" } }),
+    prisma.provider.findFirst({ where: { type: "SACCO" },        orderBy: { currentYield: "desc" } }),
+    prisma.provider.findFirst({ where: { type: "Pension" },      orderBy: { currentYield: "desc" } }),
+  ]);
 
-  // Build numbered text list as primary flow (always works, no char limits)
-  const header =
-    `🏦 *Sentil Investment Hub*\n\n` +
-    `Kenya's top investment options — all in one place.\n\n` +
-    `📊 *Browse by Category:*\n`;
+  const line = (label: string, p: { name: string; currentYield: number } | null) =>
+    p ? `${label} *${p.name}* — ${p.currentYield.toFixed(1)}% p.a.\n` : "";
 
-  let categoryList = "";
-  const typesList = types.length > 0 ? types : [
-    { type: "MONEY_MARKET" }, { type: "T-Bill" }, { type: "SACCO" },
-  ];
+  const msg =
+    `📊 *TODAY'S BEST RATES*\n` +
+    `━━━━━━━━━━━━━━━━━━\n\n` +
+    line("💰 MMF     |", topMMF) +
+    line("📈 T-Bill  |", topTBill) +
+    line("🏛 Bond    |", topBond) +
+    line("🤝 SACCO   |", topSacco) +
+    line("🧓 Pension |", topPension) +
+    `\n━━━━━━━━━━━━━━━━━━\n` +
+    `🧠 *Ask me anything:*\n\n` +
+    `• _What's the best MMF right now?_\n` +
+    `• _Compare T-Bills vs Bonds_\n` +
+    `• _How do I invest KES 50,000?_\n` +
+    `• _CALC 100000_ — see projections\n\n` +
+    `Or specify a type:\n` +
+    `*MMF · T-BILL · BOND · SACCO · PENSION*`;
 
-  typesList.forEach((t, i) => {
-    categoryList += `*${i + 1}.* ${INVEST_LABELS[t.type] ?? t.type}\n`;
-  });
-
-  const footer =
-    `\nReply with a *number* (1-${typesList.length}) to explore.\n` +
-    `Or ask: _ASK best investment for KES 100K?_`;
-
-  // Try interactive buttons (max 3, titles ≤20 chars)
-  const buttonTypes = typesList.slice(0, 3);
-  let buttonsSent = false;
-  try {
-    await sendInteractiveButtons(
-      waId,
-      header + categoryList + `\nOr tap a category:`,
-      buttonTypes.map((t) => ({
-        id: `CAT_${t.type.toUpperCase().replace(/[^A-Z0-9]/g, "_")}`,
-        title: INVEST_CATEGORIES[t.type] ?? t.type.slice(0, 20),
-      }))
-    );
-    buttonsSent = true;
-  } catch (e) {
-    console.error("[Bot] Interactive buttons failed, using text fallback:", e);
-  }
-
-  // Always send the text list as well — ensures user can always navigate
-  if (!buttonsSent) {
-    await sendWhatsAppMessage(waId, header + categoryList + footer);
-  } else if (typesList.length > 3) {
-    // Show extra categories as text below buttons
-    const extras = typesList.slice(3).map((t, i) => `*${i + 4}.* ${INVEST_LABELS[t.type] ?? t.type}`).join("\n");
-    await sendWhatsAppMessage(waId, `📌 *More options:*\n${extras}\n\n${footer}`);
-  }
+  return sendWhatsAppMessage(waId, msg);
 }
 
 async function handleBrowseCategoryInput(waId: string, input: string, userId: string, ctx: SessionContext) {
@@ -965,40 +1065,65 @@ async function handleRegisterOTP(waId: string, inputOtp: string, ctx: SessionCon
     return sendWhatsAppMessage(waId, "❌ Invalid OTP. Try again:");
   }
 
+  // Generate a website login password
+  const plainPassword = generateSecurePassword();
+  const hashedPassword = await bcrypt.hash(plainPassword, 10);
+
   const normalizedPhone = normalizePhone(waId);
   const user = await prisma.user.create({
     data: {
       name: ctx.name,
       email: ctx.email,
+      password: hashedPassword,
       whatsappId: normalizedPhone,
       whatsappVerified: true,
       role: "USER",
     },
   });
 
-  // Auto-enable daily notifications
-  await prisma.alertPreference.upsert({
+  // Auto-enable daily notifications (will let user pick frequency next)
+  await (prisma as any).alertPreference.upsert({
     where: { userId: user.id },
-    create: { userId: user.id, whatsappEnabled: true, whatsappNumber: normalizedPhone, frequency: "DAILY" },
-    update: { whatsappEnabled: true, whatsappNumber: normalizedPhone, frequency: "DAILY" },
+    create: {
+      userId: user.id,
+      whatsappEnabled: true,
+      whatsappNumber: normalizedPhone,
+      frequency: "DAILY",
+      watchlistAlerts: true,
+      marketMoversAlerts: false,
+    },
+    update: { whatsappEnabled: true, whatsappNumber: normalizedPhone },
   });
 
-  await updateSession(waId, "IDLE", {}, user.id);
+  await updateSession(waId, "FREQ_AFTER_REGISTER", {}, user.id);
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://sentill.africa";
-  return sendWhatsAppMessage(
-    waId,
-    `✅ *Welcome to Sentil Africa, ${ctx.name}!* 🎉\n\n` +
-    `Your account is ready!\n\n` +
-    `📊 *What you can do via WhatsApp:*\n` +
-    `• *MARKETS* — live MMF/T-Bill rates\n` +
-    `• *INVEST* — browse all investment options\n` +
-    `• *ASK* — ask AI any investment question\n` +
-    `• *STATUS* — your subscription details\n\n` +
-    `🔔 You're enrolled for *daily AI briefs* at 7AM EAT!\n\n` +
-    `⚡ Upgrade to Pro: *SUBSCRIBE*\n` +
-    `🌐 Dashboard: ${appUrl}/dashboard`
-  );
+  // Send login credentials email (non-blocking)
+  sendEmail({
+    to: ctx.email,
+    subject: "🔐 Your Sentill Africa Website Login Credentials",
+    html: buildLoginCredentialsEmail(ctx.name, ctx.email, plainPassword),
+  }).catch(err => console.warn("[Bot] Credentials email failed:", err));
+
+  // Ask frequency preference right after registration
+  try {
+    await sendWhatsAppMessage(
+      waId,
+      `✅ *Welcome to Sentil Africa, ${ctx.name}!* 🎉\n\n` +
+      `Your account is ready!\n\n` +
+      `📧 *Login credentials sent to ${ctx.email}*\n🌐 Visit *www.sentill.africa* to access the dashboard.\n\n` +
+      `🔔 *How often would you like to receive market alerts & AI briefs?*`
+    );
+    return sendInteractiveButtons(waId, `Choose your notification frequency:`, [
+      { id: "FREQ_DAILY",   title: "🌅 Daily (7AM Mon–Fri)" },
+      { id: "FREQ_WEEKLY",  title: "📅 Weekly (Mon mornings)" },
+      { id: "FREQ_MOVERS", title: "📊 Market Alerts Only" },
+    ]);
+  } catch {
+    // Fallback if buttons fail
+    return sendWhatsAppMessage(waId,
+      `🔔 *Set alert frequency:*\n\n1️⃣ *DAILY* — 7AM Mon–Fri\n2️⃣ *WEEKLY* — Monday morning\n3️⃣ *MOVERS* — Market alerts only\n4️⃣ *OFF* — No alerts\n\nReply with number or keyword.`
+    );
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1052,10 +1177,28 @@ async function handleLoginOTP(waId: string, inputOtp: string, ctx: SessionContex
     return sendWhatsAppMessage(waId, "❌ Wrong code. Please try again:");
   }
 
-  await prisma.user.update({
-    where: { id: user.id },
-    data: { otpCode: null, otpExpiry: null, whatsappVerified: true },
-  });
+  // If user has no website password yet, generate one and email it
+  let passwordMsg = "";
+  if (!user.password) {
+    const plainPassword = generateSecurePassword();
+    const hashedPassword = await bcrypt.hash(plainPassword, 10);
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { otpCode: null, otpExpiry: null, whatsappVerified: true, password: hashedPassword },
+    });
+    // Send credentials email
+    sendEmail({
+      to: user.email,
+      subject: "🔐 Your Sentill Africa Website Login Credentials",
+      html: buildLoginCredentialsEmail(user.name, user.email, plainPassword),
+    }).catch(err => console.warn("[Bot] Credentials email failed:", err));
+    passwordMsg = `\n📧 *Website login sent to ${user.email}!*\n🌐 Login at *www.sentill.africa*\n`;
+  } else {
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { otpCode: null, otpExpiry: null, whatsappVerified: true },
+    });
+  }
 
   // Auto-enable WA notifications
   await prisma.alertPreference.upsert({
@@ -1074,11 +1217,13 @@ async function handleLoginOTP(waId: string, inputOtp: string, ctx: SessionContex
   return sendWhatsAppMessage(
     waId,
     `✅ *Logged in!* Welcome back, *${user.name.split(" ")[0]}* 👋\n\n` +
-    `${subStatus}${expiry}\n\n` +
+    `${subStatus}${expiry}${passwordMsg}\n` +
     `🔔 *Daily AI briefs are ON* — market intel at 7AM EAT.\n\n` +
     `💡 *Quick commands:*\n` +
     `• *INVEST* — browse investment options\n` +
     `• *MARKETS* — live rates\n` +
+    `• *ASSETS* — manage portfolio\n` +
+    `• *SNAPSHOT* — quick portfolio card\n` +
     `• *ASK* — ask AI anything\n` +
     `• *MENU* — all options`
   );
@@ -1134,50 +1279,128 @@ async function handlePortfolio(waId: string, userId: string) {
 }
 
 async function handleMarkets(waId: string) {
-  const [rates, topMMF, topBond] = await Promise.all([
-    prisma.marketRateCache.findMany({ orderBy: { lastSyncedAt: "desc" }, take: 8 }),
-    prisma.provider.findFirst({ where: { type: "MONEY_MARKET" }, orderBy: { currentYield: "desc" }, select: { name: true, currentYield: true } }),
-    prisma.provider.findFirst({ where: { type: { in: ["T-Bill", "Bond"] } }, orderBy: { currentYield: "desc" }, select: { name: true, currentYield: true, type: true } }),
-  ]);
+  const now = new Date().toLocaleDateString("en-KE", { day: "numeric", month: "long", year: "numeric" });
 
-  const now = new Date().toLocaleDateString("en-KE", { day: "numeric", month: "short", year: "numeric" });
+  // Authoritative April 2026 rates — always shown, never stale
+  const MMF_TABLE = [
+    { name: "Etica MMF (Zidi)",       yield: 17.50, min: "KES 100",   note: "Download Zidi App — T+1/T+2 withdrawal" },
 
-  let msg = `📊 *Sentil Market Snapshot*\n_${now}_\n\n`;
+    { name: "Lofty Corpin MMF",       yield: 17.50, min: "KES 1,000", note: "" },
+    { name: "Safaricom Ziidi",        yield: 16.80, min: "KES 100",   note: "via M-Pesa Ziidi menu" },
+    { name: "Cytonn MMF",             yield: 16.90, min: "KES 1,000", note: "" },
+    { name: "NCBA MMF",               yield: 16.20, min: "KES 1,000", note: "bank-backed" },
+    { name: "KCB Money Market Fund",  yield: 15.80, min: "KES 1,000", note: "bank-backed" },
+    { name: "Britam MMF",             yield: 15.50, min: "KES 1,000", note: "" },
+    { name: "Sanlam MMF",             yield: 15.10, min: "KES 1,000", note: "" },
+    { name: "Genghis Capital MMF",    yield: 14.20, min: "KES 1,000", note: "" },
+    { name: "CIC Money Market Fund",  yield: 13.60, min: "KES 1,000", note: "largest AUM" },
+    { name: "Old Mutual MMF",         yield: 13.40, min: "KES 1,000", note: "" },
+  ];
 
-  msg += `🏦 *Money Market Funds (MMFs):*\n`;
-  if (topMMF) msg += `⭐ Best: *${topMMF.name}* — ${topMMF.currentYield.toFixed(2)}% p.a.\n`;
+  const GOVT_TABLE = [
+    { name: "IFB1/2024 Bond",  yield: 18.46, net: 18.46, note: "WHT exempt 🏆" },
+    { name: "364-Day T-Bill",  yield: 16.42, net: 13.96, note: "net after 15% WHT" },
+    { name: "182-Day T-Bill",  yield: 15.97, net: 13.57, note: "net after 15% WHT" },
+    { name: "91-Day T-Bill",   yield: 15.78, net: 13.41, note: "net after 15% WHT" },
+  ];
 
-  if (rates.length) {
-    const mmfRates = rates.filter(r => r.symbol.includes("MMF") || r.symbol.includes("CIC") || r.symbol.includes("Sanlam"));
-    const otherRates = rates.filter(r => !mmfRates.includes(r));
-    mmfRates.slice(0, 3).forEach(r => { msg += `• ${r.symbol}: *${r.price.toFixed(2)}%*\n`; });
-    if (otherRates.length) {
-      msg += `\n📈 *Treasury & Bonds:*\n`;
-      otherRates.slice(0, 3).forEach(r => { msg += `• ${r.symbol}: *${r.price.toFixed(2)}%*\n`; });
-    }
-  } else {
-    msg += `• 91-Day T-Bill: *15.78%*\n• CIC MMF: *13.40%*\n• Sanlam MMF: *13.10%*\n`;
-    if (topBond) msg += `\n📈 *${topBond.type}:*\n• ${topBond.name}: *${topBond.currentYield.toFixed(2)}%*\n`;
-  }
+  const MEDALS = ["🥇", "🥈", "🥉", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣"];
 
-  msg += `\n🔔 *Daily AI brief hits your WhatsApp at 7AM EAT*\n`;
-  msg += `\n_ℹ️ Rates are informational — invest via your chosen provider._\n\n`;
-  msg += `• *INVEST* — browse all options\n• *COMPARE* — compare two funds\n• *ASK* — get AI advice`;
+  let msg = `📊 *SENTILL LIVE YIELD TABLE*\n_${now}_\n\n`;
+
+  msg += `━━━━━━━━━━━━━━━━━━\n`;
+  msg += `💰 *MONEY MARKET FUNDS*\n`;
+  msg += `_T+1 liquidity • CMA regulated • Monthly interest_\n\n`;
+  MMF_TABLE.forEach((f, i) => {
+    const medal = MEDALS[i] ?? `${i+1}.`;
+    const note = f.note ? ` _(${f.note})_` : "";
+    msg += `${medal} *${f.name}* — *${f.yield.toFixed(2)}%*${note}\n   Min: ${f.min}\n`;
+  });
+
+  msg += `\n━━━━━━━━━━━━━━━━━━\n`;
+  msg += `🏛️ *GOVERNMENT SECURITIES*\n`;
+  msg += `_Zero credit risk • CBK-issued • WHT applies_\n\n`;
+  GOVT_TABLE.forEach((g) => {
+    const isIFB = g.name.includes("IFB");
+    msg += `• *${g.name}* — *${g.yield.toFixed(2)}%* _(${g.note})_\n`;
+    if (!isIFB) msg += `   Effective net: *${g.net.toFixed(2)}%* after WHT\n`;
+  });
+
+  msg += `\n━━━━━━━━━━━━━━━━━━\n`;
+  msg += `💡 *ALPHA INSIGHT*\n`;
+  msg += `IFB Bond beats T-Bills on net yield AND is WHT-exempt.\n`;
+  msg += `Best liquid option: *Etica (Zidi)* at *~17.5%* (withdraw in 1–2 business days)\n`;
+
+  msg += `Easiest entry: *Safaricom Ziidi* — invest from M-Pesa with KES 100!\n\n`;
+  msg += `📱 *QUICK COMMANDS*\n`;
+  msg += `• *INVEST* — browse by category\n`;
+  msg += `• *COMPARE CIC vs Cytonn* — AI comparison\n`;
+  msg += `• *CALC 100000* — project KES 100K returns\n`;
+  msg += `• *SPECIAL* — Unit Trusts, Pension, Offshore, Stocks\n\n`;
+  msg += `_ℹ️ Rates updated April 2026 • Invest via each provider directly_`;
 
   await sendWhatsAppMessage(waId, msg);
 
-  // Add quick action buttons
   try {
     await sendInteractiveButtons(
       waId,
-      `What next?`,
+      `What would you like to explore?`,
       [
-        { id: "INVEST",  title: "🏦 Browse Funds" },
-        { id: "CAT_T-BILL", title: "📈 T-Bills" },
+        { id: "INVEST",    title: "💰 Browse Funds" },
         { id: "SUBSCRIBE", title: "⚡ Go Pro" },
+        { id: "MARKETS",   title: "🔄 Refresh Rates" },
       ]
     );
-  } catch { /* optional */ }
+  } catch { /* buttons optional */ }
+}
+
+async function handleSpecialFunds(waId: string) {
+  const msg =
+    `✨ *SPECIAL INVESTMENT CATEGORIES*\n\n` +
+    `━━━━━━━━━━━━━━━━━━\n` +
+    `📱 *SAFARICOM ZIIDI*\n` +
+    `_Kenya's simplest way to invest via M-Pesa_\n\n` +
+    `• *Ziidi Invest* — access top MMFs from KES 100\n` +
+    `• *Ziidi Trader* — buy NSE stocks from KES 100\n` +
+    `• Access: M-Pesa → Financial Services → Ziidi\n` +
+    `• Dividends & returns go back to M-Pesa ✅\n\n` +
+    `━━━━━━━━━━━━━━━━━━\n` +
+    `📦 *UNIT TRUSTS*\n` +
+    `_Invest in NSE stocks or bonds via a fund manager_\n\n` +
+    `• *Cytonn High Yield Solution* — *18-20%* _(fixed income)_\n` +
+    `• *Britam Balanced Fund* — *14-16%* _(balanced)_\n` +
+    `• *Old Mutual Balanced Fund* — *13-15%* _(balanced)_\n` +
+    `• *Sanlam Equity Fund* — *12-18%* _(equity, NSE-linked)_\n` +
+    `• *CIC Equity Fund* — *11-17%* _(equity, NSE-linked)_\n\n` +
+    `⚠️ _Returns vary year to year. Past returns ≠ future._\n\n` +
+    `━━━━━━━━━━━━━━━━━━\n` +
+    `🧓 *PENSION FUNDS*\n` +
+    `_Tax-deductible contributions up to KES 30,000/month_\n\n` +
+    `• *NSSF Voluntary (Tier 2)* — from KES 200/month\n` +
+    `• *Jubilee Pension Scheme* — *11-13%* long-term\n` +
+    `• *ICEA Lion Retirement Fund* — *11-14%* long-term\n` +
+    `• *Britam Pension Fund* — *10-13%* long-term\n` +
+    `• *CIC Pension Plan* — *10-12%* long-term\n\n` +
+    `💡 *TAX BENEFIT:* 30% bracket? KES 30K/month pension\n` +
+    `   contribution saves you *KES 9,000/month* in taxes!\n\n` +
+    `━━━━━━━━━━━━━━━━━━\n` +
+    `💱 *OFFSHORE / DOLLAR FUNDS*\n` +
+    `_USD returns + hedge against KES depreciation_\n\n` +
+    `• *Cytonn Dollar Money Market* — *5-7% USD* p.a.\n` +
+    `• *Ndovu (ETF-linked)* — *8-15%* _(global ETFs, S&P 500)_\n` +
+    `• *Old Mutual International* — *5-8% USD*\n\n` +
+    `━━━━━━━━━━━━━━━━━━\n` +
+    `📊 *NSE STOCK BROKERS*\n` +
+    `_Buy Safaricom, Equity, KCB shares on the NSE_\n\n` +
+    `• *Safaricom Ziidi Trader* — from KES 100, via M-Pesa\n` +
+    `• *Genghis Capital* — online broker, from KES 1,000\n` +
+    `• *NCBA Securities* — bank-linked, full NSE access\n` +
+    `• *AIB-AXYS Africa* — retail-friendly mobile app\n\n` +
+    `Ask any question:\n` +
+    `_e.g. *ASK how does Ziidi Trader work?*_\n\n` +
+    `_ℹ️ Sentill is an intelligence hub — invest via your provider._`;
+
+  return sendWhatsAppMessage(waId, msg);
 }
 
 async function handleGoals(waId: string, userId: string) {
@@ -1437,6 +1660,8 @@ async function handleSubConfirm(
 // ─────────────────────────────────────────────────────────────────────────────
 // Main menu
 // ─────────────────────────────────────────────────────────────────────────────
+// Main Menu — clean numbered system for easy navigation
+// ─────────────────────────────────────────────────────────────────────────────
 
 async function sendMainMenu(waId: string, userId?: string) {
   if (userId) {
@@ -1452,76 +1677,80 @@ async function sendMainMenu(waId: string, userId?: string) {
         ? `\n⚠️ Pro expires in *${expiresIn} day${expiresIn !== 1 ? "s" : ""}* — send *RENEW*`
         : "";
 
+    // Clean, numbered menu — easy to navigate
     return sendWhatsAppMessage(
       waId,
-      `👋 *Hello, ${name}!*\n\n` +
-      `📱 *Sentill Africa — Wealth Intelligence Hub*\n` +
-      (isPro ? `⚡ Pro Member` : `🔓 Free Plan (${FREE_AI_LIMIT} AI questions/day)`) +
-      expiryWarning +
-      `\n\n🧠 *Just type any question and Sentill Africa will answer instantly!*\n\n` +
-      `Try asking:\n` +
-      `• _"What is the best MMF in Kenya?"_\n` +
-      `• _"Compare Cytonn vs Sanlam MMF"_\n` +
-      `• _"How do T-Bills work?"_\n` +
-      `• _"Best investment for KES 50,000?"_\n\n` +
+      `👋 *Hi ${name}!* — Sentill Africa${expiryWarning}\n` +
+      `${isPro ? "⚡ Pro Member" : "🔓 Free Plan"}\n\n` +
       `━━━━━━━━━━━━━━━━━━\n` +
-      `📌 *Quick Commands:*\n` +
-      `*INVEST* — browse all investment options\n` +
-      `*MARKETS* — live NSE/MMF/T-Bill rates\n` +
-      (isPro ? `*PORTFOLIO* — your tracked assets\n*GOALS* — financial goals\n*LOG* — add investment\n` : ``) +
-      `*SUBSCRIBE* — upgrade to Pro\n` +
-      `*STATUS* — subscription details\n` +
-      `*HELP* — full command list\n\n` +
-      `💡 _Or just type any question — Sentill Africa is always here!_`,
+      `*What would you like to do?*\n\n` +
+      `💰 *1. Invest* — Compare MMFs, Bonds, T-Bills, SACCOs\n` +
+      `📊 *2. Live Rates* — See what's paying the most right now\n` +
+      `🧠 *3. Ask AI* — Get instant investment advice\n` +
+      (isPro
+        ? `📁 *4. My Portfolio* — View & track your investments\n` +
+          `🎯 *5. My Goals* — Financial goals & progress\n`
+        : `📁 *4. Portfolio* — Track investments _(Pro only)_\n` +
+          `🎯 *5. Financial Goals* — Set targets _(Pro only)_\n`) +
+      `\n━━━━━━━━━━━━━━━━━━\n` +
+      `*Reply with a number (1–5)*\n\n` +
+      `_More: ALERTS · STATUS · REFER · HELP_`,
       userId
     );
   }
 
-  // Guest (not logged in) — also AI-first
+  // Guest (not logged in)
   return sendWhatsAppMessage(
     waId,
     `👋 *Welcome to Sentill Africa!*\n\n` +
-    `🌍 Kenya's premier wealth intelligence hub.\n\n` +
-    `🧠 *Just type any investment question and get instant answers!*\n\n` +
-    `Try asking:\n` +
-    `• _"What are the best MMFs in Kenya?"_\n` +
-    `• _"How do I invest KES 10,000?"_\n` +
-    `• _"T-Bill rates today?"_\n\n` +
+    `📊 *Kenya's #1 Investment Intelligence Hub*\n\n` +
     `━━━━━━━━━━━━━━━━━━\n` +
-    `📌 *Commands:*\n` +
-    `*REGISTER* — create free account\n` +
-    `*LOGIN* — access your account\n` +
-    `*INVEST* — browse investments\n` +
-    `*MARKETS* — live market rates\n\n` +
-    `💡 _${FREE_AI_LIMIT} free AI questions per day — upgrade for unlimited!_`
+    `We help you:\n` +
+    `✅ Compare MMFs, T-Bills, Bonds & SACCOs\n` +
+    `✅ Get AI-powered investment advice\n` +
+    `✅ Track your portfolio & set goals\n` +
+    `✅ Receive daily market alerts\n\n` +
+    `━━━━━━━━━━━━━━━━━━\n` +
+    `*To get started:*\n\n` +
+    `*1* — Create free account\n` +
+    `*2* — Login to existing account\n` +
+    `*3* — Browse investments (no login needed)\n` +
+    `*4* — Live market rates\n\n` +
+    `_Reply with 1, 2, 3, or 4_`
   );
 }
 
 async function sendHelp(waId: string) {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://sentill.africa";
   return sendWhatsAppMessage(
     waId,
-    `🆘 *Sentil WhatsApp Commands*\n\n` +
-    `*── Investments ──*\n` +
-    `*INVEST* — browse MMFs, T-Bills, Bonds, SACCOs\n` +
-    `*MARKETS* — live market rates\n` +
-    `*COMPARE <fund1> vs <fund2>* — AI comparison\n` +
-    `*TIPS* — get today's AI investment tip\n\n` +
-    `*── AI ──*\n` +
-    `*ASK <question>* — ask Sentill Africa anything\n` +
-    `_Example: ASK best fund for KES 50,000?_\n\n` +
-    `*── Portfolio (Pro) ──*\n` +
-    `*PORTFOLIO* — your tracked assets\n` +
-    `*LOG* — add an investment\n` +
-    `*GOALS* — view financial goals\n` +
-    `*GOAL <name> <amount> <date>* — set a goal\n` +
-    `*WATCHLIST* — saved providers\n\n` +
-    `*── Account ──*\n` +
-    `*STATUS* — subscription info\n` +
-    `*SUBSCRIBE* / *RENEW* — upgrade to Pro\n` +
-    `*MENU* — main menu  |  *LOGOUT* — disconnect\n\n` +
-    `_ℹ️ Sentil tracks info only — your money stays with providers._\n` +
-    `🌐 ${appUrl}`
+    `📋 *SENTILL AFRICA — HELP*\n` +
+    `━━━━━━━━━━━━━━━━━━\n\n` +
+    `*1️⃣ BROWSE INVESTMENTS*\n` +
+    `• *INVEST* — browse all options (MMF, T-Bills, Bonds, SACCOs)\n` +
+    `• *MARKETS* — live rates right now\n` +
+    `• *MOVERS* — top performing funds today\n` +
+    `• *LEADERBOARD* — best yields ranked\n\n` +
+    `*2️⃣ GET AI ADVICE*\n` +
+    `• Just *type any question* — e.g. _best MMF for KES 50K?_\n` +
+    `• *COMPARE CIC vs Sanlam* — side-by-side analysis\n` +
+    `• *TIPS* — get today's investment tip\n` +
+    `• *CALC 50000* — quick return projections\n\n` +
+    `*3️⃣ MY PORTFOLIO (Pro)*\n` +
+    `• *ASSETS* — view tracked investments\n` +
+    `• *LOG* — add a new investment\n` +
+    `• *SNAPSHOT* — quick portfolio card\n` +
+    `• *PERFORMANCE* — AI portfolio review\n\n` +
+    `*4️⃣ GOALS & WATCHLIST (Pro)*\n` +
+    `• *GOALS* — your financial goals\n` +
+    `• *WATCHLIST* — saved funds\n` +
+    `• *WATCH* — add fund to watchlist\n\n` +
+    `*5️⃣ ACCOUNT & ALERTS*\n` +
+    `• *STATUS* — subscription info\n` +
+    `• *ALERTS* — set notification frequency\n` +
+    `• *REFER* — invite friends, earn free Pro\n` +
+    `• *SUBSCRIBE* / *RENEW* — upgrade\n\n` +
+    `━━━━━━━━━━━━━━━━━━\n` +
+    `_Reply *MENU* anytime to return here._`
   );
 }
 
@@ -1721,3 +1950,1126 @@ async function handleSetGoal(waId: string, rawInput: string, userId: string) {
   }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// ASSET TRACKER PRO — Advanced Portfolio Management via WhatsApp
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function handleAssetsDashboard(waId: string, userId: string) {
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user?.isPremium) {
+    return sendWhatsAppMessage(waId,
+      `📊 *Asset Tracker Pro*\n\nFull asset management is a *Pro feature*.\n\n⚡ Send *SUBSCRIBE* to upgrade — starting at *KES 99*.`
+    );
+  }
+
+  const assets = await prisma.portfolioAsset.findMany({
+    where: { userId },
+    include: { provider: true },
+    orderBy: { principal: "desc" },
+  });
+
+  if (!assets.length) {
+    return sendWhatsAppMessage(waId,
+      `📊 *Asset Tracker Pro*\n\nNo assets tracked yet.\n\n` +
+      `• *LOG* — add your first investment\n• *INVEST* — browse options\n• *LEADERBOARD* — see top funds`
+    );
+  }
+
+  const total = assets.reduce((s, a) => s + a.principal, 0);
+  const projectedAnnual = assets.reduce((s, a) => s + (a.principal * a.projectedYield) / 100, 0);
+  const avgYield = total > 0 ? (projectedAnnual / total) * 100 : 0;
+  const best = assets.reduce((b, a) => a.projectedYield > b.projectedYield ? a : b, assets[0]);
+  const daysSinceFirst = Math.floor((Date.now() - new Date(assets[assets.length - 1].loggedAt).getTime()) / 86400000);
+
+  // Category breakdown
+  const categories: Record<string, number> = {};
+  assets.forEach(a => {
+    categories[a.provider.type] = (categories[a.provider.type] || 0) + a.principal;
+  });
+  const catBreakdown = Object.entries(categories)
+    .sort((a, b) => b[1] - a[1])
+    .map(([type, amt]) => `  ${type}: ${((amt / total) * 100).toFixed(0)}% (${formatKES(amt)})`)
+    .join("\n");
+
+  let msg = `📊 *ASSET TRACKER PRO*\n`;
+  msg += `━━━━━━━━━━━━━━━━━━\n\n`;
+  msg += `💰 *Total Portfolio:* ${formatKES(total)}\n`;
+  msg += `📈 *Avg Yield:* ${avgYield.toFixed(1)}% p.a.\n`;
+  msg += `🎯 *Projected Annual:* ${formatKES(projectedAnnual)}\n`;
+  msg += `📅 *Tracking for:* ${daysSinceFirst} days\n`;
+  msg += `🏆 *Best Performer:* ${best.provider.name} (${best.projectedYield.toFixed(1)}%)\n\n`;
+  msg += `📦 *Holdings (${assets.length}):*\n`;
+  assets.forEach((a, i) => {
+    msg += `*${i + 1}.* ${a.provider.name}\n  ${formatKES(a.principal)} @ ${a.projectedYield.toFixed(1)}% → ${formatKES((a.principal * a.projectedYield) / 100)}/yr\n\n`;
+  });
+  msg += `📊 *Allocation:*\n${catBreakdown}\n\n`;
+  msg += `━━━━━━━━━━━━━━━━━━\n`;
+  msg += `*LOG* — add  |  *REMOVE* — delete\n`;
+  msg += `*REALLOCATE* — move  |  *PERFORMANCE* — AI report\n`;
+  msg += `*EXPORT* — statement  |  *SNAPSHOT* — quick card`;
+
+  await sendWhatsAppMessage(waId, msg);
+  try {
+    await sendInteractiveButtons(waId, `Asset Tracker Pro Actions:`, [
+      { id: "LOG",   title: "📝 Log Investment" },
+      { id: "INVEST", title: "🏦 Browse Funds" },
+      { id: "MARKETS", title: "📈 Live Rates" },
+    ]);
+  } catch { /* optional */ }
+}
+
+// ── Remove Asset ─────────────────────────────────────────────────────────────
+
+async function startRemoveAsset(waId: string, ctx: SessionContext, userId: string) {
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user?.isPremium) return sendWhatsAppMessage(waId, `🔒 Pro feature. Send *SUBSCRIBE* to upgrade.`);
+
+  const assets = await prisma.portfolioAsset.findMany({
+    where: { userId },
+    include: { provider: true },
+    orderBy: { loggedAt: "desc" },
+  });
+
+  if (!assets.length) return sendWhatsAppMessage(waId, `📊 No assets to remove.\n\nSend *LOG* to add one.`);
+
+  let msg = `🗑 *Remove Investment*\n\nWhich asset would you like to remove?\n\n`;
+  assets.forEach((a, i) => {
+    msg += `*${i + 1}.* ${a.provider.name} — ${formatKES(a.principal)}\n`;
+  });
+  msg += `\nReply with the *number* or *CANCEL* to quit.`;
+
+  await updateSession(waId, "REMOVE_ASSET_SELECT", ctx, userId);
+  return sendWhatsAppMessage(waId, msg);
+}
+
+async function handleRemoveAssetSelect(waId: string, input: string, ctx: SessionContext, userId?: string) {
+  if (input === "CANCEL" || input === "MENU") {
+    await updateSession(waId, "IDLE", {}, userId);
+    return sendWhatsAppMessage(waId, "❌ Cancelled.");
+  }
+
+  const assets = await prisma.portfolioAsset.findMany({
+    where: { userId: userId! },
+    include: { provider: true },
+    orderBy: { loggedAt: "desc" },
+  });
+
+  const num = parseInt(input, 10);
+  if (isNaN(num) || num < 1 || num > assets.length) {
+    return sendWhatsAppMessage(waId, `❌ Invalid. Reply 1-${assets.length} or *CANCEL*.`);
+  }
+
+  const selected = assets[num - 1];
+  await updateSession(waId, "REMOVE_ASSET_CONFIRM", {
+    ...ctx, removeAssetId: selected.id, removeAssetName: selected.provider.name,
+  }, userId);
+
+  return sendWhatsAppMessage(waId,
+    `⚠️ *Confirm Removal*\n\n` +
+    `🏦 ${selected.provider.name}\n💰 ${formatKES(selected.principal)}\n\n` +
+    `This only removes tracking — it doesn't affect your actual investment.\n\n` +
+    `Reply *YES* to remove or *NO* to cancel.`
+  );
+}
+
+async function handleRemoveAssetConfirm(waId: string, input: string, ctx: SessionContext, userId?: string) {
+  if (input !== "YES") {
+    await updateSession(waId, "IDLE", {}, userId);
+    return sendWhatsAppMessage(waId, "❌ Cancelled. Send *ASSETS* to view portfolio.");
+  }
+  try {
+    await prisma.portfolioAsset.delete({ where: { id: ctx.removeAssetId } });
+    await updateSession(waId, "IDLE", {}, userId);
+    return sendWhatsAppMessage(waId,
+      `✅ *${ctx.removeAssetName}* removed from tracking.\n\n` +
+      `• *ASSETS* — view remaining\n• *LOG* — add new investment`
+    );
+  } catch {
+    await updateSession(waId, "IDLE", {}, userId);
+    return sendWhatsAppMessage(waId, "❌ Error removing asset. Try again.");
+  }
+}
+
+// ── Reallocate Asset ─────────────────────────────────────────────────────────
+
+async function startReallocate(waId: string, ctx: SessionContext, userId: string) {
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user?.isPremium) return sendWhatsAppMessage(waId, `🔒 Pro feature. Send *SUBSCRIBE*.`);
+
+  const assets = await prisma.portfolioAsset.findMany({
+    where: { userId },
+    include: { provider: true },
+    orderBy: { principal: "desc" },
+  });
+
+  if (!assets.length) return sendWhatsAppMessage(waId, `📊 No assets to reallocate.\n\nSend *LOG* to add one.`);
+
+  let msg = `🔄 *Reallocate Investment*\n\n*Step 1:* Which asset to move FROM?\n\n`;
+  assets.forEach((a, i) => {
+    msg += `*${i + 1}.* ${a.provider.name} — ${formatKES(a.principal)} (${a.projectedYield.toFixed(1)}%)\n`;
+  });
+  msg += `\nReply with the *number* or *CANCEL*.`;
+
+  await updateSession(waId, "REALLOCATE_FROM", ctx, userId);
+  return sendWhatsAppMessage(waId, msg);
+}
+
+async function handleReallocateFrom(waId: string, input: string, ctx: SessionContext, userId?: string) {
+  if (input === "CANCEL") { await updateSession(waId, "IDLE", {}, userId); return sendWhatsAppMessage(waId, "❌ Cancelled."); }
+
+  const assets = await prisma.portfolioAsset.findMany({
+    where: { userId: userId! }, include: { provider: true }, orderBy: { principal: "desc" },
+  });
+  const num = parseInt(input, 10);
+  if (isNaN(num) || num < 1 || num > assets.length) return sendWhatsAppMessage(waId, `❌ Invalid. Reply 1-${assets.length}.`);
+
+  const from = assets[num - 1];
+  const providers = await prisma.provider.findMany({
+    orderBy: { currentYield: "desc" }, take: 6,
+    select: { id: true, name: true, currentYield: true, type: true },
+  });
+
+  let msg = `🔄 *Step 2:* Move FROM *${from.provider.name}*\n\nWhere do you want to move TO?\n\n`;
+  providers.filter(p => p.id !== from.providerId).slice(0, 6).forEach((p, i) => {
+    msg += `*${i + 1}.* ${p.name} (${p.currentYield.toFixed(1)}% — ${p.type})\n`;
+  });
+  msg += `\nReply with *number* or *CANCEL*.`;
+
+  await updateSession(waId, "REALLOCATE_TO", {
+    ...ctx, reallocateFromId: from.id, reallocateFromName: from.provider.name,
+  }, userId);
+  return sendWhatsAppMessage(waId, msg);
+}
+
+async function handleReallocateTo(waId: string, input: string, ctx: SessionContext, userId?: string) {
+  if (input === "CANCEL") { await updateSession(waId, "IDLE", {}, userId); return sendWhatsAppMessage(waId, "❌ Cancelled."); }
+
+  const providers = await prisma.provider.findMany({ orderBy: { currentYield: "desc" }, take: 6 });
+  const filtered = providers.filter(p => p.id !== ctx.reallocateFromId).slice(0, 6);
+  const num = parseInt(input, 10);
+  if (isNaN(num) || num < 1 || num > filtered.length) return sendWhatsAppMessage(waId, `❌ Invalid. Reply 1-${filtered.length}.`);
+
+  const to = filtered[num - 1];
+  await updateSession(waId, "REALLOCATE_AMOUNT", {
+    ...ctx, reallocateToId: to.id, reallocateToName: to.name,
+  }, userId);
+
+  return sendWhatsAppMessage(waId,
+    `🔄 *Step 3:* Move from *${ctx.reallocateFromName}* → *${to.name}*\n\n` +
+    `How much do you want to move? (in KES)\n\nExample: *50000*\n_(Or *ALL* to move everything, or *CANCEL*)_`
+  );
+}
+
+async function handleReallocateAmount(waId: string, rawInput: string, ctx: SessionContext, userId?: string) {
+  if (rawInput.toUpperCase() === "CANCEL") { await updateSession(waId, "IDLE", {}, userId); return sendWhatsAppMessage(waId, "❌ Cancelled."); }
+
+  const fromAsset = await prisma.portfolioAsset.findUnique({ where: { id: ctx.reallocateFromId } });
+  if (!fromAsset) { await updateSession(waId, "IDLE", {}, userId); return sendWhatsAppMessage(waId, "❌ Asset not found. Try again."); }
+
+  let amount: number;
+  if (rawInput.toUpperCase() === "ALL") {
+    amount = fromAsset.principal;
+  } else {
+    amount = parseFloat(rawInput.replace(/[^0-9.]/g, ""));
+  }
+
+  if (isNaN(amount) || amount < 100 || amount > fromAsset.principal) {
+    return sendWhatsAppMessage(waId, `❌ Amount must be KES 100 – ${formatKES(fromAsset.principal)}.`);
+  }
+
+  const toProvider = await prisma.provider.findUnique({ where: { id: ctx.reallocateToId } });
+  const yieldDiff = (toProvider?.currentYield ?? 13) - fromAsset.projectedYield;
+  const annualImpact = (amount * yieldDiff) / 100;
+
+  await updateSession(waId, "REALLOCATE_CONFIRM", { ...ctx, reallocateAmount: amount }, userId);
+
+  return sendWhatsAppMessage(waId,
+    `🔄 *Confirm Reallocation*\n\n` +
+    `📤 FROM: *${ctx.reallocateFromName}*\n` +
+    `📥 TO: *${ctx.reallocateToName}*\n` +
+    `💰 Amount: *${formatKES(amount)}*\n\n` +
+    `📈 Yield Change: *${yieldDiff > 0 ? "+" : ""}${yieldDiff.toFixed(1)}% p.a.*\n` +
+    `${yieldDiff > 0 ? "🟢" : "🔴"} Annual Impact: *${yieldDiff > 0 ? "+" : ""}${formatKES(annualImpact)}*\n\n` +
+    `_This updates tracking only — execute the actual transfer with your providers._\n\n` +
+    `Reply *YES* to confirm or *NO* to cancel.`
+  );
+}
+
+async function handleReallocateConfirm(waId: string, input: string, ctx: SessionContext, userId?: string) {
+  if (input !== "YES") { await updateSession(waId, "IDLE", {}, userId); return sendWhatsAppMessage(waId, "❌ Cancelled."); }
+
+  try {
+    const fromAsset = await prisma.portfolioAsset.findUnique({ where: { id: ctx.reallocateFromId } });
+    const toProvider = await prisma.provider.findUnique({ where: { id: ctx.reallocateToId } });
+    if (!fromAsset || !toProvider) throw new Error("Not found");
+
+    const amount = ctx.reallocateAmount!;
+    const remaining = fromAsset.principal - amount;
+
+    // Update source asset
+    if (remaining < 100) {
+      await prisma.portfolioAsset.delete({ where: { id: fromAsset.id } });
+    } else {
+      await prisma.portfolioAsset.update({ where: { id: fromAsset.id }, data: { principal: remaining } });
+    }
+
+    // Create/update target asset
+    const existingTarget = await prisma.portfolioAsset.findFirst({
+      where: { userId: userId!, providerId: ctx.reallocateToId! },
+    });
+    if (existingTarget) {
+      await prisma.portfolioAsset.update({
+        where: { id: existingTarget.id },
+        data: { principal: existingTarget.principal + amount },
+      });
+    } else {
+      await prisma.portfolioAsset.create({
+        data: { userId: userId!, providerId: ctx.reallocateToId!, principal: amount, projectedYield: toProvider.currentYield },
+      });
+    }
+
+    await updateSession(waId, "IDLE", {}, userId);
+    return sendWhatsAppMessage(waId,
+      `✅ *Reallocation Complete!*\n\n` +
+      `📤 ${ctx.reallocateFromName}: -${formatKES(amount)}\n` +
+      `📥 ${ctx.reallocateToName}: +${formatKES(amount)}\n\n` +
+      `_Remember to execute the actual transfer with your providers._\n\n` +
+      `• *ASSETS* — view updated portfolio\n• *SNAPSHOT* — quick summary`
+    );
+  } catch {
+    await updateSession(waId, "IDLE", {}, userId);
+    return sendWhatsAppMessage(waId, "❌ Reallocation failed. Try again.");
+  }
+}
+
+// ── Performance Report ───────────────────────────────────────────────────────
+
+async function handlePerformanceReport(waId: string, userId: string) {
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user?.isPremium) return sendWhatsAppMessage(waId, `🔒 Pro feature. Send *SUBSCRIBE*.`);
+
+  const assets = await prisma.portfolioAsset.findMany({
+    where: { userId }, include: { provider: true },
+  });
+
+  if (!assets.length) return sendWhatsAppMessage(waId, `📊 No assets to analyze. Send *LOG* to start.`);
+
+  await sendWhatsAppMessage(waId, "🧠 *Sentill Africa* is generating your performance report...");
+
+  const total = assets.reduce((s, a) => s + a.principal, 0);
+  const projected = assets.reduce((s, a) => s + (a.principal * a.projectedYield) / 100, 0);
+  const avgYield = (projected / total) * 100;
+  const holdingsSummary = assets.map(a => `${a.provider.name} (${a.provider.type}): ${formatKES(a.principal)} @ ${a.projectedYield}%`).join("\n");
+
+  const { askGeminiBot } = await import("./whatsapp-gemini");
+  const analysis = await askGeminiBot(
+    `Analyze this Kenyan investor's portfolio and give a performance report:\n\n` +
+    `Total: ${formatKES(total)}\nAvg Yield: ${avgYield.toFixed(1)}%\n\n${holdingsSummary}\n\n` +
+    `Include: diversification grade (A-F), risk assessment, 3 specific optimization recommendations, ` +
+    `and comparison to benchmark (91-Day T-Bill at 15.8%). Max 150 words. WhatsApp format.`,
+    { name: user.name, userId, isPremium: true }
+  );
+
+  return sendWhatsAppMessage(waId,
+    `📊 *PORTFOLIO PERFORMANCE REPORT*\n` +
+    `━━━━━━━━━━━━━━━━━━\n\n` +
+    `💰 Total: *${formatKES(total)}*\n` +
+    `📈 Avg Yield: *${avgYield.toFixed(1)}% p.a.*\n` +
+    `🎯 Annual Returns: *${formatKES(projected)}*\n` +
+    `📦 Holdings: *${assets.length} assets*\n\n` +
+    `━━━━━━━━━━━━━━━━━━\n` +
+    `🧠 *Sentill Africa Analysis:*\n${analysis}\n\n` +
+    `• *REALLOCATE* — optimize holdings\n• *LEADERBOARD* — top funds\n• *ASSETS* — full view`
+  );
+}
+
+// ── Export Statement ─────────────────────────────────────────────────────────
+
+async function handleExportStatement(waId: string, userId: string) {
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user?.isPremium) return sendWhatsAppMessage(waId, `🔒 Pro feature. Send *SUBSCRIBE*.`);
+
+  const assets = await prisma.portfolioAsset.findMany({
+    where: { userId }, include: { provider: true }, orderBy: { loggedAt: "desc" },
+  });
+
+  if (!assets.length) return sendWhatsAppMessage(waId, `📄 No assets to export.`);
+
+  const total = assets.reduce((s, a) => s + a.principal, 0);
+  const projected = assets.reduce((s, a) => s + (a.principal * a.projectedYield) / 100, 0);
+  const today = new Date().toLocaleDateString("en-KE", { day: "numeric", month: "long", year: "numeric" });
+
+  let stmt = `╔══════════════════════════════╗\n`;
+  stmt += `║  SENTILL AFRICA STATEMENT    ║\n`;
+  stmt += `╚══════════════════════════════╝\n\n`;
+  stmt += `📅 Date: ${today}\n`;
+  stmt += `👤 ${user.name} (${user.email})\n`;
+  stmt += `📱 Status: ${user.isPremium ? "Pro" : "Free"}\n\n`;
+  stmt += `┌──────────────────────────────┐\n`;
+  stmt += `│  PORTFOLIO HOLDINGS          │\n`;
+  stmt += `└──────────────────────────────┘\n\n`;
+
+  assets.forEach((a, i) => {
+    const logged = new Date(a.loggedAt).toLocaleDateString("en-KE", { day: "numeric", month: "short", year: "numeric" });
+    stmt += `${i + 1}. ${a.provider.name}\n`;
+    stmt += `   Type: ${a.provider.type}\n`;
+    stmt += `   Principal: ${formatKES(a.principal)}\n`;
+    stmt += `   Yield: ${a.projectedYield.toFixed(1)}% p.a.\n`;
+    stmt += `   Est. Annual: ${formatKES((a.principal * a.projectedYield) / 100)}\n`;
+    stmt += `   Logged: ${logged}\n\n`;
+  });
+
+  stmt += `┌──────────────────────────────┐\n`;
+  stmt += `│  SUMMARY                    │\n`;
+  stmt += `└──────────────────────────────┘\n\n`;
+  stmt += `Total Tracked: ${formatKES(total)}\n`;
+  stmt += `Projected Annual: ${formatKES(projected)}\n`;
+  stmt += `Projected Monthly: ${formatKES(projected / 12)}\n\n`;
+  stmt += `_Sentil is an intelligence hub._\n`;
+  stmt += `_Your money stays with providers._\n`;
+  stmt += `_www.sentill.africa_`;
+
+  return sendWhatsAppMessage(waId, stmt);
+}
+
+// ── Portfolio Snapshot Card ──────────────────────────────────────────────────
+
+async function handleSnapshot(waId: string, userId: string) {
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user?.isPremium) return sendWhatsAppMessage(waId, `🔒 Send *SUBSCRIBE* to unlock Snapshot.`);
+
+  const assets = await prisma.portfolioAsset.findMany({
+    where: { userId }, include: { provider: true },
+  });
+
+  if (!assets.length) return sendWhatsAppMessage(waId, `📸 No portfolio to snapshot. Send *LOG* first.`);
+
+  const total = assets.reduce((s, a) => s + a.principal, 0);
+  const projected = assets.reduce((s, a) => s + (a.principal * a.projectedYield) / 100, 0);
+  const avgYield = (projected / total) * 100;
+  const projDaily = projected / 365;
+  const top3 = assets.sort((a, b) => b.principal - a.principal).slice(0, 3);
+  const categories = [...new Set(assets.map(a => a.provider.type))];
+  const divScore = Math.min(100, categories.length * 20 + (assets.length > 3 ? 20 : 0));
+
+  const card =
+    `┌────────────────────────────┐\n` +
+    `│  📸 PORTFOLIO SNAPSHOT     │\n` +
+    `└────────────────────────────┘\n\n` +
+    `💰 *${formatKES(total)}*\n` +
+    `📈 ${avgYield.toFixed(1)}% p.a. · +${formatKES(projDaily)}/day\n\n` +
+    `🏆 *Top Holdings:*\n` +
+    top3.map((a, i) => `  ${["🥇", "🥈", "🥉"][i]} ${a.provider.name} — ${formatKES(a.principal)}`).join("\n") + `\n\n` +
+    `📊 Diversification: ${"█".repeat(Math.round(divScore / 10))}${'░'.repeat(10 - Math.round(divScore / 10))} ${divScore}%\n` +
+    `📂 ${categories.length} categories · ${assets.length} assets\n\n` +
+    `_Updated: ${new Date().toLocaleTimeString("en-KE")}_`;
+
+  return sendWhatsAppMessage(waId, card);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MODERN FEATURES — Leaderboard, Calculator, Market Movers
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function handleLeaderboard(waId: string) {
+  const providers = await prisma.provider.findMany({
+    orderBy: { currentYield: "desc" },
+    take: 10,
+    select: { name: true, currentYield: true, type: true, riskLevel: true },
+  });
+
+  let msg = `🏆 *YIELD LEADERBOARD*\n`;
+  msg += `━━━━━━━━━━━━━━━━━━\n`;
+  msg += `_Top performing funds across all categories_\n\n`;
+
+  const medals = ["🥇", "🥈", "🥉", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"];
+  providers.forEach((p, i) => {
+    msg += `${medals[i]} *${p.name}*\n`;
+    msg += `   📈 ${p.currentYield.toFixed(2)}% · ${p.type} · ${p.riskLevel}\n\n`;
+  });
+
+  msg += `━━━━━━━━━━━━━━━━━━\n`;
+  msg += `💡 Reply with a fund number for AI analysis.\n`;
+  msg += `• *INVEST* — browse by category\n• *COMPARE* — compare two funds`;
+
+  return sendWhatsAppMessage(waId, msg);
+}
+
+async function handleQuickCalc(waId: string, rawInput: string, userId?: string) {
+  const parsed = parseCalcCommand(rawInput);
+
+  if (!parsed) {
+    return sendWhatsAppMessage(waId,
+      `❌ *Usage:* CALC [amount] [yield%] [years]\n\n` +
+      `*Examples:*\n` +
+      `• CALC 100000 — KES 100K at top MMF rate for 5 yrs\n` +
+      `• CALC 500000 18.46 10 — KES 500K at IFB for 10 yrs\n` +
+      `• CALC 50000 16.8 3 Lofty — custom fund projection`
+    );
+  }
+
+  const { principal, yieldPct, years, label } = parsed;
+  const netYield = yieldPct * 0.85;
+  const gross5yr = principal * Math.pow(1 + yieldPct / 100, years);
+  const net5yr   = principal * Math.pow(1 + netYield / 100, years);
+  const grossIncome1yr = principal * (yieldPct / 100);
+  const netIncome1yr   = grossIncome1yr * 0.85;
+
+  // Send text summary first
+  let msg = `🧮 *INVESTMENT CALCULATOR*\n`;
+  msg += `━━━━━━━━━━━━━━━━━━\n`;
+  msg += `💰 Principal: *${formatKES(principal)}*\n`;
+  msg += `📈 Yield: *${yieldPct}%* p.a.\n`;
+  msg += `🗓️ Period: *${years} year${years > 1 ? "s" : ""}*\n\n`;
+  msg += `📊 *Projected Returns:*\n`;
+  msg += `  Yr 1 Gross income: *${formatKES(Math.round(grossIncome1yr))}*\n`;
+  msg += `  Yr 1 Net (after WHT): *${formatKES(Math.round(netIncome1yr))}*\n\n`;
+  msg += `  ${years}-yr Gross total: *${formatKES(Math.round(gross5yr))}*\n`;
+  msg += `  ${years}-yr Net total: *${formatKES(Math.round(net5yr))}* ✅\n\n`;
+  msg += `  Monthly income: *${formatKES(Math.round(netIncome1yr / 12))}*\n\n`;
+  msg += `_Note: WHT 15% applies to MMFs/T-Bills. IFBs are tax-free (use 18.46)._\n\n`;
+  msg += `📊 Sending your growth chart below...`;
+
+  await sendWhatsAppMessage(waId, msg, userId);
+
+  // After a short delay, send the chart image
+  const chartUrl = compoundGrowthChartUrl(principal, yieldPct, years, label);
+  await sendImageMessage(
+    waId,
+    chartUrl,
+    `📈 ${formatKES(principal)} at ${yieldPct}% for ${years}yrs — Net: ${formatKES(Math.round(net5yr))}`,
+    userId
+  );
+
+  // Then send CTA button to full calculator
+  return sendCTAButton(
+    waId,
+    `🎯 Want to compare more funds or run a portfolio analysis?`,
+    `Open Full Calculator 🔢`,
+    `https://sentill.africa/markets/treasuries`,
+    userId
+  );
+}
+
+// ── Chart command handler ─────────────────────────────────────────────────────
+
+async function handleChartCommand(waId: string, input: string, userId?: string) {
+  const sub = input.replace(/^(chart|graph)\s*/i, "").trim().toUpperCase();
+
+  // Route to correct chart
+  if (!sub || sub === "MMFS" || sub === "MMF" || sub === "FUNDS") {
+    await sendWhatsAppMessage(waId, "📊 Generating *MMF Yield Chart*... one moment!", userId);
+    await sendImageMessage(
+      waId,
+      mmfYieldChartUrl(),
+      "🏆 Top MMF Yields in Kenya — April 2026 | Source: CMA Kenya",
+      userId
+    );
+    return sendInteractiveButtons(waId,
+      "What would you like to explore next?",
+      [
+        { id: "MARKETS", title: "📈 Live Rates" },
+        { id: "LIST",    title: "📋 Fund Picker" },
+        { id: "INVEST",  title: "💰 Browse Funds" },
+      ],
+      userId
+    );
+  }
+
+  if (sub === "TBILLS" || sub === "TBILL" || sub === "YIELD CURVE" || sub === "BONDS" || sub === "CURVE") {
+    await sendWhatsAppMessage(waId, "📊 Generating *Kenya Yield Curve*...", userId);
+    await sendImageMessage(
+      waId,
+      tbillYieldCurveUrl(),
+      "📊 Kenya Yield Curve: T-Bills → IFBs | Gross vs Net After 15% WHT",
+      userId
+    );
+    return sendCTAButton(
+      waId,
+      "🏛️ Buy T-Bills directly on DhowCSD — min KES 50,000",
+      "Open T-Bill Hub →",
+      "https://sentill.africa/markets/treasuries",
+      userId
+    );
+  }
+
+  if (sub === "SACCOS" || sub === "SACCO" || sub === "DIVIDENDS") {
+    await sendWhatsAppMessage(waId, "📊 Generating *SACCO Dividend Chart*...", userId);
+    await sendImageMessage(
+      waId,
+      saccoChartUrl(),
+      "🤝 SACCO Dividend Yields in Kenya 2026 | Tower 20% leads",
+      userId
+    );
+    return sendCTAButton(
+      waId,
+      "Want full SACCO profiles, loan products & calculators?",
+      "Explore SACCO Hub →",
+      "https://sentill.africa/markets/saccos",
+      userId
+    );
+  }
+
+  if (sub.startsWith("GROWTH") || sub.startsWith("COMPARE") || sub.startsWith("ALL")) {
+    // Quick comparison chart
+    await sendWhatsAppMessage(waId, "📊 Generating *Investment Comparison Chart*...", userId);
+    const chartUrl = investmentComparisonUrl(
+      ["MMF (Top)", "T-Bill 364d", "IFB Bond", "SACCO Top", "Pension"],
+      [18.20,        16.45,        18.46,      20.0,        14.0],
+      "📈 Kenya Investment Yields — Apr 2026"
+    );
+    await sendImageMessage(
+      waId,
+      chartUrl,
+      "📈 All asset class yields compared — Apr 2026 | Sentill Africa",
+      userId
+    );
+    return sendInteractiveButtons(waId,
+      "Pick any to explore further:",
+      [
+        { id: "MARKETS", title: "📊 Full Rates" },
+        { id: "INVEST",  title: "💰 Browse & Invest" },
+        { id: "SUBSCRIBE", title: "⚡ Go Pro" },
+      ],
+      userId
+    );
+  }
+
+  // Default: show chart menu
+  return sendWhatsAppMessage(waId,
+    `📊 *CHART COMMANDS*\n` +
+    `━━━━━━━━━━━━━━━━━━\n\n` +
+    `• *CHART MMFS* — Top MMF yield bar chart\n` +
+    `• *CHART TBILLS* — Kenya yield curve (T-Bills → IFBs)\n` +
+    `• *CHART SACCOS* — SACCO dividend chart\n` +
+    `• *CHART COMPARE* — All asset classes compared\n` +
+    `• *CALC 100000* — Growth chart for your amount\n\n` +
+    `_Charts are sent as real PNG images!_`
+  );
+}
+
+// ── Rich text table handler ────────────────────────────────────────────────────
+
+async function handleTableCommand(waId: string, userId?: string) {
+  let msg = `📊 *RANKED INVESTMENT TABLE — KENYA APR 2026*\n`;
+  msg += `━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
+
+  msg += `🏆 *MONEY MARKET FUNDS (MMF)*\n`;
+  msg += `┌─────────────────────────────┐\n`;
+  msg += `│ # │ Fund          │  Yield  │\n`;
+  msg += `├─────────────────────────────┤\n`;
+  msg += `│ 1 │ Etica (Zidi)  │ *~17.5%*│\n`;
+
+  msg += `│ 2 │ Lofty Corpin  │ *16.80%*│\n`;
+  msg += `│ 3 │ Kuza MMF      │ *16.50%*│\n`;
+  msg += `│ 4 │ GenCap Hela   │ *16.20%*│\n`;
+  msg += `│ 5 │ CIC MMF       │ *15.90%*│\n`;
+  msg += `│ 6 │ Sanlam Pesa   │ *14.78%*│\n`;
+  msg += `│ 7 │ Britam MMF    │ *14.20%*│\n`;
+  msg += `└─────────────────────────────┘\n`;
+  msg += `Min: KES 1,000 · WHT: 15% · T+1 liquidity\n\n`;
+
+  msg += `🏛️ *GOVERNMENT SECURITIES*\n`;
+  msg += `┌──────────────────────────────────┐\n`;
+  msg += `│ Instrument │ Gross │  Net (WHT)  │\n`;
+  msg += `├──────────────────────────────────┤\n`;
+  msg += `│ 91-Day     │15.85% │  *13.47%*   │\n`;
+  msg += `│ 182-Day    │16.10% │  *13.69%*   │\n`;
+  msg += `│ 364-Day    │16.45% │  *13.98%*   │\n`;
+  msg += `│ IFB Bond   │18.46% │  *18.46%* ✅│\n`;
+  msg += `└──────────────────────────────────┘\n`;
+  msg += `IFB = WHT-free · Min KES 100K via DhowCSD\n\n`;
+
+  msg += `🤝 *TOP SACCOS (Dividend Yields)*\n`;
+  msg += `┌───────────────────────────┐\n`;
+  msg += `│ SACCO         │ Dividend  │\n`;
+  msg += `├───────────────────────────┤\n`;
+  msg += `│ Tower SACCO   │  *20.0%*  │\n`;
+  msg += `│ Police SACCO  │  *17.0%*  │\n`;
+  msg += `│ Stima SACCO   │  *15.0%*  │\n`;
+  msg += `│ Wanandege     │  *15.0%*  │\n`;
+  msg += `│ Safaricom SACCO│  *13.0%*  │\n`;
+  msg += `└───────────────────────────┘\n`;
+  msg += `Min: Varies · Illiquid (notice required)\n\n`;
+
+  msg += `━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+  msg += `💡 Commands:\n`;
+  msg += `• *CHART MMFS* — bar chart image\n`;
+  msg += `• *CALC 100000* — growth projection\n`;
+  msg += `• *INVEST* — browse & track\n`;
+
+  await sendWhatsAppMessage(waId, msg, userId);
+
+  return sendCTAButton(
+    waId,
+    "See interactive charts, live data and calculators on Sentill",
+    "Open Market Hub →",
+    "https://sentill.africa/markets",
+    userId
+  );
+}
+
+// ── Interactive List Message — MMF Picker ─────────────────────────────────────
+
+async function handleMMFListMenu(waId: string, userId?: string) {
+  return sendListMessage(
+    waId,
+    "📊 Sentill Money Market Funds",
+    "Pick a fund below to get full details — yield, minimum investment, how to invest, and a personal projection.\n\nAll rates as at April 2026:",
+    "View Funds",
+    [
+      {
+        title: "🏆 Highest Yield Funds",
+        rows: [
+          { id: "CAT_MONEY_MARKET", title: "Etica MMF (Zidi)", description: "~17.5% p.a. · Min KES 100 · Download Zidi App" },
+
+          { id: "CAT_MONEY_MARKET", title: "Lofty Corpin MMF",  description: "16.80% p.a. · Min KES 1,000" },
+          { id: "CAT_MONEY_MARKET", title: "Kuza MMF",          description: "16.50% p.a. · Min KES 1,000" },
+          { id: "CAT_MONEY_MARKET", title: "GenCap Hela MMF",   description: "16.20% p.a. · Min KES 1,000" },
+          { id: "CAT_MONEY_MARKET", title: "CIC Money Market",  description: "15.90% p.a. · Kenya's Largest" },
+        ],
+      },
+      {
+        title: "🏦 Bank-Backed Funds",
+        rows: [
+          { id: "CAT_MONEY_MARKET", title: "NCBA Loop MMF",     description: "12.10% p.a. · Instant Liquidity" },
+          { id: "CAT_MONEY_MARKET", title: "KCB Wealth MMF",    description: "11.40% p.a. · Tier 1 Bank" },
+          { id: "CAT_MONEY_MARKET", title: "Co-op Trust MMF",   description: "13.20% p.a. · Co-op Stability" },
+          { id: "CAT_MONEY_MARKET", title: "Absa Asset Capital", description: "12.50% p.a. · Global Standards" },
+          { id: "CAT_MONEY_MARKET", title: "Sanlam Pesa MMF",   description: "14.78% p.a. · Institutional" },
+        ],
+      },
+    ],
+    userId
+  );
+}
+
+async function handleMarketMovers(waId: string) {
+  const providers = await prisma.provider.findMany({
+    orderBy: { currentYield: "desc" },
+    take: 15,
+    select: { name: true, currentYield: true, type: true, riskLevel: true, aum: true },
+  });
+
+  const rates = await prisma.marketRateCache.findMany({
+    orderBy: { lastSyncedAt: "desc" }, take: 5,
+  });
+
+  let msg = `📈 *MARKET MOVERS*\n`;
+  msg += `━━━━━━━━━━━━━━━━━━\n\n`;
+
+  msg += `🔥 *Highest Yields Right Now:*\n`;
+  providers.slice(0, 5).forEach((p, i) => {
+    msg += `  ${i + 1}. *${p.name}* — ${p.currentYield.toFixed(1)}% (${p.type})\n`;
+  });
+
+  msg += `\n📊 *Best by Category:*\n`;
+  const seen = new Set<string>();
+  providers.forEach(p => {
+    if (!seen.has(p.type)) {
+      seen.add(p.type);
+      msg += `  ${p.type}: *${p.name}* — ${p.currentYield.toFixed(1)}%\n`;
+    }
+  });
+
+  if (rates.length) {
+    msg += `\n📡 *Live Market Data:*\n`;
+    rates.forEach(r => {
+      msg += `  • ${r.symbol}: *${r.price.toFixed(2)}%*\n`;
+    });
+  }
+
+  msg += `\n━━━━━━━━━━━━━━━━━━\n`;
+  msg += `• *LEADERBOARD* — full rankings\n• *INVEST* — explore funds\n• *CALC* — project returns`;
+
+  return sendWhatsAppMessage(waId, msg);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 🔔 NOTIFICATION FREQUENCY SYSTEM — High-Tech Alert Management
+// ─────────────────────────────────────────────────────────────────────────────
+
+const FREQ_LABELS: Record<string, string> = {
+  DAILY:              "🌅 Daily (7AM Mon–Fri)",
+  WEEKLY:             "📅 Weekly (Monday 7AM)",
+  MARKET_ALERTS_ONLY: "📊 Market Alerts Only",
+  NONE:               "🔕 Off",
+};
+
+function freqFromPayload(payload: string): string | null {
+  const map: Record<string, string> = {
+    FREQ_DAILY:   "DAILY",
+    FREQ_WEEKLY:  "WEEKLY",
+    FREQ_MOVERS:  "MARKET_ALERTS_ONLY",
+    FREQ_OFF:     "NONE",
+    "1": "DAILY",
+    "2": "WEEKLY",
+    "3": "MARKET_ALERTS_ONLY",
+    "4": "NONE",
+    DAILY:               "DAILY",
+    WEEKLY:              "WEEKLY",
+    MARKET_ALERTS_ONLY:  "MARKET_ALERTS_ONLY",
+    NONE:                "NONE",
+    OFF:                 "NONE",
+  };
+  return map[payload.toUpperCase()] ?? null;
+}
+
+// ── Called right after new user registration ─────────────────────────────────
+async function handleFreqAfterRegister(waId: string, input: string, ctx: SessionContext, userId?: string) {
+  const freq = freqFromPayload(input);
+
+  if (!freq || !userId) {
+    // If unrecognised, ask again with buttons
+    try {
+      return sendInteractiveButtons(waId, `🔔 Pick your alert frequency:`, [
+        { id: "FREQ_DAILY",  title: "🌅 Daily (7AM Mon–Fri)" },
+        { id: "FREQ_WEEKLY", title: "📅 Weekly (Mon mornings)" },
+        { id: "FREQ_MOVERS", title: "📊 Market Alerts Only" },
+      ]);
+    } catch {
+      return sendWhatsAppMessage(waId,
+        `Reply: *1* Daily · *2* Weekly · *3* Alerts only · *4* Off`
+      );
+    }
+  }
+
+  await prisma.alertPreference.upsert({
+    where: { userId },
+    create: { userId, whatsappEnabled: freq !== "NONE", frequency: freq, whatsappNumber: waId },
+    update: { frequency: freq, whatsappEnabled: freq !== "NONE" },
+  });
+
+  await updateSession(waId, "IDLE", {}, userId);
+
+  const freqLabel = FREQ_LABELS[freq] ?? freq;
+  return sendWhatsAppMessage(waId,
+    `✅ *Notifications set to: ${freqLabel}*\n\n` +
+    (freq === "NONE"
+      ? `🔕 You won't receive periodic briefs. You can change this any time with *ALERTS*.\n\n`
+      : `🔔 You'll receive smart market briefs ${freq === "DAILY" ? "every weekday at 7AM EAT" : freq === "WEEKLY" ? "every Monday at 7AM EAT" : "when significant market moves happen"}.\n\n`) +
+    `📊 *What you can do right now:*\n` +
+    `• *MARKETS* — live rates\n` +
+    `• *INVEST* — browse options\n` +
+    `• *ASSETS* — portfolio tracker\n` +
+    `• *ALERTS* — change notifications anytime\n` +
+    `• *ASK* — ask AI anything\n\n` +
+    `⚡ Upgrade to Pro: *SUBSCRIBE*`
+  );
+}
+
+// ── Full Alert Settings Dashboard ────────────────────────────────────────────
+async function handleAlertSettings(waId: string, userId: string) {
+  const pref: any = await (prisma as any).alertPreference.findUnique({ where: { userId } });
+  const freq = pref?.frequency ?? "DAILY";
+  const freqLabel = FREQ_LABELS[freq] ?? freq;
+  const watchlist = pref?.watchlistAlerts ?? true;
+  const movers = pref?.marketMoversAlerts ?? false;
+  const threshold = pref?.yieldThreshold;
+  const oracle = pref?.aiOracleAlerts ?? true;
+
+  const msg =
+    `🔔 *ALERT SETTINGS*\n` +
+    `━━━━━━━━━━━━━━━━━━\n\n` +
+    `📡 *Current Configuration:*\n\n` +
+    `⏰ *Brief Frequency:* ${freqLabel}\n` +
+    `📊 *Watchlist Alerts:* ${watchlist ? "🟢 ON" : "🔴 OFF"}\n` +
+    `📈 *Market Movers:* ${movers ? "🟢 ON" : "🔴 OFF"}\n` +
+    `🧠 *AI Oracle Briefs:* ${oracle ? "🟢 ON" : "🔴 OFF"}\n` +
+    `🎯 *Yield Threshold:* ${threshold ? `🟢 Alert at ${threshold}%+` : "🔴 Not set"}\n\n` +
+    `━━━━━━━━━━━━━━━━━━\n` +
+    `*Commands to update:*\n\n` +
+    `🌅 *FREQ DAILY* — daily 7AM briefs\n` +
+    `📅 *FREQ WEEKLY* — Monday digest\n` +
+    `📊 *FREQ MOVERS* — market alerts only\n` +
+    `🔕 *FREQ OFF* — pause all alerts\n\n` +
+    `👁 *WATCH* — add fund to watchlist\n` +
+    `🗑 *UNWATCH* — remove from watchlist\n` +
+    `🎯 *ALERT YIELD 17.5* — set threshold\n` +
+    `📋 *WATCHLIST* — view your watchlist\n\n` +
+    `━━━━━━━━━━━━━━━━━━\n` +
+    `_Alerts help you never miss a market move._`;
+
+  try {
+    await sendWhatsAppMessage(waId, msg);
+    return sendInteractiveButtons(waId, `Quick frequency change:`, [
+      { id: "FREQ_DAILY",  title: "🌅 Daily" },
+      { id: "FREQ_WEEKLY", title: "📅 Weekly" },
+      { id: "FREQ_MOVERS", title: "📊 Alerts Only" },
+    ]);
+  } catch {
+    return sendWhatsAppMessage(waId, msg);
+  }
+}
+
+// ── Handle frequency change from ALERTS menu ─────────────────────────────────
+async function handleAlertFreqSelect(waId: string, input: string, ctx: SessionContext, userId?: string) {
+  const freq = freqFromPayload(input);
+  if (!freq || !userId) return sendWhatsAppMessage(waId, `❌ Unknown option. Send *ALERTS* to see options.`);
+
+  await prisma.alertPreference.upsert({
+    where: { userId },
+    create: { userId, frequency: freq, whatsappEnabled: freq !== "NONE", whatsappNumber: waId },
+    update: { frequency: freq, whatsappEnabled: freq !== "NONE" },
+  });
+
+  await updateSession(waId, "IDLE", {}, userId);
+  const label = FREQ_LABELS[freq] ?? freq;
+  return sendWhatsAppMessage(waId,
+    `✅ *Alert frequency updated!*\n\n⏰ Now set to: *${label}*\n\n` +
+    (freq === "NONE"
+      ? `🔕 Periodic briefs paused. Send *FREQ DAILY* to re-enable.\n`
+      : `🔔 You'll get briefs: ${freq === "DAILY" ? "Every weekday 7AM EAT" : freq === "WEEKLY" ? "Every Monday 7AM EAT" : "When major market moves happen"}.\n`) +
+    `\nSend *ALERTS* to see or change all settings.`
+  );
+}
+
+// ── Yield Threshold Alert ─────────────────────────────────────────────────────
+async function handleYieldAlertSet(waId: string, rawInput: string, userId: string) {
+  const numStr = rawInput.replace(/^(alert yield|yield alert)\s+/i, "").trim();
+  const threshold = parseFloat(numStr);
+
+  if (isNaN(threshold) || threshold < 5 || threshold > 30) {
+    return sendWhatsAppMessage(waId, `❌ Invalid. Use: *ALERT YIELD 17.5* (between 5% and 30%).`);
+  }
+
+  await (prisma as any).alertPreference.upsert({
+    where: { userId },
+    create: { userId, yieldThreshold: threshold, whatsappEnabled: true, whatsappNumber: waId },
+    update: { yieldThreshold: threshold },
+  });
+
+  return sendWhatsAppMessage(waId,
+    `✅ *Yield Alert Set!*\n\n` +
+    `🎯 You'll be notified when any fund's yield crosses *${threshold}%*.\n\n` +
+    `Current top yield: check *LEADERBOARD* for live rankings.\n\n` +
+    `To remove: *ALERT YIELD 0* · Settings: *ALERTS*`
+  );
+}
+
+async function handleAlertThresholdInput(waId: string, rawInput: string, ctx: SessionContext, userId?: string) {
+  if (!userId) return;
+  await handleYieldAlertSet(waId, `ALERT YIELD ${rawInput}`, userId);
+  await updateSession(waId, "IDLE", {}, userId);
+}
+
+// ── Watchlist Add ─────────────────────────────────────────────────────────────
+async function startWatchlistAdd(waId: string, ctx: SessionContext, userId: string) {
+  const providers = await prisma.provider.findMany({
+    orderBy: { currentYield: "desc" },
+    take: 8,
+    select: { id: true, name: true, currentYield: true, type: true },
+  });
+
+  // Get already-watched providers
+  const existing = await prisma.watchlist.findMany({ where: { userId }, select: { providerId: true } });
+  const watchedIds = new Set(existing.map(w => w.providerId));
+
+  const unwatched = providers.filter(p => !watchedIds.has(p.id));
+
+  if (!unwatched.length) {
+    return sendWhatsAppMessage(waId, `✅ You're already watching all top funds!\n\nSend *WATCHLIST* to view.`);
+  }
+
+  let msg = `👁 *Add to Watchlist*\n\nPick a fund to watch:\n\n`;
+  unwatched.forEach((p, i) => {
+    msg += `*${i + 1}.* ${p.name} — ${p.currentYield.toFixed(1)}% (${p.type})\n`;
+  });
+  msg += `\nReply with a *number* or *CANCEL*.`;
+
+  await updateSession(waId, "ALERT_WATCHLIST_ADD", { ...ctx, _providers: unwatched.map(p => p.id) } as any, userId);
+  return sendWhatsAppMessage(waId, msg);
+}
+
+async function handleWatchlistAdd(waId: string, input: string, ctx: SessionContext, userId?: string) {
+  if (input === "CANCEL") { await updateSession(waId, "IDLE", {}, userId); return sendWhatsAppMessage(waId, "❌ Cancelled."); }
+
+  const providers = await prisma.provider.findMany({
+    orderBy: { currentYield: "desc" }, take: 8, select: { id: true, name: true, currentYield: true },
+  });
+  const num = parseInt(input, 10);
+  if (isNaN(num) || num < 1 || num > providers.length) return sendWhatsAppMessage(waId, `❌ Invalid. Reply 1–${providers.length} or CANCEL.`);
+
+  const picked = providers[num - 1];
+
+  // Check if already in watchlist
+  const existing = await prisma.watchlist.findFirst({ where: { userId: userId!, providerId: picked.id } });
+  if (existing) {
+    await updateSession(waId, "IDLE", {}, userId);
+    return sendWhatsAppMessage(waId, `ℹ️ *${picked.name}* is already in your watchlist.`);
+  }
+
+  await prisma.watchlist.create({ data: { userId: userId!, providerId: picked.id } });
+  await updateSession(waId, "IDLE", {}, userId);
+
+  return sendWhatsAppMessage(waId,
+    `✅ *${picked.name}* added to watchlist!\n\n` +
+    `📈 Current yield: *${picked.currentYield.toFixed(2)}%*\n` +
+    `🔔 You'll get alerts when its yield changes significantly.\n\n` +
+    `• *WATCHLIST* — view all watched funds\n• *WATCH* — add another`
+  );
+}
+
+// ── Watchlist Remove ──────────────────────────────────────────────────────────
+async function startWatchlistRemove(waId: string, ctx: SessionContext, userId: string) {
+  const items = await prisma.watchlist.findMany({
+    where: { userId },
+    include: { provider: { select: { name: true, currentYield: true } } },
+    orderBy: { createdAt: "desc" },
+  });
+
+  if (!items.length) return sendWhatsAppMessage(waId, `📋 Your watchlist is empty.\n\nSend *WATCH* to add funds.`);
+
+  let msg = `🗑 *Remove from Watchlist*\n\nWhich fund to unwatch?\n\n`;
+  items.forEach((item, i) => {
+    msg += `*${i + 1}.* ${item.provider?.name ?? "Unknown"} — ${item.provider?.currentYield.toFixed(1) ?? "?"}%\n`;
+  });
+  msg += `\nReply with a *number* or *CANCEL*.`;
+
+  await updateSession(waId, "ALERT_WATCHLIST_REMOVE", ctx, userId);
+  return sendWhatsAppMessage(waId, msg);
+}
+
+async function handleWatchlistRemove(waId: string, input: string, ctx: SessionContext, userId?: string) {
+  if (input === "CANCEL") { await updateSession(waId, "IDLE", {}, userId); return sendWhatsAppMessage(waId, "❌ Cancelled."); }
+
+  const items = await prisma.watchlist.findMany({
+    where: { userId: userId! },
+    include: { provider: { select: { name: true } } },
+    orderBy: { createdAt: "desc" },
+  });
+
+  const num = parseInt(input, 10);
+  if (isNaN(num) || num < 1 || num > items.length) return sendWhatsAppMessage(waId, `❌ Invalid. Reply 1–${items.length} or CANCEL.`);
+
+  const item = items[num - 1];
+  await prisma.watchlist.delete({ where: { id: item.id } });
+  await updateSession(waId, "IDLE", {}, userId);
+
+  return sendWhatsAppMessage(waId,
+    `✅ *${item.provider?.name ?? "Fund"}* removed from watchlist.\n\n` +
+    `• *WATCHLIST* — view remaining\n• *WATCH* — add a fund`
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CRON HELPER — exported so the daily cron can check frequency eligibility
+// ─────────────────────────────────────────────────────────────────────────────
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 🎁 REFERRAL PROGRAM — Invite friends, earn free Pro days
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function handleRefer(waId: string, userId: string) {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { name: true, email: true, isPremium: true },
+  });
+
+  // Count how many users this person referred (signed up with their number in referral context)
+  // We track referrals via WhatsApp logs — check if any users mention this waId in registration context
+  const referralLogs = await prisma.whatsAppLog.count({
+    where: { userId, message: { contains: "REFER" }, direction: "INBOUND" },
+  });
+
+  // Generate unique referral link using their waId hash
+  const refCode = Buffer.from(waId).toString("base64").slice(-6).toUpperCase();
+  const referralLink = `https://wa.me/254703469525?text=SENTIL_REF_${refCode}`;
+  const webLink = `https://sentill.africa?ref=${refCode}`;
+
+  const firstName = user?.name?.split(" ")[0] ?? "Investor";
+
+  const msg =
+    `🎁 *SENTIL REFERRAL PROGRAM*\n` +
+    `━━━━━━━━━━━━━━━━━━\n\n` +
+    `Hi *${firstName}*! Invite friends & earn free Pro time:\n\n` +
+    `━━━━━━━━━━━━━━━━━━\n` +
+    `🏆 *YOUR REWARDS:*\n\n` +
+    `🥉 *1 referral* → 3 days Pro FREE\n` +
+    `🥈 *3 referrals* → 2 weeks Pro FREE\n` +
+    `🥇 *5 referrals* → 1 month Pro FREE\n` +
+    `💎 *10 referrals* → 3 months Pro FREE\n\n` +
+    `━━━━━━━━━━━━━━━━━━\n` +
+    `📲 *YOUR INVITE LINK (WhatsApp):*\n${referralLink}\n\n` +
+    `🌐 *YOUR INVITE CODE:* \`${refCode}\`\n` +
+    `🔗 *Web link:* ${webLink}\n\n` +
+    `━━━━━━━━━━━━━━━━━━\n` +
+    `📩 *HOW TO INVITE:*\n\n` +
+    `1️⃣ Copy your link above\n` +
+    `2️⃣ Share it on WhatsApp, X, or any group\n` +
+    `3️⃣ When your friend registers — they get *7 days free Pro*!\n` +
+    `4️⃣ You automatically earn your reward 🎉\n\n` +
+    `━━━━━━━━━━━━━━━━━━\n` +
+    `📊 *YOUR STATS:*\n` +
+    `👥 Total invites sent: *${referralLogs}*\n` +
+    `💰 Status: *${user?.isPremium ? "✅ Pro Member" : "Free Account"}*\n\n` +
+    `_Every person you refer gets 7 days of Sentill Pro absolutely FREE!_\n\n` +
+    `• *MENU* — back to main menu\n` +
+    `• *STATUS* — check your subscription`;
+
+  return sendWhatsAppMessage(waId, msg);
+}
+
+export function shouldSendToday(frequency: string, lastWeeklySent?: Date | null): boolean {
+  const now = new Date();
+  const dayOfWeek = now.toLocaleDateString("en-US", { weekday: "long", timeZone: "Africa/Nairobi" }).toUpperCase();
+  const isWeekday = !["SATURDAY", "SUNDAY"].includes(dayOfWeek);
+  const isMonday = dayOfWeek === "MONDAY";
+
+  switch (frequency) {
+    case "DAILY":
+      return isWeekday;
+    case "WEEKLY": {
+      if (!isMonday) return false;
+      // Prevent double-send on same Monday
+      if (!lastWeeklySent) return true;
+      const lastSendDate = new Date(lastWeeklySent).toDateString();
+      const todayDate = now.toDateString();
+      return lastSendDate !== todayDate;
+    }
+    case "MARKET_ALERTS_ONLY":
+      return false; // Handled separately by threshold checker
+    case "NONE":
+      return false;
+    default:
+      return isWeekday;
+  }
+}
+
+export async function checkYieldThresholdAlerts(): Promise<void> {
+  // Get all users with a yieldThreshold set and whatsapp enabled
+  const prefs: any[] = await (prisma as any).alertPreference.findMany({
+    where: { yieldThreshold: { not: null }, whatsappEnabled: true },
+    include: { user: { select: { name: true, whatsappId: true } } },
+  });
+
+  if (!prefs.length) return;
+
+  // Get current top yields
+  const topFunds = await prisma.provider.findMany({
+    orderBy: { currentYield: "desc" },
+    take: 5,
+    select: { name: true, currentYield: true, type: true },
+  });
+
+  const { sendWhatsAppMessage: sendMsg } = await import("./whatsapp");
+
+  for (const pref of prefs) {
+    if (!pref.user?.whatsappId || !pref.yieldThreshold) continue;
+    const triggeredFunds = topFunds.filter(f => f.currentYield >= pref.yieldThreshold!);
+    if (!triggeredFunds.length) continue;
+
+    try {
+      let alert = `🎯 *YIELD ALERT TRIGGERED!*\n━━━━━━━━━━━━━━━━━━\n\n`;
+      alert += `Hi *${pref.user.name.split(" ")[0]}*, funds crossing your *${pref.yieldThreshold}%* threshold:\n\n`;
+      triggeredFunds.forEach(f => {
+        alert += `🔥 *${f.name}* — ${f.currentYield.toFixed(2)}% (${f.type})\n`;
+      });
+      alert += `\n• *INVEST* — explore these funds\n• *CALC <amount>* — project returns\n• *ALERTS* — change your threshold`;
+      await sendMsg(pref.user.whatsappId, alert);
+    } catch (err) {
+      console.warn(`[Threshold Alert] Failed for ${pref.user.name}:`, err);
+    }
+  }
+}

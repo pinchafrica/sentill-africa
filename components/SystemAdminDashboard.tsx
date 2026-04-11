@@ -96,7 +96,7 @@ export default function SystemAdminDashboard({
 
   const dynamicRiskMatrix = [
     { asset: "SCOM (Equities)", riskLevel: "Live Rate", sentinelScore: 82, trend: `KES ${scom}`, color: "bg-red-500" },
-    { asset: "Etica MMF", riskLevel: "Live Rate", sentinelScore: 95, trend: `${etca}%`, color: "bg-blue-500" },
+    { asset: "Top MMF", riskLevel: "Live Rate", sentinelScore: 95, trend: `${etca}%`, color: "bg-blue-500" },
     { asset: "Fixed Income", riskLevel: "Minimal", sentinelScore: 12, trend: "+0%", color: "bg-emerald-500" },
   ];
 

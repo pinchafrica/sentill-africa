@@ -68,7 +68,7 @@ export default function WhatsAppAdminPanel() {
         <p className="text-[9px] font-black uppercase tracking-widest text-green-700 mb-3">Message includes daily:</p>
         <div className="space-y-1.5">
           {[
-            "Top 3 MMF yields (Zidi, Etica, Lofty)",
+            "Top 3 MMF yields (CIC, Zidi, Lofty)",
             "T-Bill gross & net yields (all 3 tenors)",
             "Best IFB coupon (IFB1/2024 - WHT free)",
             "NSE top movers (SCOM, EQTY, KCB)",

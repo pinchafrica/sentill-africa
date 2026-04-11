@@ -24,6 +24,8 @@ import LoanVsInvestCalculator from "@/components/LoanVsInvestCalculator";
 import { useAIStore } from "@/lib/store";
 import useSWR from "swr";
 import { CheckCircle } from "lucide-react";
+import WhatsAppQR from "@/components/WhatsAppQR";
+
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -82,9 +84,9 @@ const HERO_SLIDES = [
     title: "MMF Yield Leaderboard",
     subtitle: "Money Market Dominance",
     badge: "Top Tier",
-    value: "Etica 17.5%",
+    value: "Top MMFs 14-18%",
     image: IMG.hero3,
-    description: "Deep data matrix comparing Etica, Sanlam, Cytonn & more. 1-year historical trendlines mapped to CBK rates.",
+    description: "Deep data matrix comparing 30+ MMFs: Zidi, CIC, Kuza, Lofty, Sanlam & more. 1-year trendlines mapped to CBK rates.",
     stats: [
       { label: "Funds Tracked", value: "32+" },
       { label: "Updates", value: "Daily" },
@@ -122,7 +124,7 @@ const HERO_SLIDES = [
 ];
 
 const FAQS = [
-  { q: "Is Sentill a custodian of my money?", a: "No. Sentill is a non-custodial intelligence layer. We never hold or manage your funds. You invest directly with licensed providers like Etica, CIC, or through the NSE via your own CDSC account." },
+  { q: "Is Sentill a custodian of my money?", a: "No. Sentill is a non-custodial intelligence layer. We never hold or manage your funds. You invest directly with licensed providers like CIC, Sanlam, Britam, or through the NSE via your own CDSC account." },
   { q: "How accurate are the yield projections?", a: "Yields are updated daily from official fund manager reports. Our projections automatically factor in the 15% KRA Withholding Tax for MMFs to give you the real net yield, not the misleading gross figure." },
   { q: "What is the Sentil Pro subscription?", a: "Pro unlocks the Ultra Advisor AI engine, automated KRA tax form generation, real-time bond auction alerts, and priority customer support. Start with our 7-day trial for just KES 100 — no auto-renewal, no commitment." },
   { q: "Can I track SACCOs and Chamas?", a: "Yes. Our Chama Admin module lets you manage group investments, track contributions, and generate transparent audit reports for all members." },
@@ -130,13 +132,13 @@ const FAQS = [
 ];
 
 const MARKET_ASSETS = [
-  { id: "etica", provider: "Etica MMF", yield: "17.5%", liquidity: "24-48 Hrs", aum: "KES 4.2B", trend: "up", type: "MMF", desc: "Top-tier sovereign debt yields." },
-  { id: "lofty", provider: "Lofty Corban MMF", yield: "16.8%", liquidity: "Instant", aum: "KES 1.8B", trend: "up", type: "MMF", desc: "Aggresive cash management." },
-  { id: "SCOM", provider: "Safaricom PLC", yield: "12.4%", liquidity: "T+1", aum: "Equity", trend: "up", type: "Stock", desc: "Dominant telco with high dividends." },
-  { id: "EQTY", provider: "Equity Group", yield: "14.1%", liquidity: "T+1", aum: "Equity", trend: "up", type: "Stock", desc: "Regional banking powerhouse." },
   { id: "ifb1_2024", provider: "IFB1/2024/6.5", yield: "18.5%", liquidity: "Secondary", aum: "Bond", trend: "up", type: "Bond", desc: "Tax-free sovereign infrastructure." },
+  { id: "cic", provider: "CIC Wealth MMF", yield: "15.9%", liquidity: "24 Hrs", aum: "KES 5.8B", trend: "up", type: "MMF", desc: "Largest non-bank MMF by AUM." },
+  { id: "lofty", provider: "Lofty Corban MMF", yield: "16.8%", liquidity: "Instant", aum: "KES 1.8B", trend: "up", type: "MMF", desc: "Aggressive cash management." },
+  { id: "SCOM", provider: "Safaricom PLC", yield: "12.4%", liquidity: "T+1", aum: "Equity", trend: "up", type: "Stock", desc: "Dominant telco with high dividends." },
+  { id: "etica", provider: "Etica MMF", yield: "17.5%", liquidity: "24-48 Hrs", aum: "KES 4.2B", trend: "up", type: "MMF", desc: "High-yield emerging fund manager." },
   { id: "sanlam", provider: "Sanlam Pesa MMF", yield: "16.2%", liquidity: "24 Hrs", aum: "KES 4.7B", trend: "up", type: "MMF", desc: "Safe, balanced liquidity hub." },
-  { id: "cytonn", provider: "Cytonn MMF", yield: "15.2%", liquidity: "Sub-24 Hrs", aum: "KES 12.4B", trend: "down", type: "MMF", desc: "Scale-driven yield stability." },
+  { id: "EQTY", provider: "Equity Group", yield: "14.1%", liquidity: "T+1", aum: "Equity", trend: "up", type: "Stock", desc: "Regional banking powerhouse." },
   { id: "KCB", provider: "KCB Group", yield: "13.8%", liquidity: "T+1", aum: "Equity", trend: "down", type: "Stock", desc: "Kenya's legacy banking leader." },
   { id: "EABL", provider: "EABL", yield: "11.5%", liquidity: "T+1", aum: "Equity", trend: "up", type: "Stock", desc: "Blue-chip consumer non-cyclical." },
   { id: "fxd1_2024", provider: "FXD1/2024/10", yield: "16.4%", liquidity: "Secondary", aum: "Bond", trend: "up", type: "Bond", desc: "Long-term fixed-income anchor." },
@@ -154,7 +156,7 @@ const AI_RECOMMENDATIONS = [
   { symbol: "EQTY", name: "Equity Group", signal: "BUY", target: "KES 56.00", confidence: "91%", reason: "Regional expansion alpha." },
   { symbol: "EABL", name: "East African Breweries", signal: "SELL", target: "KES 110.00", confidence: "76%", reason: "Cost pressures in supply chain." },
   { symbol: "ABS", name: "Absa Bank", signal: "BUY", target: "KES 16.50", confidence: "85%", reason: "Credit growth momentum." },
-  { symbol: "ETICA", name: "Etica MMF", signal: "ALLOCATE", target: "17.5%", confidence: "98%", reason: "Yield leadership." },
+  { symbol: "IFB1", name: "Infrastructure Bond", signal: "TAX-FREE", target: "18.5%", confidence: "99%", reason: "Sovereign-backed, zero WHT." },
 ];
 
 export default function HomePage() {
@@ -405,6 +407,10 @@ export default function HomePage() {
                     <Plus className="w-4 h-4" /> Log Asset
                   </button>
                 </div>
+                {/* WhatsApp quick access */}
+                <div className="mt-4">
+                  <WhatsAppQR />
+                </div>
               </motion.div>
             </AnimatePresence>
 
@@ -550,9 +556,8 @@ export default function HomePage() {
         </motion.div>
       </section>
 
-      {/* ═══════════════════════════════════════════════════════════════════════
-          SECTION 1.7 — VISION 2030 IMPACT TRACKER (wow factor)
-         ═══════════════════════════════════════════════════════════════════════ */}
+
+      {/* ── SECTION 2 — VISION 2030 IMPACT ─────────────────────────────── */}
       <section className="pt-24 pb-12 bg-white relative overflow-hidden">
         <div className="max-w-[1400px] mx-auto px-6 lg:px-12">
           <div className="bg-slate-950 rounded-[3rem] p-10 lg:p-20 relative overflow-hidden border border-white/5 shadow-2xl">
