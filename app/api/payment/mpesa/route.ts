@@ -14,13 +14,15 @@ export async function POST(req: NextRequest) {
 
     // Verify minimum amount
     const MIN_AMOUNTS: Record<string, number> = {
-      WEEKLY_7_DAYS: 99,
-      MONTHLY_30_DAYS: 349,
-      QUARTERLY_90_DAYS: 999,
-      ANNUAL_365_DAYS: 2999,
+      PRO_30_DAYS: 490,
+      // Legacy plan codes — all map to 490 now
+      WEEKLY_7_DAYS: 490,
+      MONTHLY_30_DAYS: 490,
+      QUARTERLY_90_DAYS: 490,
+      ANNUAL_365_DAYS: 490,
       // Legacy plans (backwards compat)
-      PRO_MONTHLY: 349,
-      PRO_ANNUAL: 999,
+      PRO_MONTHLY: 490,
+      PRO_ANNUAL: 490,
     };
 
     if (plan && amount < MIN_AMOUNTS[plan]) {
