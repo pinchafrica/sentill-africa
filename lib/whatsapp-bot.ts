@@ -833,13 +833,14 @@ async function sendInvestmentCategories(waId: string, userId: string) {
     line("🤝 SACCO   |", topSacco) +
     line("🧓 Pension |", topPension) +
     `\n━━━━━━━━━━━━━━━━━━\n` +
-    `🧠 *Ask me anything:*\n\n` +
+    `🧠 *Ask me anything about investing:*\n\n` +
+    `Just type your question! Examples:\n` +
     `• _What's the best MMF right now?_\n` +
     `• _Compare T-Bills vs Bonds_\n` +
     `• _How do I invest KES 50,000?_\n` +
-    `• _CALC 100000_ — see projections\n\n` +
-    `Or specify a type:\n` +
-    `*MMF · T-BILL · BOND · SACCO · PENSION*`;
+    `• _CALC 100000_ — see projections\n` +
+    `• _Which SACCO has the highest returns?_\n\n` +
+    `_Type your question and Sentill AI will give you a personalised answer._`;
 
   return sendWhatsAppMessage(waId, msg);
 }
@@ -1868,8 +1869,8 @@ async function sendMainMenu(waId: string, userId?: string) {
       `${isPro ? "⚡ Pro Member" : "🔓 Free Plan"}\n\n` +
       `━━━━━━━━━━━━━━━━━━\n` +
       `*What would you like to do?*\n\n` +
-      `💰 *1. Invest* — Compare MMFs, Bonds, T-Bills, SACCOs\n` +
-      `📊 *2. Live Rates* — See what's paying the most right now\n` +
+      `📊 *1. Best Rates* — Today's top yields across all categories\n` +
+      `📈 *2. Live Markets* — Full rate table + T-Bills, Bonds\n` +
       `🧠 *3. Ask AI* — Get instant investment advice\n` +
       (isPro
         ? `📁 *4. My Portfolio* — View & track your investments\n` +
@@ -1877,7 +1878,7 @@ async function sendMainMenu(waId: string, userId?: string) {
         : `📁 *4. Portfolio* — Track investments _(Pro only)_\n` +
           `🎯 *5. Financial Goals* — Set targets _(Pro only)_\n`) +
       `\n━━━━━━━━━━━━━━━━━━\n` +
-      `*Reply with a number (1–5)*\n\n` +
+      `*Reply with a number (1–5)* or just type a question\n\n` +
       `_More: ALERTS · STATUS · REFER · HELP_`,
       userId
     );
@@ -1896,7 +1897,7 @@ async function sendMainMenu(waId: string, userId?: string) {
     `━━━━━━━━━━━━━━━━━━\n` +
     `*Or choose:*\n\n` +
     `*1* — 📊 Live Market Rates\n` +
-    `*2* — 💰 Browse Investments\n` +
+    `*2* — 📈 Today's Best Yields\n` +
     `*3* — 🧠 Ask AI Anything\n` +
     `*4* — 👤 Create Free Account _(unlock portfolio & alerts)_\n\n` +
     `_Reply with a number or just type your question_`
