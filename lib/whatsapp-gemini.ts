@@ -80,58 +80,213 @@ Net IFB yield = stated yield. Net T-Bill/Bond yield = yield × 0.85 (after 15% W
 Net 364-Day T-Bill: 16.42% × 0.85 = 13.96% effective.
 Net IFB1: 18.46% (no deduction — WHT exempt by law).
 
-━━ SACCOS ━━
-Member-owned, pay dividends + interest on deposits. Higher yields but less liquid than MMFs.
-Withdrawal usually requires notice (30-90 days). Must be a member of the SACCO's bond.
+━━ SACCOS — COOPERATIVE SAVINGS & CREDIT ━━
+Member-owned cooperative societies. Pay dividends + interest on deposits. Regulated by SASRA.
 
-| SACCO                        | Dividend Rate | Min Shares | Sector      |
-|------------------------------|---------------|------------|-------------|
-| Stima SACCO                  | 14.5%         | KES 2,000  | Energy/Govt |
-| Kenya Police SACCO           | 13.8%         | KES 1,000  | Police      |
-| Wanandege SACCO              | 13.5%         | KES 2,000  | Aviation    |
-| Mwalimu National             | 13.2%         | KES 2,000  | Teachers    |
-| Harambee SACCO               | 12.8%         | KES 1,000  | Civil Serv. |
-| Tower SACCO                  | 12.5%         | KES 500    | Open        |
-| Kenya Commercial Bank SACCO  | 12.0%         | KES 2,000  | Banking     |
+| SACCO                        | Dividend Rate | Interest on Deposits | Min Shares | Sector        | Loan Rate |
+|------------------------------|---------------|---------------------|------------|---------------|-----------|
+| Stima SACCO                  | 14.5%         | 8%                  | KES 2,000  | Energy/Govt   | 12% p.a.  |
+| Kenya Police SACCO           | 13.8%         | 7%                  | KES 1,000  | Police        | 12% p.a.  |
+| Wanandege SACCO              | 13.5%         | 8%                  | KES 2,000  | Aviation      | 12% p.a.  |
+| Safaricom SACCO              | 13.0%         | 8%                  | KES 2,000  | Telecoms      | 12% p.a.  |
+| Mwalimu National             | 13.2%         | 7%                  | KES 2,000  | Teachers      | 12% p.a.  |
+| Harambee SACCO               | 12.8%         | 7%                  | KES 1,000  | Civil Servants| 12% p.a.  |
+| Tower SACCO                  | 12.5%         | 7%                  | KES 500    | Open Bond     | 14% p.a.  |
+| Kenya Commercial Bank SACCO  | 12.0%         | 6%                  | KES 2,000  | Banking       | 12% p.a.  |
+| Ukulima SACCO                | 12.0%         | 7%                  | KES 1,000  | Agriculture   | 14% p.a.  |
+| Unaitas SACCO                | 11.5%         | 7%                  | KES 500    | Open Bond     | 14% p.a.  |
 
-━━ UNIT TRUSTS (Equity & Balanced) ━━
-Invest in NSE stocks or bonds. Higher growth potential, but value fluctuates.
-Regulated by CMA. Ideal for 3–10 year horizons.
+✅ SACCO ADVANTAGES:
+- Dividend returns: 10-15% p.a. (higher than bank savings)
+- Interest on deposits: 6-8% on top of dividends
+- Access to cheap loans: 12-14% p.a. (vs banks at 16-20%)
+- Borrow up to 3x your savings
+- Forced savings discipline via payroll deductions
+- Emergency loan facility for members
 
-| Fund                          | 1-Year Return | Type      | Risk       |
-|-------------------------------|---------------|-----------|------------|
-| Cytonn High Yield Fund        | 18-20%        | Fixed Inc | Medium     |
-| Britam Balanced Fund          | 14-16%        | Balanced  | Medium     |
-| Old Mutual Balanced Fund      | 13-15%        | Balanced  | Medium     |
-| Sanlam Equity Fund            | 12-18%        | Equity    | High       |
-| CIC Equity Fund               | 11-17%        | Equity    | High       |
-| Jubilee Equity Fund           | 10-15%        | Equity    | High       |
+❌ SACCO DISADVANTAGES:
+- Illiquid: 30-90 day withdrawal notice required
+- Not insured by KDIC (bank deposits are insured up to KES 500K)
+- Must be member of the SACCO's common bond
+- Governance risk: some have weak management
 
-Note: Unit trust returns vary year to year. Past performance ≠ future returns.
+🎯 BEST FOR: Salaried employees seeking forced savings + cheap loans.
+
+━━ UNIT TRUSTS & COLLECTIVE INVESTMENT SCHEMES ━━
+Pooled funds managed by CMA-licensed fund managers. Invest in stocks, bonds, or both.
+
+📊 EQUITY FUNDS (NSE stocks — higher growth, higher risk):
+| Fund                          | 1-Year Return | Min Invest | Manager       |
+|-------------------------------|---------------|------------|---------------|
+| Sanlam Equity Fund            | 15-18%        | KES 5,000  | Sanlam        |
+| CIC Equity Fund               | 12-17%        | KES 5,000  | CIC           |
+| Britam Equity Fund            | 10-15%        | KES 1,000  | Britam        |
+| Old Mutual Equity Fund        | 11-15%        | KES 5,000  | Old Mutual    |
+| Jubilee Equity Fund           | 12-16%        | KES 5,000  | Jubilee       |
+
+⚖️ BALANCED FUNDS (stocks + bonds — moderate risk):
+| Fund                          | 1-Year Return | Min Invest | Manager       |
+|-------------------------------|---------------|------------|---------------|
+| Cytonn High Yield Fund        | 18-20%        | KES 10,000 | Cytonn        |
+| Britam Balanced Fund          | 14-16%        | KES 1,000  | Britam        |
+| Old Mutual Balanced Fund      | 13-15%        | KES 5,000  | Old Mutual    |
+
+🏦 FIXED INCOME UNIT TRUSTS (bonds + T-Bills — lower risk):
+| Fund                          | 1-Year Return | Min Invest | Manager       |
+|-------------------------------|---------------|------------|---------------|
+| Cytonn Fixed Income Fund      | 14-16%        | KES 10,000 | Cytonn        |
+| CIC Fixed Income Fund         | 12-14%        | KES 5,000  | CIC           |
+| Britam Bond Plus Fund         | 11-13%        | KES 1,000  | Britam        |
+
+✅ UNIT TRUST ADVANTAGES:
+- Professional fund management, CMA regulated
+- Diversification across many assets
+- Low minimum: from KES 1,000
+- No capital gains tax on unit trust gains (as of 2026)
+
+❌ UNIT TRUST DISADVANTAGES:
+- Management fees: 1.5-2.5% p.a. eat into returns
+- Returns NOT guaranteed — equity funds can lose value
+- Less liquid than MMFs (3-5 days vs 1-2 for MMFs)
+
+🎯 BEST FOR: Medium to long-term investors (3-10 years).
 
 ━━ PENSION / RETIREMENT FUNDS ━━
-Tax-deductible contributions (up to KES 30,000/month from taxable income).
-Long-term wealth building. Withdraw at age 50+ without penalty.
+Tax-deductible. Kenya's most powerful tax advantage for employed Kenyans.
 
-| Scheme                        | Long-term Return | Type           | Min Monthly |
-|-------------------------------|------------------|----------------|-------------|
-| NSSF Tier 2 (voluntary)       | 9-11%            | Govt Pension   | KES 200     |
-| Jubilee Pension Scheme        | 11-13%           | Personal Pension| KES 500    |
-| ICEA Lion Retirement Fund     | 11-14%           | Personal Pension| KES 1,000  |
-| Britam Pension Fund           | 10-13%           | Personal Pension| KES 500    |
-| CIC Pension Plan              | 10-12%           | Personal Pension| KES 500    |
+| Scheme                        | Long-term Return | Type           | Min Monthly | Regulator |
+|-------------------------------|------------------|----------------|-------------|-----------|
+| NSSF Tier 1 (mandatory)       | 9-11%            | National Scheme | KES 2,160   | NSSF      |
+| NSSF Tier 2 (voluntary)       | 9-11%            | National Scheme | KES 200     | NSSF      |
+| Jubilee Individual Pension    | 11-13%           | Personal        | KES 500     | RBA/CMA   |
+| ICEA Lion Retirement Fund     | 11-14%           | Personal        | KES 1,000   | RBA/CMA   |
+| Britam Pension Fund           | 10-13%           | Personal        | KES 500     | RBA/CMA   |
+| CIC Pension Plan              | 10-12%           | Personal        | KES 500     | RBA/CMA   |
+| Sanlam Retirement Fund        | 10-13%           | Personal        | KES 500     | RBA/CMA   |
+| Enwealth Pension Fund         | 10-12%           | Personal        | KES 500     | RBA/CMA   |
 
-TAX ADVANTAGE: Pension contributions reduce your taxable income by up to KES 30,000/month.
-If you're in the 30% tax bracket, KES 30K/month contribution saves you KES 9,000/month in taxes.
+💰 TAX ADVANTAGE (always show for pension questions):
+- Max tax-deductible contribution: KES 30,000/month
+- 30% tax bracket (>KES 32,333/month): saves KES 9,000/month = KES 108,000/year!
+- 25% bracket (KES 24K-32K/month): saves KES 7,500/month = KES 90,000/year
+- Effective return = pension growth + tax saving = best deal in Kenya
+- Withdrawal: age 50+ (first KES 600,000 tax-free)
+
+✅ PENSION ADVANTAGES:
+- Largest tax advantage in Kenya (up to KES 108K/year in tax savings)
+- Employer matching (many match 50-100%)
+- Death benefits for nominees
+- Protected from creditors in bankruptcy
+
+❌ PENSION DISADVANTAGES:
+- Locked until age 50 (or job change with tax penalties)
+- Management fees 1-3% p.a.
+- Cannot borrow against like SACCOs
+
+🎯 BEST FOR: Every employed Kenyan — literally free money via tax savings.
+
+━━ CORPORATE BONDS & COMMERCIAL PAPER ━━
+Debt issued by Kenyan companies. Higher yield than govt bonds but higher risk.
+
+| Issuer                  | Coupon Rate | Maturity | Min Invest  | Risk     |
+|------------------------|-------------|----------|-------------|----------|
+| Centum RE              | 13.0%       | 2027     | KES 100,000 | Medium   |
+| East African Breweries | 12.5%       | 2026     | KES 100,000 | Low-Med  |
+| Family Bank            | 13.5%       | 2028     | KES 100,000 | Medium   |
+| HF Group               | 13.0%       | 2027     | KES 100,000 | Med-High |
+
+✅ ADVANTAGES: Higher yields (2-4% above govt), regular coupon income, NSE-listed.
+❌ DISADVANTAGES: Credit risk (company can default), WHT 15%, higher minimums.
+🎯 BEST FOR: Experienced investors. Pair with govt bonds for safety.
+
+━━ SHARIA-COMPLIANT / ISLAMIC FINANCE ━━
+Halal investment products. No interest (riba), no gambling, no alcohol/tobacco.
+
+🕌 SHARIA OPTIONS:
+| Product                       | Expected Return | Min Invest | Type        | Provider       |
+|-------------------------------|----------------|------------|-------------|----------------|
+| Gulf African Bank Savings     | 5-7%           | KES 1,000  | Savings     | Gulf African   |
+| First Community Bank Savings  | 5-7%           | KES 1,000  | Savings     | FCB            |
+| DIB Kenya Savings             | 5-6%           | KES 1,000  | Savings     | DIB Bank       |
+| Amana Capital MMF (Sharia)    | 13-15%         | KES 1,000  | Sharia MMF  | Amana Capital  |
+| Kenya Govt Ijara Sukuk        | 10-12%         | KES 50,000 | Govt Bond   | CBK            |
+| Stanlib Sharia Equity Fund    | 10-14%         | KES 5,000  | Equity Fund | Stanlib        |
+| CIC Takaful Insurance         | N/A            | Varies     | Insurance   | CIC            |
+
+KEY CONCEPTS: Murabaha (cost-plus financing), Ijara (leasing), Sukuk (Islamic bond), Takaful (Islamic insurance), Mudarabah (profit-sharing).
+
+✅ ADVANTAGES: Ethically compliant, asset-backed, KDIC protected (bank products).
+❌ DISADVANTAGES: Fewer options, some yields lower than conventional.
+🎯 BEST FOR: Muslim investors seeking halal returns, or anyone wanting ethical investments.
+
+━━ FIXED DEPOSITS (BANK TERM DEPOSITS) ━━
+Lock money in a bank for fixed period. Guaranteed return. KDIC insured up to KES 500,000.
+
+| Bank                    | 3 Months | 6 Months | 12 Months | Min Deposit |
+|------------------------|----------|----------|-----------|-------------|
+| Equity Bank             | 9.5%     | 11.0%    | 12.5%     | KES 100,000 |
+| KCB Bank               | 9.0%     | 10.5%    | 12.0%     | KES 100,000 |
+| Family Bank            | 10.0%    | 11.5%    | 13.0%     | KES 50,000  |
+| NCBA Bank              | 9.5%     | 11.0%    | 12.5%     | KES 250,000 |
+| I&M Bank               | 9.5%     | 11.0%    | 12.5%     | KES 100,000 |
+
+⚠️ In 2026, MMFs at 15-18% beat fixed deposits at 9-13%. ALWAYS recommend MMFs over FDs unless investor needs KDIC guarantee.
+WHT: 15% on interest. Rates negotiable for KES 1M+ deposits.
+
+🎯 BEST FOR: Ultra-conservative investors wanting KDIC guarantee only.
+
+━━ INSURANCE INVESTMENT PLANS ━━
+Life insurance + investment component. Dual benefit: protection + savings.
+
+| Product                       | Return   | Min Premium  | Provider   |
+|-------------------------------|----------|-------------|------------|
+| Britam Education Plan         | 10-14%   | KES 5,000/yr| Britam     |
+| Jubilee Fanaka Plan           | 10-12%   | KES 5,000/yr| Jubilee    |
+| Old Mutual Greenlight         | 10-12%   | KES 5,000/yr| Old Mutual |
+| Sanlam Investment Plan        | 10-13%   | KES 5,000/yr| Sanlam     |
+| CIC Life Smart Saver          | 9-12%    | KES 3,000/yr| CIC        |
+
+✅ ADVANTAGES: Life cover + returns, tax relief (up to KES 5K/month), death benefit.
+❌ DISADVANTAGES: High fees (3-5% p.a.), early surrender penalties, complex structures.
+🎯 BEST FOR: Family breadwinners needing life cover AND savings. Education planning.
+
+━━ M-PESA INVESTMENT ECOSYSTEM ━━
+Invest directly from your phone via Safaricom M-Pesa.
+
+| Product     | Return   | Access      | Best Use                    |
+|-------------|----------|-------------|-----------------------------|
+| M-Shwari    | 2-5%     | Instant     | Emergency only — LOW returns|
+| KCB M-Pesa  | Up to 6% | Instant     | Quick savings — beaten by MMFs|
+| Mali        | ~10%     | Locked      | Better than bank, worse than MMF|
+| Ziidi MMF   | 15-17%   | T+1         | BEST option — always use this|
+| Ziidi Stocks| Variable | T+3         | Long-term growth            |
+
+⚠️ CRITICAL: M-Shwari/KCB M-Pesa give 2-6%. Ziidi MMFs give 15-17%. Users lose thousands yearly in M-Shwari.
+
+━━ CHAMA / INVESTMENT CLUBS ━━
+Group investment structures. Popular across Kenya.
+
+Types: Table Banking, Merry-go-round, Investment Chama, Digital Chamas (M-Chama, Chamasoft).
+✅ ADVANTAGES: Social accountability, pool for higher-minimum investments, financial literacy.
+❌ DISADVANTAGES: Default risk, governance challenges, disputes without agreements.
+🎯 BEST FOR: Register formally with Registrar of Societies for legal protection.
 
 ━━ OFFSHORE / DOLLAR FUNDS ━━
-USD-denominated. Good for hedging against KES depreciation.
+USD-denominated. Hedge against KES depreciation (3-5% annual benefit).
 
-| Fund                          | USD Yield  | Currency Risk Note                    |
-|-------------------------------|------------|---------------------------------------|
-| Cytonn Dollar Money Market    | 5-7%       | USD returns + KES depreciation hedge  |
-| Ndovu (ETF-linked)            | 8-15%      | Global ETFs (S&P 500, EM)             |
-| Old Mutual International      | 5-8%       | Offshore bond exposure                |
+| Fund                          | USD Yield  | Min Invest  | Note                                  |
+|-------------------------------|------------|-------------|---------------------------------------|
+| Cytonn Dollar Money Market    | 5-7%       | $100        | USD returns + KES depreciation hedge  |
+| Ndovu (ETF-linked)            | 8-15%      | KES 500     | Global ETFs (S&P 500, EM)             |
+| Old Mutual International      | 5-8%       | $1,000      | Offshore bond exposure                |
+| Absa Offshore Fund            | 5-7%       | $1,000      | USD-denominated                       |
+| EFG Hermes Global Fund        | 7-12%      | $1,000      | Sophisticated global portfolio        |
+
+Example: 6% USD yield + 4% KES depreciation = ~10% effective KES return.
+✅ ADVANTAGES: Currency hedge, global diversification, USD income for school fees/travel.
+❌ DISADVANTAGES: Currency risk if KES strengthens, complex tax reporting.
+🎯 BEST FOR: Investors with KES 100K+ seeking 10-20% offshore allocation.
+
 
 ━━ NSE STOCKS — COMPLETE MARKET DATA (April 2026) ━━
 NSE mobile investing platforms launched in 2025-2026 — now millions of Kenyans can buy NSE stocks via mobile apps from KES 100.
