@@ -323,23 +323,31 @@ export async function processIncomingMessage(
     if (input === "5") return handleGoals(waId, uid);
   }
 
-  // Guest: 1=Register, 2=Login, 3=Browse Investments, 4=Live Rates
+  // Guest: 1=Live Rates, 2=Browse Investments, 3=Ask AI, 4=Create Account
   if (!session.userId) {
-    if (input === "1") {
+    if (input === "1") return handleMarkets(waId);
+    if (input === "2") return sendInvestmentCategories(waId, "guest");
+    if (input === "3") return sendWhatsAppMessage(waId,
+      `🧠 *Ask Sentill Africa anything!*\n\n` +
+      `Just type your investment question. For example:\n` +
+      `• _What’s the best MMF in Kenya right now?_\n` +
+      `• _How much will KES 100K grow in 1 year?_\n` +
+      `• _Compare T-Bills vs Bonds_\n` +
+      `• _CALC 50000_ — quick growth projection\n\n` +
+      `_Go ahead, type your question..._`
+    );
+    if (input === "4") {
       await updateSession(waId, "REGISTER_NAME", {});
       return sendWhatsAppMessage(waId,
         `🎉 *Create Your Free Sentill Account*\n\n` +
-        `It takes less than 2 minutes.\n\n` +
-        `You’ll be able to:\n` +
-        `• Get personalised investment advice\n` +
-        `• Track your portfolio\n` +
-        `• Receive daily market briefs\n\n` +
+        `Takes 30 seconds. You’ll unlock:\n` +
+        `✅ Portfolio tracker & investment logging\n` +
+        `✅ Daily market alerts to this WhatsApp\n` +
+        `✅ Personalised investment advice\n` +
+        `✅ Financial goal tracking\n\n` +
         `First, what is your *full name*?`
       );
     }
-    if (input === "2") return handleLoginRequest(waId);
-    if (input === "3") return sendInvestmentCategories(waId, "guest");
-    if (input === "4") return handleMarkets(waId);
     if (input === "RATES" || input === "R") return handleMarkets(waId);
     if (input === "SPECIAL") return handleSpecialFunds(waId);
     if (input.startsWith("CHART") || input.startsWith("GRAPH")) return handleChartCommand(waId, input, undefined);
@@ -557,9 +565,23 @@ async function handleGeminiQuestionGuest(waId: string, question: string) {
       isPremium: false,
     });
 
+    // Smart contextual nudge based on how many questions they've already asked
+    const usedSoFar = aiQueriesCount + 1; // +1 for this answer
+    let nudge = "";
+    if (usedSoFar === 1) {
+      // First answer — very soft, don't interrupt the value
+      nudge = `\n\n_Ask another question or type *MENU* for options_`;
+    } else if (usedSoFar === 3) {
+      // 3rd question — introduce the benefit of registering
+      nudge = `\n\n━━━━━━━━━━━━━━━━\n📲 *Get daily alerts for these rates* — send *REGISTER* (free, 30 sec)`;
+    } else if (usedSoFar >= 5) {
+      // 5th+ question — stronger nudge, they're engaged
+      nudge = `\n\n━━━━━━━━━━━━━━━━\n💡 *Save this to your portfolio & get daily alerts*\nSend *REGISTER* — free account, takes 30 seconds`;
+    }
+
     return sendWhatsAppMessage(
       waId,
-      `🧠 *Sentill Africa Says:*\n\n${answer}\n\n━━━━━━━━━━━━━━━━\n💡 *Register* for personalized insights!\nSend *REGISTER* to create your free account.`
+      `🧠 *Sentill Africa Says:*\n\n${answer}${nudge}`
     );
   } catch (err) {
     console.error("[Bot] Guest Gemini error:", err);
@@ -1699,24 +1721,23 @@ async function sendMainMenu(waId: string, userId?: string) {
     );
   }
 
-  // Guest (not logged in)
+  // Guest (not logged in) — lead with value, registration is optional step
   return sendWhatsAppMessage(
     waId,
-    `👋 *Welcome to Sentill Africa!*\n\n` +
-    `📊 *Kenya's #1 Investment Intelligence Hub*\n\n` +
+    `👋 *Welcome to Sentill Africa!*\n` +
+    `_Kenya's #1 Investment Intelligence Hub_\n\n` +
     `━━━━━━━━━━━━━━━━━━\n` +
-    `We help you:\n` +
-    `✅ Compare MMFs, T-Bills, Bonds & SACCOs\n` +
-    `✅ Get AI-powered investment advice\n` +
-    `✅ Track your portfolio & set goals\n` +
-    `✅ Receive daily market alerts\n\n` +
+    `💬 *Just type any question to get started:*\n\n` +
+    `_"What's the best MMF right now?"_\n` +
+    `_"How much will KES 50K grow in 1 year?"_\n` +
+    `_"Compare T-Bills vs Bonds"_\n\n` +
     `━━━━━━━━━━━━━━━━━━\n` +
-    `*To get started:*\n\n` +
-    `*1* — Create free account\n` +
-    `*2* — Login to existing account\n` +
-    `*3* — Browse investments (no login needed)\n` +
-    `*4* — Live market rates\n\n` +
-    `_Reply with 1, 2, 3, or 4_`
+    `*Or choose:*\n\n` +
+    `*1* — 📊 Live Market Rates\n` +
+    `*2* — 💰 Browse Investments\n` +
+    `*3* — 🧠 Ask AI Anything\n` +
+    `*4* — 👤 Create Free Account _(unlock portfolio & alerts)_\n\n` +
+    `_Reply with a number or just type your question_`
   );
 }
 
