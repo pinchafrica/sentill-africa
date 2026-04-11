@@ -1,132 +1,13 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { CheckCircle2, Zap, Shield, Crown, ArrowRight, Minus, Star, Clock, Sparkles } from "lucide-react";
+import { CheckCircle2, Zap, Shield, Crown, ArrowRight, Star, Sparkles } from "lucide-react";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import PremiumModal from "@/components/PremiumModal";
 import { useState, useEffect } from "react";
 import { useAIStore } from "@/lib/store";
 import { useRouter } from "next/navigation";
-
-const PACKAGES = [
-  {
-    name: "Standard Access",
-    price: "Free",
-    period: "Forever",
-    description: "Essential intelligence for the emerging retail investor in Kenya.",
-    color: "from-slate-800 to-slate-900 border-white/10 text-white",
-    features: [
-      "Live NSE Ticker & EOD Data",
-      "Daily Top 5 MMF Yields",
-      "Basic Portfolio Tracking (Up to 3 Assets)",
-      "Sentil Academy (Full Access)",
-      "Standard Web Support"
-    ],
-    missing: [
-      "Tax Alpha Optimizer",
-      "Real-time Institutional Order Book",
-      "Sentill Africa Oracle AI",
-      "Unlimited Asset Logging"
-    ],
-    cta: "Sign Up Free",
-    link: "/auth/register",
-    planCode: null,
-    amount: 0,
-  },
-  {
-    name: "1 Week Pro",
-    price: "KES 99",
-    period: "/week",
-    description: "Try every Pro feature for 7 days. No commitment, no auto-renewal.",
-    color: "from-emerald-900/60 to-slate-950 border-emerald-500/30 text-emerald-400 transform md:-translate-y-4 scale-105 shadow-2xl shadow-emerald-900/20",
-    badge: "🔥 Best First Step",
-    features: [
-      "Everything in Standard",
-      "Sentil Alpha AI Engine (Full)",
-      "KRA Tax-Loss Harvesting AI",
-      "Real-time Price & Yield Alerts",
-      "Unlimited Portfolio Logging",
-      "NSE Candlestick Charts + RSI/MACD",
-      "Chama / Investment Club Dashboard",
-      "Priority 24/7 Support"
-    ],
-    missing: [],
-    cta: "Start 1-Week Trial — KES 99",
-    link: "/auth/register?plan=premium",
-    planCode: "WEEKLY_7_DAYS",
-    amount: 99,
-  },
-  {
-    name: "1 Month Pro",
-    price: "KES 349",
-    period: "/month",
-    description: "Full institutional-grade intelligence. Save 12% vs weekly billing.",
-    color: "from-blue-900/60 to-indigo-950 border-blue-500/30 text-blue-400",
-    badge: "Most Popular",
-    features: [
-      "Everything in 1-Week Pro",
-      "Estate Vault (Beneficiary Automations)",
-      "NSE Block Trade Scanner",
-      "Global Macro Sentiment Pulse",
-      "Automated KRA Tax Export",
-      "1-on-1 Wealth Strategy Session",
-      "Downloadable PDF Analytics",
-      "Direct API Feed Access (Webhooks)"
-    ],
-    missing: [],
-    cta: "Go Pro — KES 349/mo",
-    link: "/auth/register?plan=pro",
-    planCode: "MONTHLY_30_DAYS",
-    amount: 349,
-  },
-  {
-    name: "3 Months Pro",
-    price: "KES 999",
-    period: "/quarter",
-    description: "Maximum savings — lock in 3 months of Pro at the best rate. Save 24% vs monthly.",
-    color: "from-indigo-900/60 to-violet-950 border-indigo-500/30 text-indigo-400",
-    badge: "💎 Best Value",
-    features: [
-      "Everything in Monthly Pro",
-      "Priority Concierge Support",
-      "Exclusive Quarterly Wealth Report",
-      "Early Access to New Features",
-      "Custom Portfolio Strategy Session",
-      "Advanced Risk Profiler AI",
-      "Institutional Research Briefs",
-      "VIP Community Access"
-    ],
-    missing: [],
-    cta: "Lock in 3 Months — KES 999",
-    link: "/auth/register?plan=quarterly",
-    planCode: "QUARTERLY_90_DAYS",
-    amount: 999,
-  },
-  {
-    name: "Annual Pro",
-    price: "KES 2,999",
-    period: "/year",
-    description: "The full platform for serious investors. Lock in 12 months at our best ever rate — save 30%.",
-    color: "from-amber-900/60 to-slate-950 border-amber-500/30 text-amber-400",
-    badge: "🏆 Best Rate",
-    features: [
-      "Everything in 3-Month Pro",
-      "12 Months Full Pro Access",
-      "Annual Portfolio Strategy Call",
-      "Dedicated Account Manager",
-      "First Access to New Asset Classes",
-      "Annual Wealth Report PDF",
-      "KRA Tax Export (Full Year)",
-      "VIP WhatsApp Group Access"
-    ],
-    missing: [],
-    cta: "Go Annual — KES 2,999/yr",
-    link: "/auth/register?plan=annual",
-    planCode: "ANNUAL_365_DAYS",
-    amount: 2999,
-  }
-];
 
 export default function PackagesPage() {
   const router = useRouter();
@@ -158,23 +39,23 @@ export default function PackagesPage() {
       <section className="pt-40 pb-32 px-6 relative">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-[400px] bg-indigo-600/10 rounded-full blur-[120px] -z-10 pointer-events-none" />
         
-        <div className="max-w-7xl mx-auto text-center space-y-8 mb-20">
+        <div className="max-w-3xl mx-auto text-center space-y-8 mb-20">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-black uppercase tracking-[0.2em] mb-8">
-              <Crown className="w-4 h-4" /> Sentill Premium
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-black uppercase tracking-[0.2em] mb-8">
+              <Crown className="w-4 h-4" /> Sentill Pro
             </div>
             
             <h1 className="text-5xl md:text-7xl font-black text-white tracking-tighter uppercase leading-none font-heading mb-6">
-              Unlock the Depth <br/>
-              <span className="text-slate-500">of the Market.</span>
+              One Plan. <br/>
+              <span className="text-emerald-400">Full Power.</span>
             </h1>
             
             <p className="text-xl text-slate-400 font-medium max-w-2xl mx-auto leading-relaxed">
-              From free essential market data to institutional-grade AI modeling. Choose the intelligence tier that fits your capital.
+              Institutional-grade AI wealth intelligence for less than a cup of coffee per day. No tiers. No upsells. Just everything.
             </p>
           </motion.div>
 
-          {/* Pricing badges */}
+          {/* Trust badges */}
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
             className="flex flex-wrap items-center justify-center gap-4 mt-8"
@@ -192,103 +73,124 @@ export default function PackagesPage() {
           </motion.div>
         </div>
 
-        <div className="max-w-7xl mx-auto grid md:grid-cols-3 lg:grid-cols-5 gap-5 items-start relative z-10">
-          {PACKAGES.map((pkg, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 + (i * 0.1) }}
-              className={`bg-gradient-to-b ${pkg.color} border rounded-[2.5rem] p-8 relative flex flex-col h-full`}
+        {/* ─── SINGLE PLAN CARD ──────────────────────────── */}
+        <div className="max-w-lg mx-auto relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="bg-gradient-to-b from-emerald-900/60 to-slate-950 border border-emerald-500/30 rounded-[2.5rem] p-10 relative shadow-2xl shadow-emerald-900/30"
+          >
+            {/* Badge */}
+            <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-6 py-2 bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest rounded-full shadow-lg whitespace-nowrap">
+              🔥 Everything Included
+            </div>
+            
+            <div className="text-center mb-8">
+              <h3 className="text-2xl font-black text-white uppercase tracking-tight mb-2">Sentill Pro</h3>
+              <p className="text-[11px] font-medium text-emerald-400/80 leading-relaxed">
+                Full institutional-grade intelligence. All features unlocked. 30 days of unlimited access.
+              </p>
+            </div>
+
+            <div className="text-center mb-10 pb-8 border-b border-emerald-500/15">
+              <div className="flex items-baseline justify-center gap-2">
+                <span className="text-6xl font-black text-white tracking-tighter">
+                  KES 490
+                </span>
+                <span className="text-sm font-bold tracking-widest uppercase text-emerald-400/70">
+                  /month
+                </span>
+              </div>
+              <p className="text-[11px] text-emerald-400/60 font-bold mt-3">
+                ≈ KES 16/day · Less than a cup of coffee
+              </p>
+            </div>
+
+            {/* Features */}
+            <div className="space-y-4 mb-10">
+              {[
+                "Unlimited Sentill Oracle AI — Ask anything, anytime",
+                "Full Portfolio Tracker — Log unlimited assets",
+                "KRA Tax-Loss Harvesting AI",
+                "Real-time Price & Yield Alerts",
+                "NSE Candlestick Charts + RSI/MACD",
+                "Financial Goal Planning & Tracking",
+                "Chama / Investment Club Dashboard",
+                "Estate Vault (Beneficiary Automations)",
+                "NSE Block Trade Scanner",
+                "Global Macro Sentiment Pulse",
+                "Automated KRA Tax Export",
+                "Downloadable PDF Analytics",
+                "Priority 24/7 Support",
+                "Direct API Feed Access (Webhooks)",
+              ].map((f, j) => (
+                <div key={j} className="flex items-start gap-3">
+                  <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400 mt-0.5" />
+                  <span className="text-[12px] font-bold text-white leading-relaxed">{f}</span>
+                </div>
+              ))}
+            </div>
+
+            <button 
+              onClick={() => {
+                if (isLoggedIn) {
+                  setPremiumModalOpen(true);
+                } else {
+                  router.push("/auth/register?plan=premium");
+                }
+              }}
+              className="w-full py-5 rounded-2xl flex items-center justify-center gap-2 text-[11px] font-black uppercase tracking-widest transition-all bg-emerald-500 hover:bg-emerald-400 text-white shadow-lg shadow-emerald-500/25"
             >
-              {pkg.badge && (
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1.5 bg-blue-500 text-white text-[10px] font-black uppercase tracking-widest rounded-full shadow-lg whitespace-nowrap">
-                  {pkg.badge}
-                </div>
-              )}
-              
-              <div className="mb-6">
-                <h3 className="text-xl font-black text-white uppercase tracking-tight mb-2">{pkg.name}</h3>
-                <p className="text-[11px] font-medium opacity-80 leading-relaxed min-h-[40px]">{pkg.description}</p>
-              </div>
+              {isLoggedIn && user?.isPremium ? "✅ Active Plan" : "⚡ Activate Pro — KES 490/mo"} <ArrowRight className="w-4 h-4" />
+            </button>
 
-              <div className="mb-8 pb-6 border-b border-current/10">
-                <div className="flex items-baseline gap-2">
-                  <span className="text-4xl font-black text-white tracking-tighter">
-                    {pkg.price}
-                  </span>
-                  <span className="text-sm font-bold tracking-widest uppercase opacity-70">
-                    {pkg.period}
-                  </span>
-                </div>
-                {pkg.planCode === "ANNUAL_365_DAYS" && (
-                  <p className="text-[10px] text-amber-400 font-bold mt-2">
-                    ≈ KES {Math.round(pkg.amount / 52)}/week · Save 30%
-                  </p>
-                )}
-                {pkg.amount > 0 && pkg.planCode === "QUARTERLY_90_DAYS" && (
-                  <p className="text-[10px] text-emerald-400 font-bold mt-2">
-                    ≈ KES {Math.round(pkg.amount / 13)}/week · Save 24%
-                  </p>
-                )}
-                {pkg.planCode === "MONTHLY_30_DAYS" && (
-                  <p className="text-[10px] text-blue-400 font-bold mt-2">
-                    ≈ KES {Math.round(pkg.amount / 4)}/week · Save 12%
-                  </p>
-                )}
-              </div>
-
-              <div className="space-y-4 flex-grow mb-8">
-                {pkg.features.map((f, j) => (
-                  <div key={j} className="flex items-start gap-3">
-                    <CheckCircle2 className="w-4 h-4 shrink-0 text-current opacity-80 mt-0.5" />
-                    <span className="text-[11px] font-bold text-white leading-relaxed">{f}</span>
-                  </div>
-                ))}
-                {pkg.missing.map((f, j) => (
-                  <div key={j} className="flex items-start gap-3 opacity-40">
-                    <Minus className="w-4 h-4 shrink-0 mt-0.5" />
-                    <span className="text-[11px] font-bold">{f}</span>
-                  </div>
-                ))}
-              </div>
-
-              <button 
-                onClick={() => {
-                   if (pkg.name === "Standard Access") {
-                      if (isLoggedIn) {
-                         router.push("/dashboard");
-                      } else {
-                         router.push("/auth/register");
-                      }
-                   } else {
-                      if (isLoggedIn) {
-                         setPremiumModalOpen(true);
-                      } else {
-                         router.push(pkg.link);
-                      }
-                   }
-                }}
-                className={`w-full py-4 rounded-2xl flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all ${
-                  pkg.badge 
-                    ? 'bg-blue-500 hover:bg-blue-400 text-white shadow-lg shadow-blue-500/25' 
-                    : 'bg-white/10 hover:bg-white/20 text-white'
-                }`}
-              >
-                {isLoggedIn && user?.isPremium && pkg.amount > 0 ? "Active Plan" : pkg.cta} <ArrowRight className="w-4 h-4" />
-              </button>
-            </motion.div>
-          ))}
+            {/* Trust */}
+            <div className="flex items-center justify-center gap-4 mt-6">
+              {["No auto-renew", "Cancel anytime", "M-Pesa & Card"].map((t, i) => (
+                <span key={i} className="text-[9px] font-black text-slate-500 uppercase tracking-widest">
+                  ✓ {t}
+                </span>
+              ))}
+            </div>
+          </motion.div>
         </div>
+
+        {/* Free tier info */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="max-w-lg mx-auto mt-12 text-center"
+        >
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+            <h4 className="text-sm font-black text-white uppercase tracking-tight mb-3">Already using Sentill Free?</h4>
+            <p className="text-[11px] text-slate-400 font-medium leading-relaxed mb-4">
+              Free users get live NSE ticker, daily top 5 MMF yields, basic portfolio tracking (3 assets), full Sentill Academy access, and 10 free AI questions per day.
+            </p>
+            <button 
+              onClick={() => {
+                if (isLoggedIn) {
+                  router.push("/dashboard");
+                } else {
+                  router.push("/auth/register");
+                }
+              }}
+              className="px-6 py-3 bg-white/10 hover:bg-white/15 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all"
+            >
+              {isLoggedIn ? "Go to Dashboard" : "Create Free Account"} <ArrowRight className="w-3 h-3 inline ml-1" />
+            </button>
+          </div>
+        </motion.div>
 
         {/* WhatsApp CTA */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8 }}
-          className="max-w-2xl mx-auto mt-20 text-center"
+          className="max-w-2xl mx-auto mt-16 text-center"
         >
-          <p className="text-slate-500 text-sm font-bold mb-4">Need help choosing the right plan?</p>
+          <p className="text-slate-500 text-sm font-bold mb-4">Need help or have questions?</p>
           <a
             href="https://wa.me/254703469525?text=Hi%20Sentill%2C%20I%20need%20help%20choosing%20a%20subscription%20plan."
             target="_blank"

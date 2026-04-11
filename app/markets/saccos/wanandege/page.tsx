@@ -860,7 +860,7 @@ export default function WanandegeSaccoPage() {
                         <RechartsTooltip
                           contentStyle={{ backgroundColor: '#1e1b4b', borderColor: '#312e81', borderRadius: '15px' }}
                           itemStyle={{ color: '#fff', fontSize: '10px', fontWeight: 'bold' }}
-                          formatter={(v: number) => `KES ${v.toLocaleString()}`}
+                          formatter={(v: unknown) => `KES ${(v as number).toLocaleString()}`}
                         />
                         <Bar dataKey="shares" name="Shares" stackId="a" fill="#10b981" radius={[0, 0, 0, 0]} />
                         <Bar dataKey="deposits" name="Deposits" stackId="a" fill="#6366f1" radius={[4, 4, 0, 0]} />

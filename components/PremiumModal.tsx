@@ -13,26 +13,16 @@ const PRO_FEATURES = [
   { icon: ShieldCheck, title: "Sentil Alpha Engine",           desc: "AI insights reserved for institutional fund managers. Now yours." },
 ];
 
-const PLANS = [
-  { id: "WEEKLY_7_DAYS", label: "1 Week", price: 99, period: "7 days", perDay: "KES 14/day", popular: false },
-  { id: "MONTHLY_30_DAYS", label: "1 Month", price: 349, period: "30 days", perDay: "KES 12/day", popular: true },
-  { id: "QUARTERLY_90_DAYS", label: "3 Months", price: 999, period: "90 days", perDay: "KES 11/day", popular: false },
-];
-
 export default function PremiumModal({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
   const [stage, setStage] = useState<"value" | "loading" | "error">("value");
   const [apiError, setApiError] = useState("");
-  const [selectedPlan, setSelectedPlan] = useState("MONTHLY_30_DAYS");
 
   useEffect(() => {
     if (isOpen) {
       setStage("value");
       setApiError("");
-      setSelectedPlan("MONTHLY_30_DAYS");
     }
   }, [isOpen]);
-
-  const currentPlan = PLANS.find(p => p.id === selectedPlan) || PLANS[1];
 
   const handleUpgrade = async () => {
     setApiError("");
@@ -55,9 +45,9 @@ export default function PremiumModal({ isOpen, onClose }: { isOpen: boolean, onC
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           userId: realUserId,
-          amount: currentPlan.price,
+          amount: 490,
           mpesaCode: "254700000000",
-          plan: currentPlan.id,
+          plan: "PRO_30_DAYS",
           email: userEmail || "user@sentill.africa"
         })
       });
@@ -115,39 +105,22 @@ export default function PremiumModal({ isOpen, onClose }: { isOpen: boolean, onC
             <div className="p-8">
               {/* Header */}
               <div className="text-center mb-6">
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-400 text-[10px] font-black uppercase tracking-[0.25em] mb-4">
-                  <Star className="w-3.5 h-3.5" /> Sentil Pro
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 text-[10px] font-black uppercase tracking-[0.25em] mb-4">
+                  <Star className="w-3.5 h-3.5" /> Sentill Pro
                 </div>
                 <h2 className="text-3xl font-black text-white uppercase tracking-tight leading-tight mb-2">
                   Unlock Institutional<br />Intelligence.
                 </h2>
                 <p className="text-slate-400 text-sm font-medium leading-relaxed max-w-sm mx-auto">
-                  Choose your preferred billing cycle. All plans include every Pro feature.
+                  One simple plan. Every feature. No upsells.
                 </p>
               </div>
 
-              {/* Plan Selector — Modern Pills */}
-              <div className="grid grid-cols-3 gap-2 mb-6 bg-slate-950/50 p-2 rounded-2xl border border-white/5">
-                {PLANS.map((plan) => (
-                  <button
-                    key={plan.id}
-                    onClick={() => setSelectedPlan(plan.id)}
-                    className={`relative py-4 px-3 rounded-xl text-center transition-all ${
-                      selectedPlan === plan.id
-                        ? "bg-gradient-to-b from-emerald-600 to-emerald-700 text-white shadow-lg shadow-emerald-900/40"
-                        : "text-slate-400 hover:bg-white/5 hover:text-white"
-                    }`}
-                  >
-                    {plan.popular && (
-                      <span className="absolute -top-2 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-amber-500 text-white text-[7px] font-black uppercase tracking-widest rounded-full whitespace-nowrap">
-                        Best Value
-                      </span>
-                    )}
-                    <p className="text-[10px] font-black uppercase tracking-widest mb-1">{plan.label}</p>
-                    <p className="text-xl font-black tracking-tighter">KES {plan.price}</p>
-                    <p className="text-[8px] font-bold opacity-70 mt-0.5">{plan.perDay}</p>
-                  </button>
-                ))}
+              {/* Single Plan Summary */}
+              <div className="bg-gradient-to-b from-emerald-900/30 to-slate-900 border border-emerald-500/20 rounded-2xl p-6 mb-6 text-center">
+                <p className="text-[10px] font-black uppercase tracking-widest text-emerald-400 mb-2">Sentill Pro · 30 Days</p>
+                <p className="text-5xl font-black text-white tracking-tighter">KES 490</p>
+                <p className="text-[10px] text-slate-400 mt-2 uppercase tracking-widest">≈ KES 16/day · Cancel anytime · No auto-renew</p>
               </div>
 
               {/* Features grid */}
@@ -165,26 +138,12 @@ export default function PremiumModal({ isOpen, onClose }: { isOpen: boolean, onC
                 ))}
               </div>
 
-              {/* Selected plan summary */}
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-5 mb-6 flex items-center justify-between">
-                <div>
-                  <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">{currentPlan.label} Pro Access</p>
-                  <p className="text-3xl font-black text-white tracking-tighter">KES {currentPlan.price}</p>
-                  <p className="text-[9px] text-slate-400 mt-1 uppercase tracking-widest">Valid for {currentPlan.period} · Cancel anytime</p>
-                </div>
-                <div className="space-y-1.5 text-right">
-                  {["✅ All Pro features", "✅ No auto-renew", "✅ Cancel anytime"].map((t, i) => (
-                    <p key={i} className="text-[9px] text-emerald-400 font-bold">{t}</p>
-                  ))}
-                </div>
-              </div>
-
               {/* CTA */}
               <button
                 onClick={handleUpgrade}
                 className="w-full py-4 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] transition-all active:scale-[0.98] shadow-lg shadow-emerald-900/30 flex items-center justify-center gap-2"
               >
-                <Zap className="w-4 h-4" /> Activate {currentPlan.label} for KES {currentPlan.price}
+                <Zap className="w-4 h-4" /> Activate Pro — KES 490
               </button>
 
               {/* WhatsApp help */}
