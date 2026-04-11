@@ -4,7 +4,6 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Outfit } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
-import LiveTicker from "@/components/LiveTicker";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import InterceptorModal from "@/components/InterceptorModal";
@@ -62,11 +61,11 @@ export const metadata: Metadata = {
     url: "https://sentill.africa",
     siteName: "Sentill Africa",
     locale: "en_KE",
-    images: [{ 
-      url: "/og-image.jpg",
+    images: [{
+      url: "/opengraph-image",
       width: 1200,
       height: 630,
-      alt: "Sentill Africa Institutional Wealth Dashboard"
+      alt: "Sentill Africa — Kenya's #1 Investment Intelligence Hub"
     }],
     type: "website",
   },
@@ -74,7 +73,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Sentill Africa | Wealth Intelligence",
     description: "Institutional-grade oversight for SACCOs, MMFs, and Equities.",
-    images: ["/og-image.jpg"],
+    images: ["/opengraph-image"],
   },
   verification: {
     google: "sentill-google-search-console-verification-id",

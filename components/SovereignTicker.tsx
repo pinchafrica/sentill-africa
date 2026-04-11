@@ -64,8 +64,8 @@ export default function SovereignTicker() {
         <div className="absolute left-0 top-0 h-full w-6 bg-gradient-to-r from-slate-950 to-transparent z-10 pointer-events-none" />
         <div className="absolute right-0 top-0 h-full w-6 bg-gradient-to-l from-slate-950 to-transparent z-10 pointer-events-none" />
         <motion.div
-          animate={{ x: [0, -1200] }}
-          transition={{ duration: 45, repeat: Infinity, ease: "linear" }}
+          animate={{ x: ["0%", "-33.333%"] }}
+          transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
           className="flex items-center gap-10 px-4 h-full whitespace-nowrap absolute top-0 left-0"
         >
           {[...dataToDisplay, ...dataToDisplay, ...dataToDisplay].map((item, i) => (

@@ -481,7 +481,7 @@ export default function HomePage() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className="bg-white/80 backdrop-blur-3xl border border-slate-200 rounded-[2.5rem] p-8 lg:p-12 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] overflow-hidden group"
+          className="bg-white/80 backdrop-blur-3xl border border-slate-200 rounded-[2.5rem] p-6 md:p-8 lg:p-12 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] overflow-hidden group"
         >
           <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/5 rounded-full blur-[100px] -z-10 group-hover:bg-emerald-500/10 transition-colors duration-1000" />
           
@@ -518,7 +518,7 @@ export default function HomePage() {
             </div>
 
             {/* Right: Countdown & CTAs */}
-            <div className="w-full lg:w-[400px] space-y-8 bg-slate-50 border border-slate-100 p-8 lg:p-10 rounded-[2rem]">
+            <div className="w-full md:w-[340px] lg:w-[400px] space-y-8 bg-slate-50 border border-slate-100 p-6 md:p-8 lg:p-10 rounded-[2rem]">
                <div className="text-center lg:text-left">
                   <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-4">Auction Close Countdown</span>
                   <div className="flex items-center justify-center lg:justify-start gap-4 font-mono font-black text-3xl text-slate-900">

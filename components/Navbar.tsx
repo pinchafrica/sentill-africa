@@ -502,7 +502,7 @@ export default function Navbar() {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="lg:hidden fixed top-[100px] left-4 right-4 z-[60] bg-white rounded-3xl border border-slate-200 shadow-2xl overflow-hidden"
+              className="lg:hidden fixed top-[112px] left-4 right-4 z-[60] bg-white rounded-3xl border border-slate-200 shadow-2xl overflow-hidden"
             >
               <div className="p-5 space-y-1 max-h-[80vh] overflow-y-auto">
                 {Object.entries(menuData).map(([key, menu]: [string, any]) => (

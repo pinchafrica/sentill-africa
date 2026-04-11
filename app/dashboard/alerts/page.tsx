@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bell, ShieldCheck, Zap, ArrowRight, Activity, Clock, Mail, MessageSquare, CheckCircle, Save, Loader2, Toggle, AlertCircle, TrendingUp } from "lucide-react";
+import { Bell, ShieldCheck, Zap, ArrowRight, Activity, Clock, Mail, MessageSquare, CheckCircle, Save, Loader2, AlertCircle, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
 
 interface AlertPrefs {
