@@ -35,6 +35,173 @@ import bcrypt from "bcryptjs";
 import crypto from "crypto";
 
 
+// ─────────────────────────────────────────────────────────────────────────────
+// NSE Stock Intelligence
+// ─────────────────────────────────────────────────────────────────────────────
+
+const NSE_SYMBOLS: Record<string, string> = {
+  SCOM:  "Safaricom PLC",
+  EQTY:  "Equity Group Holdings",
+  KCB:   "KCB Group PLC",
+  COOP:  "Co-operative Bank of Kenya",
+  NCBA:  "NCBA Group PLC",
+  ABSA:  "ABSA Bank Kenya",
+  EABL:  "East African Breweries",
+  BAT:   "BAT Kenya",
+  BAMB:  "Bamburi Cement",
+  NMG:   "Nation Media Group",
+  DTB:   "Diamond Trust Bank",
+  JUB:   "Jubilee Holdings",
+  BRIT:  "Britam Holdings",
+  CIC:   "CIC Insurance Group",
+  KPLC:  "Kenya Power & Lighting",
+  SBUS:  "Stanbic Holdings",
+  SASN:  "Sasini PLC",
+  ARM:   "ARM Cement",
+  WTK:   "Williamson Tea",
+  TOTL:  "Total Energies Marketing Kenya",
+};
+
+// Hardcoded NSE data (fallback when Yahoo Finance unavailable)
+const NSE_FALLBACK: Record<string, { price: number; change: number; pe: number; div: number; signal: string; why: string }> = {
+  SCOM: { price: 30.60, change: -0.8,  pe: 14,  div: 4.5,  signal: "HOLD",  why: "Stable dividend payer. Ziidi & M-PESA driving long-term moats." },
+  EQTY: { price: 77.00, change: +1.2,  pe: 6.8, div: 5.2,  signal: "BUY",   why: "Pan-African expansion, cheap valuation, strong EPS growth." },
+  KCB:  { price: 45.50, change: +0.5,  pe: 5.2, div: 6.8,  signal: "BUY",   why: "Highest dividend yield on NSE, trading below book value." },
+  COOP: { price: 18.50, change: -0.3,  pe: 6.1, div: 5.5,  signal: "BUY",   why: "Consistent profits, SACCO banking network advantage." },
+  NCBA: { price: 91.25, change: +0.9,  pe: 8.2, div: 4.8,  signal: "HOLD",  why: "Post-merger benefits showing, watch for NIM expansion." },
+  ABSA: { price: 16.50, change: +0.2,  pe: 7.4, div: 5.1,  signal: "HOLD",  why: "Global backing, improving ROE — good for long-term hold." },
+  EABL: { price: 120.0, change: -1.5,  pe: 18,  div: 3.2,  signal: "WATCH", why: "Premium brand but expensive. Tax pressures on alcohol." },
+};
+
+async function fetchNSEData(): Promise<any[]> {
+  try {
+    const base = process.env.NEXT_PUBLIC_APP_URL ?? "https://sentill.africa";
+    const res = await fetch(`${base}/api/market/nse`, { cache: "no-store" });
+    if (!res.ok) throw new Error("NSE API error");
+    const data = await res.json();
+    return Array.isArray(data.stocks) ? data.stocks : [];
+  } catch {
+    // Return fallback data shaped like the API response
+    return Object.entries(NSE_FALLBACK).map(([sym, d]) => ({
+      symbol: sym,
+      name: NSE_SYMBOLS[sym] ?? sym,
+      price: d.price,
+      change: (d.price * d.change) / 100,
+      percent: d.change,
+    }));
+  }
+}
+
+async function handleNSEStocks(waId: string, userId?: string) {
+  await sendWhatsAppMessage(waId, "📊 Fetching live NSE data...");
+
+  const stocks = await fetchNSEData();
+  const top = stocks.slice(0, 8);
+
+  let msg = `📊 *NSE LIVE — NAIROBI STOCK EXCHANGE*\n`;
+  msg += `━━━━━━━━━━━━━━━━━━\n\n`;
+
+  top.forEach((s: any) => {
+    const chg = typeof s.percent === "number" ? s.percent : typeof s.change === "number" ? s.change : 0;
+    const arrow = chg >= 0 ? "▲" : "▼";
+    const sign  = chg >= 0 ? "+" : "";
+    const fallback = NSE_FALLBACK[s.symbol];
+    const signal = fallback?.signal ?? "";
+    const badge = signal === "BUY" ? " 🟢" : signal === "WATCH" ? " 🟡" : "";
+    msg += `*${s.symbol}*${badge} — KES ${Number(s.price).toFixed(2)}  ${arrow} ${sign}${Number(chg).toFixed(1)}%\n`;
+  });
+
+  msg += `\n━━━━━━━━━━━━━━━━━━\n`;
+  msg += `🟢 BUY signal  🟡 WATCH  (no signal = HOLD)\n\n`;
+  msg += `💡 *Type any ticker for deep AI analysis:*\n`;
+  msg += `_SCOM · EQTY · KCB · COOP · NCBA · EABL_\n\n`;
+  msg += `📱 *Trade on Ziidi Trader:*\n`;
+  msg += `M-Pesa → Financial Services → Ziidi → Trade Shares\n\n`;
+  msg += `_Send *ZIIDI* for the Ziidi Trader beginner's guide_`;
+
+  return sendWhatsAppMessage(waId, msg);
+}
+
+async function handleNSEStockLookup(waId: string, symbol: string, userId?: string) {
+  await sendWhatsAppMessage(waId, `🧠 Analysing *${symbol}*...`);
+
+  const stocks = await fetchNSEData();
+  const live = stocks.find((s: any) => s.symbol?.toUpperCase() === symbol);
+  const fallback = NSE_FALLBACK[symbol];
+  const name = NSE_SYMBOLS[symbol] ?? symbol;
+
+  const price = live?.price ?? fallback?.price ?? "N/A";
+  const chg   = live?.percent ?? live?.change ?? fallback?.change ?? 0;
+  const pe    = live?.pe ?? fallback?.pe ?? "N/A";
+  const div   = live?.dividendYield ?? fallback?.div ?? "N/A";
+  const signal = fallback?.signal ?? "HOLD";
+  const why    = fallback?.why ?? "Strong Kenyan blue chip stock.";
+  const arrow  = Number(chg) >= 0 ? "▲" : "▼";
+  const sign   = Number(chg) >= 0 ? "+" : "";
+  const badge  = signal === "BUY" ? "🟢 BUY" : signal === "WATCH" ? "🟡 WATCH" : "⚪ HOLD";
+
+  // Get AI deep-dive for more context
+  const aiContext = `Give a concise WhatsApp stock analysis for ${name} (${symbol}) listed on the NSE Kenya. Price: KES ${price}, change: ${sign}${Number(chg).toFixed(1)}%, P/E: ${pe}, dividend yield: ${div}%. Signal: ${signal}. Analyst note: ${why}. Cover: 1) What the company does, 2) Why the signal, 3) Key risks, 4) Who should buy this (which investor profile). Keep it under 200 words, use bold and emojis, WhatsApp formatting.`;
+
+  let aiText = "";
+  try {
+    const { askGeminiBot } = await import("./whatsapp-gemini");
+    aiText = await askGeminiBot(aiContext, { name: "Investor", userId: userId ?? "guest", isPremium: false });
+  } catch {
+    aiText = `${why}\n\n📊 P/E ratio of ${pe}x suggests ${Number(pe) < 10 ? "undervalued vs regional peers" : "fair market pricing"}. Dividend yield of ${div}% ${Number(div) > 5 ? "is above the NSE average — attractive for income investors" : "is modest — focus on capital growth"}.`;
+  }
+
+  let msg = `📊 *${name} (${symbol})*\n`;
+  msg += `━━━━━━━━━━━━━━━━━━\n\n`;
+  msg += `💰 Price: *KES ${Number(price).toFixed(2)}*  ${arrow} ${sign}${Number(chg).toFixed(1)}% today\n`;
+  msg += `📈 Signal: *${badge}*\n`;
+  msg += `📉 P/E Ratio: *${pe}x*\n`;
+  msg += `💵 Dividend Yield: *${div}%*\n\n`;
+  msg += `━━━━━━━━━━━━━━━━━━\n`;
+  msg += `🧠 *Sentill Africa Analysis:*\n\n${aiText}\n\n`;
+  msg += `━━━━━━━━━━━━━━━━━━\n`;
+  msg += `📱 *To buy ${symbol}:*\n`;
+  msg += `M-Pesa → Ziidi → Trade Shares → Search *${symbol}* → Enter amount\n\n`;
+  msg += `_⚠️ This is not financial advice. Invest responsibly._`;
+
+  return sendWhatsAppMessage(waId, msg);
+}
+
+async function handleZiidiTraderGuide(waId: string) {
+  const msg =
+    `📱 *ZIIDI TRADER — BEGINNER'S GUIDE*\n` +
+    `_Buy NSE stocks directly from M-Pesa_\n\n` +
+    `━━━━━━━━━━━━━━━━━━\n\n` +
+    `*How to access:*\n` +
+    `M-Pesa → Financial Services → Ziidi → Trade Shares\n\n` +
+    `✅ No broker account needed\n` +
+    `✅ Minimum investment: *KES 100*\n` +
+    `✅ Uses your M-Pesa balance directly\n` +
+    `✅ Dividends paid to M-Pesa\n` +
+    `✅ Commission: ~1.8% per trade\n\n` +
+    `━━━━━━━━━━━━━━━━━━\n` +
+    `🏆 *Beginner's Starter Portfolio:*\n` +
+    `_(for someone starting with KES 5,000–10,000)_\n\n` +
+    `1️⃣ *KCB Group (KCB)* — 40% of budget\n` +
+    `   _Cheapest big bank, highest dividend on NSE (~6.8%)_\n\n` +
+    `2️⃣ *Equity Group (EQTY)* — 40% of budget\n` +
+    `   _Kenya's most profitable bank, pan-Africa growth_\n\n` +
+    `3️⃣ *Safaricom (SCOM)* — 20% of budget\n` +
+    `   _Monopoly on M-Pesa, you already use their product_\n\n` +
+    `━━━━━━━━━━━━━━━━━━\n` +
+    `⚠️ *Key rules for beginners:*\n` +
+    `• Don't invest money you need in the next 12 months\n` +
+    `• NSE stocks are for 3–5 year+ horizons\n` +
+    `• Dividends are taxed 5% (WHT) automatically\n` +
+    `• Settlement takes T+3 (3 business days)\n\n` +
+    `━━━━━━━━━━━━━━━━━━\n` +
+    `💡 *Get AI analysis on any NSE stock:*\n` +
+    `Just type the ticker: _SCOM · EQTY · KCB · COOP · EABL_\n\n` +
+    `_Sentill advises. Ziidi Trader executes. 🚀_`;
+
+  return sendWhatsAppMessage(waId, msg);
+}
+
 // ── Generate a secure random password ────────────────────────────────────────
 function generateSecurePassword(): string {
   const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
@@ -350,6 +517,9 @@ export async function processIncomingMessage(
     }
     if (input === "RATES" || input === "R") return handleMarkets(waId);
     if (input === "SPECIAL") return handleSpecialFunds(waId);
+    if (["ZIIDI", "ZIIDI TRADER", "ZIIDI GUIDE", "ZIIDITRADER"].includes(input)) return handleZiidiTraderGuide(waId);
+    if (["STOCKS", "NSE", "SHARES", "NSE LIVE", "EQUITY", "EQUITIES"].includes(input)) return handleNSEStocks(waId, undefined);
+    if (NSE_SYMBOLS[input]) return handleNSEStockLookup(waId, input, undefined);
     if (input.startsWith("CHART") || input.startsWith("GRAPH")) return handleChartCommand(waId, input, undefined);
     if (input === "TABLE" || input === "RANKED") return handleTableCommand(waId, undefined);
     if (input === "LIST" || input === "FUNDS" || input === "MMF LIST") return handleMMFListMenu(waId, undefined);
@@ -369,8 +539,11 @@ export async function processIncomingMessage(
   if (input === "MARKETS"   || input === "M" || input === "RATES" || input === "R") return handleMarkets(waId);
   if (input === "GOALS"     || input === "G") return handleGoals(waId, userId);
   if (input === "WATCHLIST" || input === "W") return handleWatchlist(waId, userId);
-  if (["SPECIAL", "SPECIAL FUNDS", "UNIT TRUST", "PENSION", "OFFSHORE", "DOLLAR FUND",
-       "ZIIDI", "ZIIDI TRADER", "TRADER", "STOCKS", "NSE", "SHARES", "TRADE"].includes(input)) return handleSpecialFunds(waId);
+  if (["ZIIDI", "ZIIDI TRADER", "ZIIDI GUIDE", "ZIIDITRADER"].includes(input)) return handleZiidiTraderGuide(waId);
+  if (["STOCKS", "NSE", "SHARES", "NSE LIVE", "EQUITY", "EQUITIES"].includes(input)) return handleNSEStocks(waId, userId);
+  if (["SPECIAL", "SPECIAL FUNDS", "UNIT TRUST", "PENSION", "OFFSHORE", "DOLLAR FUND", "TRADE"].includes(input)) return handleSpecialFunds(waId);
+  // NSE ticker lookup — e.g. "SCOM", "EQTY", "KCB"
+  if (NSE_SYMBOLS[input]) return handleNSEStockLookup(waId, input, userId);
   if (input === "STATUS"    || input === "S") return handleSubscriptionStatus(waId, userId);
   if (input === "HELP"      || input === "H") return sendHelp(waId);
   if (input === "LOGOUT")                     return handleLogout(waId);

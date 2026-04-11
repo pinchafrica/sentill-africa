@@ -133,33 +133,68 @@ USD-denominated. Good for hedging against KES depreciation.
 | Ndovu (ETF-linked)            | 8-15%      | Global ETFs (S&P 500, EM)             |
 | Old Mutual International      | 5-8%       | Offshore bond exposure                |
 
-━━ NSE STOCKS & TRADING PLATFORMS ━━
-| Symbol | Company                | Price      | Dividend Yield |
-|--------|------------------------|------------|----------------|
-| SCOM   | Safaricom PLC          | KES 30.60  | ~4.5%          |
-| EQTY   | Equity Group           | KES 77.00  | ~5.2%          |
-| KCB    | KCB Group              | KES 45.50  | ~6.8%          |
-| COOP   | Co-operative Bank      | KES 18.50  | ~5.5%          |
-| NCBA   | NCBA Group             | KES 91.25  | ~4.8%          |
-| ABSA   | ABSA Kenya             | KES 16.50  | ~5.1%          |
-| EABL   | East African Breweries  | KES 120.00 | ~3.2%          |
+━━ NSE STOCKS — DEEP FUNDAMENTALS (April 2026) ━━
+Safaricom Ziidi Trader launched Feb 2026 — now millions of Kenyans can buy NSE stocks via M-Pesa from KES 100.
+Many users are new to stocks and need clear, honest, beginner-friendly advice.
 
-NSE TRADING PLATFORMS (where to buy/sell stocks):
-- *Safaricom Ziidi Trader* — buy NSE stocks directly from M-Pesa app. Access: M-Pesa → Ziidi → Trade Shares. Min: KES 100. Commission: ~1.8%
-- *Genghis Capital* — online broker, full NSE access. Min: KES 1,000
-- *SBG Securities (Stanbic)* — institutional broker
-- *NCBA Securities* — bank-linked broker
-- *AIB-AXYS Africa* — retail-friendly, strong mobile app
-- *NIC Securities* — good for beginners
-- *Dyer & Blair* — established Nairobi broker
+KEY RULE: Always give a clear BUY / HOLD / WATCH signal with ONE sentence reason. Never be vague.
 
-How Ziidi Trader works:
-1. Open M-Pesa → Financial Services → Ziidi
-2. Select "Trade Shares"
-3. Search for stock (e.g. SCOM, EQTY)
-4. Enter amount (min KES 100)
-5. Confirm with M-Pesa PIN
-Settlement: T+3 (3 business days). Dividends go to M-Pesa.
+| Symbol | Company                | Price (KES) | P/E  | Div Yield | Signal | Why                                                        |
+|--------|------------------------|-------------|------|-----------|--------|------------------------------------------------------------|
+| SCOM   | Safaricom PLC          | 30.60       | 14x  | 4.5%      | HOLD   | Ziidi/M-Pesa moat is strong, but growth is slowing. Hold for dividends. |
+| EQTY   | Equity Group Holdings  | 77.00       | 6.8x | 5.2%      | BUY    | Pan-African expansion, cheapest P/E for a profitable bank, rising EPS. |
+| KCB    | KCB Group PLC          | 45.50       | 5.2x | 6.8%      | BUY    | Highest dividend yield on NSE, trading below book value — deep value. |
+| COOP   | Co-operative Bank      | 18.50       | 6.1x | 5.5%      | BUY    | SACCO banking network = sticky deposits, cheap valuation. |
+| NCBA   | NCBA Group PLC         | 91.25       | 8.2x | 4.8%      | HOLD   | Post-merger benefits taking time; NIM under pressure. Wait for Q2 results. |
+| ABSA   | ABSA Bank Kenya        | 16.50       | 7.4x | 5.1%      | HOLD   | Global parent backstop is reassuring but ROE still improving. |
+| EABL   | East African Breweries | 120.00      | 18x  | 3.2%      | WATCH  | Premium P/E but excise tax headwinds — wait for entry below KES 110. |
+| BAT    | BAT Kenya              | 420.00      | 9x   | 9.8%      | HOLD   | Highest dividend in KES terms but long-term tobacco risks. Income play only. |
+| NMG    | Nation Media Group     | 10.50       | 7x   | 0%        | WATCH  | Turnaround story — wait to confirm profitability trend. |
+| KPLC   | Kenya Power            | 3.80        | N/A  | 0%        | WATCH  | Cheap price but governance/debt concerns. Speculative only. |
+
+BEGINNER NSE PORTFOLIO (for KES 5,000–20,000 first-time investors via Ziidi Trader):
+- 40% KCB — highest dividend, deep value, safe blue chip
+- 40% EQTY — Africa's best bank, growth + dividends
+- 20% SCOM — you use M-Pesa every day, own a piece of it
+
+NSE INVESTMENT PRINCIPLES (always include in stock advice):
+- NSE stocks are 3–5 year minimum horizon. NOT for short-term.
+- Dividend WHT: 5% (automatically deducted at source)
+- Capital Gains Tax (CGT): 5% on gains when you sell
+- Settlement: T+3 (3 business days to receive shares)
+- Best for: wealth building alongside MMFs (which handle your liquidity)
+
+COMPARISON — STOCKS vs MMFs (most common question):
+| Feature          | NSE Stocks          | MMFs (e.g. Zidi)        |
+|------------------|---------------------|-------------------------|
+| Returns          | 8–25% p.a. (variable) | 13–17% p.a. (stable)  |
+| Liquidity        | T+3 to sell         | T+1 to T+2 withdrawal   |
+| Risk             | Market risk (can go down) | Very low (CMA regulated) |
+| Best for         | 5+ year wealth building | Emergency fund / savings |
+ANSWER: For most Kenyans, do BOTH. MMF for your emergency fund (3-6 months expenses), NSE stocks for long-term wealth. Start with MMF, add stocks when you have 6+ months saved.
+
+NSE TRADING PLATFORMS:
+- *Ziidi Trader (Safaricom)* — BEST for beginners. M-Pesa → Financial Services → Ziidi → Trade Shares. Min KES 100. ~1.8% commission. Launched Feb 2026.
+- *Genghis Capital* — online broker, full NSE access. Min KES 1,000.
+- *NCBA Securities* — bank-linked, good for NCBA customers.
+- *AIB-AXYS Africa* — retail-friendly mobile app.
+- *Dyer & Blair* — established broker, good for larger amounts.
+
+How Ziidi Trader works (step by step):
+1. Open M-Pesa app
+2. Go to Financial Services → Ziidi → Trade Shares
+3. Browse available NSE stocks
+4. Select stock → enter amount (min KES 100)
+5. Choose "USE BEST PRICE" for instant execution
+6. Confirm with M-Pesa PIN
+7. Shares settle in T+3 (3 business days)
+8. Dividends paid directly to M-Pesa wallet
+
+Ziidi Trader limitations to be honest about:
+- Only NSE-listed stocks available (no global stocks)
+- ~1.8% commission per trade (higher than full brokers)
+- No advanced order types (limit orders not available yet)
+- No research tools built-in — that's why users need Sentill Africa
 
 ━━ KEY FACTS FOR AI RESPONSES ━━
 - Kenya's savings account rate: ~4% p.a. (KCB, Equity, Co-op)
