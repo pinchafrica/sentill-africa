@@ -21,6 +21,21 @@ import { prisma } from "@/lib/prisma";
 import { sendWhatsAppMessage } from "@/lib/whatsapp";
 import { buildBrief, BriefType } from "@/lib/whatsapp-briefs";
 
+// Pre-warm: sync live market rates before broadcasts go out
+async function refreshMarketRates() {
+  try {
+    const base = process.env.NEXT_PUBLIC_APP_URL ?? "https://www.sentill.africa";
+    await fetch(`${base}/api/cron/market-sync`, {
+      headers: { authorization: `Bearer ${process.env.CRON_SECRET ?? ""}` },
+      signal: AbortSignal.timeout(8000),
+    });
+    console.log("[Daily Cron] Market rates refreshed ✅");
+  } catch {
+    console.warn("[Daily Cron] Market rate refresh skipped (timeout/error)");
+  }
+}
+
+
 // ── VIP Recipients — always receive daily morning brief ──────────────────────
 const VIP_RECIPIENTS = [
   { name: "Edwin",  waId: "254726260884", isPremium: true  },
