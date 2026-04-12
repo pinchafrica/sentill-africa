@@ -955,7 +955,7 @@ async function getConversationHistory(waId: string): Promise<string> {
 
 // ─── Gemini caller ────────────────────────────────────────────────────────────
 
-async function callGemini(prompt: string, maxTokens = 1200, useSearch = false, lowTemp = false): Promise<string> {
+async function callGemini(prompt: string, maxTokens = 4000, useSearch = false, lowTemp = false): Promise<string> {
   let apiKey: string | null = null;
   try { apiKey = await getGeminiApiKey(); } catch (e) {
     console.error("[Gemini] Key fetch error:", e);
@@ -1244,7 +1244,7 @@ TONE: Sharp. Direct. Like the best fund manager at a Nairobi investment forum �
   try {
     const answer = await callGemini(
       `${systemPrompt}\n\n━━ USER QUESTION ━━\n${question}`,
-      1200,
+      4000,
       useSearch,
       lowTemp
     );
