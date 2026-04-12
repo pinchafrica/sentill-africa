@@ -14,7 +14,7 @@
 import { getGeminiApiKey } from "./api-keys";
 import { prisma } from "./prisma";
 
-const GEMINI_MODEL = "gemini-2.0-flash";
+const GEMINI_MODEL = "gemini-2.5-flash";
 const GEMINI_API_BASE = "https://generativelanguage.googleapis.com/v1beta/models";
 
 // ─── Intent classifier ─────────────────────────────────────────────────────────
