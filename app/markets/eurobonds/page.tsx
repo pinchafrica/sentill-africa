@@ -220,26 +220,7 @@ export default function EurobondPage() {
         </div>
       </div>
 
-      {/* TAB BAR */}
-      <div className="bg-slate-900 border-b border-slate-800 sticky top-[108px] z-20">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex gap-1 overflow-x-auto no-scrollbar">
-            {([
-              { key: "overview", label: "Bonds Overview" },
-              { key: "spreads", label: "Spread Analysis" },
-              { key: "fx", label: "FX Risk (USD/KES)" },
-              { key: "guide", label: "Investor Guide" },
-            ] as const).map(t => (
-              <button key={t.key} onClick={() => setActiveTab(t.key)}
-                className={`px-6 py-4 text-[10px] font-black uppercase tracking-widest whitespace-nowrap border-b-2 transition-all ${
-                  activeTab === t.key ? "border-indigo-500 text-indigo-400" : "border-transparent text-slate-400 hover:text-slate-200"
-                }`}>
-                {t.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
+
 
       <div className="max-w-7xl mx-auto px-6 py-12 space-y-10">
 
@@ -273,7 +254,30 @@ export default function EurobondPage() {
             </motion.div>
           ))}
         </div>
+      </div>
 
+      {/* TAB BAR */}
+      <div className="bg-slate-900 border-b border-slate-800 sticky top-[64px] lg:top-[108px] z-30">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex gap-1 overflow-x-auto no-scrollbar">
+            {([
+              { key: "overview", label: "Bonds Overview" },
+              { key: "spreads", label: "Spread Analysis" },
+              { key: "fx", label: "FX Risk (USD/KES)" },
+              { key: "guide", label: "Investor Guide" },
+            ] as const).map(t => (
+              <button key={t.key} onClick={() => setActiveTab(t.key)}
+                className={`px-6 py-4 text-[10px] font-black uppercase tracking-widest whitespace-nowrap border-b-2 transition-all ${
+                  activeTab === t.key ? "border-indigo-500 text-indigo-400" : "border-transparent text-slate-400 hover:text-slate-200"
+                }`}>
+                {t.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-6 py-12 space-y-10">
         {/* ── OVERVIEW TAB ── */}
         {activeTab === "overview" && (
           <div className="space-y-8">
