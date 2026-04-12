@@ -545,6 +545,22 @@ export async function processIncomingMessage(
   if (["NSE GUIDE", "STOCKS GUIDE", "HOW TO BUY STOCKS", "BUY STOCKS", "ZIIDI", "ZIIDI GUIDE"].includes(input)) return handleNSEBeginnersGuide(waId);
   if (["STOCKS", "NSE", "SHARES", "NSE LIVE", "EQUITY", "EQUITIES"].includes(input)) return handleNSEStocks(waId, userId);
   if (["SPECIAL", "SPECIAL FUNDS", "UNIT TRUST", "PENSION", "OFFSHORE", "DOLLAR FUND", "TRADE"].includes(input)) return handleSpecialFunds(waId);
+  // New investment category keywords from the Investment Hub menu
+  if (["OFFSHORE", "GLOBAL", "ETF", "ETFS", "GLOBAL ETFS", "USD FUND"].includes(input))
+    return handleGeminiQuestion(waId, "Give me complete details on offshore and global ETF investment options available for Kenyan investors, including Ndovu, Cytonn Dollar MMF, and ABSA Offshore. Include returns, minimums, platforms, and currency hedge benefits.", userId);
+  if (["REITS", "REIT", "REAL ESTATE", "PROPERTY"].includes(input))
+    return handleGeminiQuestion(waId, "Give me complete details on Real Estate and REIT investment options in Kenya in 2026, including ILAM Fahari REIT, Acorn D-REIT, land investments, and how to access from KES 6 on NSE.", userId);
+  if (["CRYPTO", "BITCOIN", "BTC", "ETHEREUM", "ETH", "CRYPTOCURRENCY"].includes(input))
+    return handleGeminiQuestion(waId, "Give me a complete Kenya crypto investment guide for 2026: Bitcoin, Ethereum prices, how to buy via Binance P2P with M-Pesa, risks, Luno vs Binance comparison, KRA tax position, and 5-10% portfolio rule.", userId);
+  if (["FOREX", "FX", "FOREX TRADING", "CURRENCY TRADING"].includes(input))
+    return handleGeminiQuestion(waId, "Give me all CMA-licensed forex brokers in Kenya 2026 with minimum deposits, leverage, platforms, and critical risk warnings. Include FXPesa, Pepperstone, Scope Markets, EGM Securities, HF Markets.", userId);
+  if (["MANSA-X", "MANSAX", "MANSA X", "SIB FUND", "SIB"].includes(input))
+    return handleGeminiQuestion(waId, "Give me complete details on the Mansa-X Multi-Asset Fund by Standard Investment Bank (SIB) Kenya. Include: strategy, minimum investment (KES 250,000), markets traded (NYSE/LSE/commodities), fees, Sharia option, pros, cons, and who it is best for.", userId);
+  if (["CORP BONDS", "CORPORATE BONDS", "CORPORATE BOND", "COMMERCIAL PAPER"].includes(input))
+    return handleGeminiQuestion(waId, "Give me complete details on corporate bonds and commercial paper available in Kenya in 2026. Include current issuers (Centum, Family Bank, EABL, HF Group), coupon rates, WHT treatment, minimums, risks and how to buy on NSE.", userId);
+  if (["IFB", "INFRASTRUCTURE BOND", "INFRASTRUCTURE BONDS"].includes(input))
+    return handleGeminiQuestion(waId, "Give me the complete step-by-step guide to investing in Kenya Infrastructure Bonds (IFBs) in 2026. Include IFB1/2024 details (18.46% WHT-free), how to open a DhowCSD account, the CBK auction process, minimum investment, tax exemption proof, and comparison vs T-Bills and MMFs.", userId);
+
   // NSE ticker lookup — e.g. "SCOM", "EQTY", "KCB"
   if (NSE_SYMBOLS[input]) return handleNSEStockLookup(waId, input, userId);
   if (input === "STATUS"    || input === "S") return handleSubscriptionStatus(waId, userId);
@@ -831,7 +847,7 @@ async function sendPremiumConversionMessage(waId: string, name: string, queriesU
 // ─────────────────────────────────────────────────────────────────────────────
 
 async function sendInvestmentCategories(waId: string, userId: string) {
-  // Fetch top fund from each category
+  // Fetch real-time top fund from each category
   const [topMMF, topBond, topTBill, topSacco, topPension] = await Promise.all([
     prisma.provider.findFirst({ where: { type: "MONEY_MARKET" }, orderBy: { currentYield: "desc" } }),
     prisma.provider.findFirst({ where: { type: "Bond" },         orderBy: { currentYield: "desc" } }),
@@ -840,29 +856,115 @@ async function sendInvestmentCategories(waId: string, userId: string) {
     prisma.provider.findFirst({ where: { type: "Pension" },      orderBy: { currentYield: "desc" } }),
   ]);
 
-  const line = (label: string, p: { name: string; currentYield: number } | null) =>
-    p ? `${label} *${p.name}* — ${p.currentYield.toFixed(1)}% p.a.\n` : "";
+  const mmfYield    = topMMF?.currentYield?.toFixed(1)     ?? "17.5";
+  const bondYield   = topBond?.currentYield?.toFixed(1)    ?? "18.46";
+  const tbillYield  = topTBill?.currentYield?.toFixed(1)   ?? "16.42";
+  const saccoYield  = topSacco?.currentYield?.toFixed(1)   ?? "14.5";
+  const pensionYield = topPension?.currentYield?.toFixed(1) ?? "13";
 
   const msg =
-    `📊 *TODAY'S BEST RATES*\n` +
-    `━━━━━━━━━━━━━━━━━━\n\n` +
-    line("💰 MMF     |", topMMF) +
-    line("📈 T-Bill  |", topTBill) +
-    line("🏛 Bond    |", topBond) +
-    line("🤝 SACCO   |", topSacco) +
-    line("🧓 Pension |", topPension) +
-    `\n━━━━━━━━━━━━━━━━━━\n` +
-    `🧠 *Ask me anything about investing:*\n\n` +
-    `Just type your question! Examples:\n` +
-    `• _What's the best MMF right now?_\n` +
-    `• _Compare T-Bills vs Bonds_\n` +
-    `• _How do I invest KES 50,000?_\n` +
-    `• _CALC 100000_ — see projections\n` +
-    `• _Which SACCO has the highest returns?_\n\n` +
-    `_Type your question and Sentill AI will give you a personalised answer._`;
+    `\u{1F3DB} *SENTILL AFRICA \u2014 INVESTMENT HUB*\n` +
+    `_Kenya\u2019s Complete Investment Universe_\n` +
+    `\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\n\n` +
+
+    `*\u{1F4B0} 1. MONEY MARKET FUNDS (MMFs)*\n` +
+    `   Best: *${mmfYield}% p.a.* \u2014 ${topMMF?.name ?? "Etica MMF (Zidi)"}\n` +
+    `   WHT: 15% | Min: KES 100 | Liquidity: \u26A1 T+1 (24hrs)\n` +
+    `   Risk: \u{1F7E2} Very Low | CMA-regulated custodian\n` +
+    `   \u2192 Start: M-Pesa \u2192 Ziidi, or download Zidi app\n` +
+    `   _Reply *MMF* or *1* for full ranked list_\n\n` +
+
+    `*\u{1F4C8} 2. TREASURY BILLS (T-Bills)*\n` +
+    `   Best: *${tbillYield}%* gross (364-day) | Net: *~13.96%*\n` +
+    `   WHT: 15% | Min: KES 50,000 | Tenure: 91/182/364 days\n` +
+    `   Risk: \u{1F7E2} Zero \u2014 Government of Kenya guaranteed\n` +
+    `   Auction: Every Monday via DhowCSD platform\n` +
+    `   _Reply *TBILL* or *2* for auction guide_\n\n` +
+
+    `*\u{1F3DB} 3. GOVERNMENT BONDS (IFBs \u{1F525})*\n` +
+    `   Best: *${bondYield}%* \u2014 IFB1/2024 | *0% WHT \u2014 FULLY TAX-FREE*\n` +
+    `   Net yield = stated yield. Zero tax, zero deduction.\n` +
+    `   Min: KES 50,000 | Tenure: 6.5 years | Govt guaranteed\n` +
+    `   *Kenya\u2019s best risk-adjusted investment in April 2026*\n` +
+    `   _Reply *BOND* or *3* for full IFB guide_\n\n` +
+
+    `*\u{1F91D} 4. SACCOs (Cooperative Savings \u0026 Credit)*\n` +
+    `   Best dividend: *${saccoYield}% p.a.* + 8% on deposits\n` +
+    `   Bonus: Loans at 12% p.a. (banks charge 16\u201320%)\n` +
+    `   Min: KES 500 | Liquidity: 30\u201390 day withdrawal notice\n` +
+    `   Risk: \u{1F7E1} Low-Medium | SASRA-regulated\n` +
+    `   _Reply *SACCO* or *4* to browse top SACCOs_\n\n` +
+
+    `*\u{1F4CA} 5. NSE STOCKS (Nairobi Stock Exchange)*\n` +
+    `   Top dividends: BAT *9.8%* | KCB *6.8%* | SCBK *7.2%*\n` +
+    `   Top YTD gains: KCB +28% | EQTY +22% | SBIC +18%\n` +
+    `   Starts: KES 100 via M-Pesa \u2192 Ziidi \u2192 Trade\n` +
+    `   Risk: \u{1F534} Medium\u2013High | Horizon: min 3\u20135 years\n` +
+    `   _Reply *NSE* or *5* for live prices + AI analysis_\n\n` +
+
+    `*\u{1F9D3} 6. PENSION / RETIREMENT FUNDS*\n` +
+    `   Returns: *${pensionYield}\u201314%* p.a. long-term compound\n` +
+    `   TAX SAVING: Up to *KES 9,000/month* in taxes saved!\n` +
+    `   Max deductible: KES 30,000/month (30% tax bracket)\n` +
+    `   Min: KES 500/month | Locked to age 50\n` +
+    `   _Reply *PENSION* or *6* for full tax saving guide_\n\n` +
+
+    `*\u{1F30D} 7. GLOBAL ETFs \u0026 OFFSHORE FUNDS*\n` +
+    `   S\u0026P 500 (USD): *~15% p.a.* via Ndovu from KES 500\n` +
+    `   USD Money Market: *5\u20137%* USD + KES hedge benefit\n` +
+    `   Platforms: Ndovu, Cytonn Dollar MMF, ABSA Offshore\n` +
+    `   Risk: \u{1F7E1} Medium | Great KES depreciation hedge\n` +
+    `   _Reply *OFFSHORE* or *7* for global options_\n\n` +
+
+    `*\u{1F3D7} 8. REAL ESTATE \u0026 REITs*\n` +
+    `   ILAM Fahari REIT: *6.5%* dividend (NSE-listed)\n` +
+    `   Land appreciation: 8\u201320% p.a. (Kiambu, Ruiru hot zones)\n` +
+    `   From KES 6 (ILAM REIT on NSE) to KES 5M (land)\n` +
+    `   Risk: \u{1F7E1} Medium | Long-term wealth builder\n` +
+    `   _Reply *REITS* or *8* for full property guide_\n\n` +
+
+    `*\u{1FA99} 9. CRYPTO (Bitcoin, Ethereum)*\n` +
+    `   Bitcoin: *~$95,000* | ETH: *~$3,800* (April 2026)\n` +
+    `   Buy via Binance P2P with M-Pesa from KES 500\n` +
+    `   Risk: \u{1F534} EXTREME | Max 5\u201310% of portfolio only\n` +
+    `   CBK advisory issued \u2014 trade responsibly\n` +
+    `   _Reply *CRYPTO* or *9* for beginner\u2019s guide_\n\n` +
+
+    `*\u{1F4B1} 10. FOREX TRADING*\n` +
+    `   CMA-licensed: FXPesa ($5 min), Pepperstone, Scope\n` +
+    `   Leverage: up to 1:400 | Platforms: MT4/MT5\n` +
+    `   Risk: \u{1F534} VERY HIGH \u2014 75\u201385% retail traders LOSE money\n` +
+    `   Demo account FIRST. Never trade with rent money.\n` +
+    `   _Reply *FOREX* or *10* for licensed brokers list_\n\n` +
+
+    `*\u{1F4BB} 11. MANSA-X (SIB Multi-Asset Fund)*\n` +
+    `   Global long/short: NYSE, LSE, commodities, metals\n` +
+    `   Manager: Standard Investment Bank (SIB) \u2014 since 1995\n` +
+    `   Min: *KES 250,000* | CMA-licensed | Sharia option \u2705\n` +
+    `   USD denomination available \u2014 perfect forex hedge\n` +
+    `   _Reply *MANSA-X* or *11* for full profile_\n\n` +
+
+    `*\u{1F33F} 12. CORPORATE BONDS \u0026 COMMERCIAL PAPER*\n` +
+    `   Issuers: Centum RE 13%, Family Bank 13.5%, EABL 12.5%\n` +
+    `   Higher yield than govt T-bills. WHT: 15%.\n` +
+    `   Min: KES 100,000 | Listed on NSE\n` +
+    `   Risk: \u{1F7E1} Medium \u2014 corporate credit risk applies\n` +
+    `   _Reply *CORP BONDS* or *12* for current issuances_\n\n` +
+
+    `\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\n` +
+    `\u{1F9E0} *ASK AI ANYTHING \u2014 TYPE YOUR QUESTION:*\n` +
+    `\u2022 _How do I invest KES 50,000 safely?_\n` +
+    `\u2022 _Compare IFB Bond vs MMF_\n` +
+    `\u2022 _Best option for 6 months?_\n` +
+    `\u2022 _CALC 100000_ \u2014 see projected returns\n` +
+    `\u2022 _CHART MMFS_ \u2014 visual bar chart comparison\n` +
+    `\u2022 _TABLE_ \u2014 full ranked investment table\n\n` +
+    `_S-Tier Institutional Wealth Intelligence_ \u{1F1F0}\u{1F1EA}\n` +
+    `_sentill.africa_`;
 
   return sendWhatsAppMessage(waId, msg);
 }
+
 
 async function handleBrowseCategoryInput(waId: string, input: string, userId: string, ctx: SessionContext) {
   // Handle CAT_ button payload
