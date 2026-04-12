@@ -146,7 +146,7 @@ async function handleNSEStockLookup(waId: string, symbol: string, userId?: strin
   let aiText = "";
   try {
     const { askGeminiBot } = await import("./whatsapp-gemini");
-    aiText = await askGeminiBot(aiContext, { name: "Investor", userId: userId ?? "guest", isPremium: false });
+    aiText = await askGeminiBot(aiContext, { name: "Investor", userId: userId ?? "guest", isPremium: false }, waId);
   } catch {
     aiText = `${why}\n\n📊 P/E ratio of ${pe}x suggests ${Number(pe) < 10 ? "undervalued vs regional peers" : "fair market pricing"}. Dividend yield of ${div}% ${Number(div) > 5 ? "is above the NSE average — attractive for income investors" : "is modest — focus on capital growth"}.`;
   }
@@ -714,7 +714,7 @@ async function handleGeminiQuestion(waId: string, question: string, userId: stri
       name: user?.name ?? "Investor",
       userId,
       isPremium: user?.isPremium ?? false,
-    });
+    }, waId);
 
     return sendWhatsAppMessage(waId, `🧠 *Sentill Africa Says:*\n\n${answer}`);
   } catch (err) {
@@ -763,7 +763,7 @@ async function handleGeminiQuestionGuest(waId: string, question: string) {
       name: "Investor",
       userId: "guest",
       isPremium: false,
-    });
+    }, waId);
 
     // Smart contextual nudge based on how many questions they've already asked
     const usedSoFar = aiQueriesCount + 1; // +1 for this answer

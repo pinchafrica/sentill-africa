@@ -821,15 +821,88 @@ async function getPortfolioContext(userId: string): Promise<string> {
   }
 }
 
+// Human-readable labels for market rate cache symbols
+const RATE_LABELS: Record<string, string> = {
+  SCOM:  "Safaricom (NSE) price",
+  EQTY:  "Equity Group (NSE) price",
+  ETCA:  "Etica MMF (Zidi) yield",
+  LOFT:  "Lofty Corpin MMF yield",
+  SANU:  "Sanlam USD MMF yield",
+  CICM:  "CIC Money Market yield",
+  BRIT:  "Britam MMF yield",
+  TBILL_91:  "91-Day T-Bill yield",
+  TBILL_182: "182-Day T-Bill yield",
+  TBILL_364: "364-Day T-Bill yield",
+  IFB1:  "IFB1/2024 Bond yield (WHT-free)",
+};
+
+const STOCK_SYMBOLS = new Set(["SCOM", "EQTY", "KCB", "COOP", "NCBA", "ABSA"]);
+
 async function getLiveRatesContext(): Promise<string> {
   try {
     const rates = await prisma.marketRateCache.findMany({
-      orderBy: { price: "desc" },
-      take: 8,
+      orderBy: { lastSyncedAt: "desc" },
+      take: 12,
     });
     if (rates.length < 2) return ""; // Fall back to hardcoded if DB is thin
-    return "LIVE DB RATES (supplement the hardcoded data above):\n" +
-      rates.map(r => `  • ${r.symbol}: ${r.price.toFixed(2)}%`).join("\n");
+
+    // Check data freshness
+    const mostRecent = rates[0]?.lastSyncedAt;
+    const hoursOld = mostRecent
+      ? Math.round((Date.now() - new Date(mostRecent).getTime()) / 3600000)
+      : 999;
+    const freshnessNote = hoursOld > 24
+      ? `\n  ⚠️ Last synced ${hoursOld}h ago — use hardcoded data as primary source.`
+      : `\n  ✅ Synced ${hoursOld}h ago (today's data).`;
+
+    const lines = rates.map(r => {
+      const label = RATE_LABELS[r.symbol] ?? r.symbol;
+      // Stocks show as KES price, funds show as % yield
+      const value = STOCK_SYMBOLS.has(r.symbol)
+        ? `KES ${r.price.toFixed(2)}`
+        : `${r.price.toFixed(2)}% p.a.`;
+      return `  • ${label}: ${value}`;
+    });
+
+    return `LIVE MARKET DATA (synced from DB — use these numbers when answering):${freshnessNote}\n` +
+      lines.join("\n");
+  } catch {
+    return "";
+  }
+}
+
+// ─── Conversation memory ─────────────────────────────────────────────────────
+// Reads last 3 AI Q&A pairs from WhatsAppLog so Gemini has memory of the session
+
+async function getConversationHistory(waId: string): Promise<string> {
+  try {
+    // Get last 6 messages (3 inbound user questions + 3 outbound AI replies)
+    const logs = await prisma.whatsAppLog.findMany({
+      where: { waId },
+      orderBy: { createdAt: "desc" },
+      take: 8,
+      select: { direction: true, message: true, createdAt: true },
+    });
+
+    if (logs.length < 2) return "";
+
+    // Reverse to chronological, then pair user → AI
+    const chronological = logs.reverse();
+    const pairs: string[] = [];
+    for (let i = 0; i < chronological.length - 1; i++) {
+      const curr = chronological[i];
+      const next = chronological[i + 1];
+      if (curr.direction === "INBOUND" && next.direction === "OUTBOUND") {
+        const userMsg = curr.message.slice(0, 120);
+        const aiReply = next.message.replace(/^🧠 \*Sentill Africa Says:\*\n\n/, "").slice(0, 200);
+        pairs.push(`  User: "${userMsg}"\n  AI: "${aiReply}..."`); 
+        i++; // skip the pair's second element
+      }
+    }
+
+    if (!pairs.length) return "";
+    const recent = pairs.slice(-3); // Keep last 3 pairs max
+    return `CONVERSATION HISTORY (this session — reference when answering follow-ups):\n${recent.join("\n---\n")}`;
   } catch {
     return "";
   }
@@ -1012,10 +1085,11 @@ interface UserContext {
   isPremium: boolean;
 }
 
-export async function askGeminiBot(question: string, user: UserContext): Promise<string> {
-  const [portfolioCtx, liveRates] = await Promise.all([
+export async function askGeminiBot(question: string, user: UserContext, waId?: string): Promise<string> {
+  const [portfolioCtx, liveRates, conversationHistory] = await Promise.all([
     getPortfolioContext(user.userId),
     getLiveRatesContext(),
+    waId ? getConversationHistory(waId) : Promise.resolve(""),
   ]);
 
   const systemPrompt = `You are *Sentill Africa* — Kenya's sharpest AI wealth intelligence assistant, delivered via WhatsApp.
@@ -1025,6 +1099,7 @@ ${KENYA_MARKET_KNOWLEDGE}
 
 ${liveRates}
 ${portfolioCtx ? `\n${portfolioCtx}` : ""}
+${conversationHistory ? `\n${conversationHistory}` : ""}
 
 USER: ${user.name} | Plan: ${user.isPremium ? "Pro ⚡" : "Free (10 AI questions/day)"}
 
