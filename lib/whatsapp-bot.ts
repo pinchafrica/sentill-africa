@@ -544,7 +544,7 @@ export async function processIncomingMessage(
   if (input === "WATCHLIST" || input === "W") return handleWatchlist(waId, userId);
   if (["NSE GUIDE", "STOCKS GUIDE", "HOW TO BUY STOCKS", "BUY STOCKS", "ZIIDI", "ZIIDI GUIDE"].includes(input)) return handleNSEBeginnersGuide(waId);
   if (["STOCKS", "NSE", "SHARES", "NSE LIVE", "EQUITY", "EQUITIES"].includes(input)) return handleNSEStocks(waId, userId);
-  if (["SPECIAL", "SPECIAL FUNDS", "UNIT TRUST", "PENSION", "OFFSHORE", "DOLLAR FUND", "TRADE"].includes(input)) return handleSpecialFunds(waId);
+  if (["SPECIAL", "SPECIAL FUNDS", "UNIT TRUST", "UNIT TRUSTS", "DOLLAR FUND", "TRADE"].includes(input)) return handleSpecialFunds(waId);
   // New investment category keywords from the Investment Hub menu
   if (["OFFSHORE", "GLOBAL", "ETF", "ETFS", "GLOBAL ETFS", "USD FUND"].includes(input))
     return handleGeminiQuestion(waId, "Give me complete details on offshore and global ETF investment options available for Kenyan investors, including Ndovu, Cytonn Dollar MMF, and ABSA Offshore. Include returns, minimums, platforms, and currency hedge benefits.", userId);
@@ -937,12 +937,14 @@ async function sendInvestmentCategories(waId: string, userId: string) {
     `   Demo account FIRST. Never trade with rent money.\n` +
     `   _Reply *FOREX* or *10* for licensed brokers list_\n\n` +
 
-    `*\u{1F4BB} 11. MANSA-X (SIB Multi-Asset Fund)*\n` +
-    `   Global long/short: NYSE, LSE, commodities, metals\n` +
-    `   Manager: Standard Investment Bank (SIB) \u2014 since 1995\n` +
-    `   Min: *KES 250,000* | CMA-licensed | Sharia option \u2705\n` +
-    `   USD denomination available \u2014 perfect forex hedge\n` +
-    `   _Reply *MANSA-X* or *11* for full profile_\n\n` +
+    `*\u{1F4BB} 11. SPECIAL FUNDS (Unit Trusts \u0026 Alternatives)*\n` +
+    `   \u{1F4C8} Equity Funds: Sanlam 15\u201318% | Britam 10\u201315% p.a.\n` +
+    `   \u2696\uFE0F Balanced Funds: Cytonn High Yield *18\u201320%* | Britam 14\u201316%\n` +
+    `   \u{1F9F8} Fixed Income CIS: Cytonn FI 14\u201316% | CIC 12\u201314%\n` +
+    `   \u{1F54C} Islamic/Sharia: Amana Capital MMF *13\u201315%* | Ijara Sukuk\n` +
+    `   \u{1FAC0} Mansa-X (SIB): Global multi-asset \u2014 Min KES 250,000\n` +
+    `   Min: KES 1,000 (unit trusts) | CMA-regulated\n` +
+    `   _Reply *SPECIAL* or *11* for full special funds guide_\n\n` +
 
     `*\u{1F33F} 12. CORPORATE BONDS \u0026 COMMERCIAL PAPER*\n` +
     `   Issuers: Centum RE 13%, Family Bank 13.5%, EABL 12.5%\n` +
