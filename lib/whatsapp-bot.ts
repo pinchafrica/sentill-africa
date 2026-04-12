@@ -1987,6 +1987,37 @@ async function handleSubConfirm(
 // ─────────────────────────────────────────────────────────────────────────────
 
 async function sendMainMenu(waId: string, userId?: string) {
+  // Pull real-time top MMF yield for the menu header
+  let topYield = "17.5";
+  try {
+    const topMMF = await prisma.provider.findFirst({
+      where: { type: "MONEY_MARKET" },
+      orderBy: { currentYield: "desc" },
+      select: { currentYield: true },
+    });
+    if (topMMF) topYield = topMMF.currentYield.toFixed(1);
+  } catch { /* use default */ }
+
+  const investmentList =
+    `\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\n` +
+    `\ud83c\udfd7 *ALL INVESTMENT OPTIONS*\n\n` +
+    `\ud83d\udcb0 *MMFs* (Money Market) \u2014 *${topYield}% p.a.* | KES 100 min | T+1\n` +
+    `\ud83d\udcc8 *T-Bills* (Govt) \u2014 *16.42%* gross | KES 50K | 91\u2013364 days\n` +
+    `\ud83c\uddb9 *IFB Bonds* \u2014 *18.46% WHT-FREE* \ud83d\udd25 | KES 50K | 6.5 yrs\n` +
+    `\ud83e\udd1d *SACCOs* \u2014 *14\u201320%* div + cheap loans | KES 500\n` +
+    `\ud83d\udcca *NSE Stocks* \u2014 Dividends + capital growth | KES 100\n` +
+    `\ud83e\udd73 *Pension* \u2014 *13\u201415%* + save KES 9K/mo in taxes\n` +
+    `\ud83c\udf0d *Global ETFs* \u2014 S\u0026P 500 ~15% USD | via Ndovu KES 500\n` +
+    `\ud83c\udfd7 *Real Estate/REITs* \u2014 ILAM REIT 6.5% div | KES 6\n` +
+    `\ud83e\ude99 *Crypto* \u2014 BTC, ETH | M-Pesa via Binance | High risk\n` +
+    `\ud83d\udcb1 *Forex* \u2014 CMA-licensed brokers | $5 min | Very high risk\n` +
+    `\ud83d\udcbb *Special Funds* \u2014 Unit trusts, Balanced, Islamic funds\n` +
+    `\ud83c\udf3f *Corp Bonds* \u2014 Centum 13%, Family Bank 13.5%\n` +
+    `\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\n` +
+    `\ud83d\udca1 *Reply with any category name for full details:*\n` +
+    `_MMF \u00b7 TBILL \u00b7 BOND \u00b7 IFB \u00b7 SACCO \u00b7 NSE \u00b7 PENSION_\n` +
+    `_OFFSHORE \u00b7 REITS \u00b7 CRYPTO \u00b7 FOREX \u00b7 SPECIAL \u00b7 CORP BONDS_`;
+
   if (userId) {
     const user = await prisma.user.findUnique({ where: { id: userId } });
     const name = user?.name?.split(" ")[0] ?? "Investor";
@@ -1997,50 +2028,45 @@ async function sendMainMenu(waId: string, userId?: string) {
       : null;
     const expiryWarning =
       isPro && expiresIn !== null && expiresIn <= 7
-        ? `\n⚠️ Pro expires in *${expiresIn} day${expiresIn !== 1 ? "s" : ""}* — send *RENEW*`
+        ? `\n\u26a0\ufe0f Pro expires in *${expiresIn} day${expiresIn !== 1 ? "s" : ""}* \u2014 send *RENEW*`
         : "";
 
-    // Clean, numbered menu — easy to navigate
     return sendWhatsAppMessage(
       waId,
-      `👋 *Hi ${name}!* — Sentill Africa${expiryWarning}\n` +
-      `${isPro ? "⚡ Pro Member" : "🔓 Free Plan"}\n\n` +
-      `━━━━━━━━━━━━━━━━━━\n` +
-      `*What would you like to do?*\n\n` +
-      `📊 *1. Best Rates* — Today's top yields across all categories\n` +
-      `📈 *2. Live Markets* — Full rate table + T-Bills, Bonds\n` +
-      `🧠 *3. Ask AI* — Get instant investment advice\n` +
+      `\ud83d\udc4b *Hi ${name}!* \u2014 Sentill Africa${expiryWarning}\n` +
+      `${isPro ? "\u26a1 Pro Member" : "\ud83d\udd13 Free Plan"}\n\n` +
+      investmentList +
+      `\n\n\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\n` +
+      `*Quick actions:*\n` +
+      `*1* \u2014 \ud83d\udcca Live Rates \u0026 Yields\n` +
+      `*2* \u2014 \ud83e\udde0 Ask AI Anything\n` +
       (isPro
-        ? `📁 *4. My Portfolio* — View & track your investments\n` +
-          `🎯 *5. My Goals* — Financial goals & progress\n`
-        : `📁 *4. Portfolio* — Track investments _(Pro only)_\n` +
-          `🎯 *5. Financial Goals* — Set targets _(Pro only)_\n`) +
-      `\n━━━━━━━━━━━━━━━━━━\n` +
-      `*Reply with a number (1–5)* or just type a question\n\n` +
-      `_More: ALERTS · STATUS · REFER · HELP_`,
+        ? `*3* \u2014 \ud83d\udcc1 My Portfolio\n` +
+          `*4* \u2014 \ud83c\udfaf My Goals\n`
+        : `*3* \u2014 \ud83d\udcc1 Portfolio _(Pro)_\n` +
+          `*4* \u2014 \ud83c\udfaf Goals _(Pro)_\n`) +
+      `*5* \u2014 \u2b50 Subscribe / Renew Pro\n\n` +
+      `_Or just type your question \u2014 AI replies instantly_`,
       userId
     );
   }
 
-  // Guest (not logged in) — lead with value, registration is optional step
+  // Guest — lead with full investment universe, then quick actions
   return sendWhatsAppMessage(
     waId,
-    `👋 *Welcome to Sentill Africa!*\n` +
-    `_Kenya's #1 Investment Intelligence Hub_\n\n` +
-    `━━━━━━━━━━━━━━━━━━\n` +
-    `💬 *Just type any question to get started:*\n\n` +
-    `_"What's the best MMF right now?"_\n` +
-    `_"How much will KES 50K grow in 1 year?"_\n` +
-    `_"Compare T-Bills vs Bonds"_\n\n` +
-    `━━━━━━━━━━━━━━━━━━\n` +
-    `*Or choose:*\n\n` +
-    `*1* — 📊 Live Market Rates\n` +
-    `*2* — 📈 Today's Best Yields\n` +
-    `*3* — 🧠 Ask AI Anything\n` +
-    `*4* — 👤 Create Free Account _(unlock portfolio & alerts)_\n\n` +
-    `_Reply with a number or just type your question_`
+    `\ud83d\udc4b *Welcome to Sentill Africa!*\n` +
+    `_Kenya\u2019s #1 Investment Intelligence Hub_\n\n` +
+    investmentList +
+    `\n\n\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\n` +
+    `*Quick actions:*\n` +
+    `*1* \u2014 \ud83d\udcca Live Rates \u0026 Yields\n` +
+    `*2* \u2014 \ud83e\udde0 Ask AI Anything\n` +
+    `*3* \u2014 \ud83d\udc64 Create Free Account _(portfolio \u0026 alerts)_\n\n` +
+    `_Or just type any question \u2014 no account needed_\n` +
+    `_e.g. \u201cBest MMF for KES 50K?\u201d or \u201cHow to buy a bond?\u201d_`
   );
 }
+
 
 async function sendHelp(waId: string) {
   return sendWhatsAppMessage(
