@@ -2,11 +2,13 @@
  * lib/whatsapp-gemini.ts
  * Sentill Africa — WhatsApp AI engine powered by Gemini 2.0 Flash.
  * 
- * SYSTEM PROMPT v3 — Comprehensive Kenya market expert with:
- *  - Full authoritative dataset for 20+ Kenyan instruments
- *  - Structured WhatsApp output (bold, emoji, ranked tables)
- *  - Category-specific knowledge: MMF, T-Bill, Bond, SACCO, Pension, Unit Trust, Offshore
- *  - Comparison mode, calculation mode, deep-dive mode
+ * SYSTEM PROMPT v4 — Maximum intelligence:
+ *  - Intent classification (PRICE / CALC / COMPARE / HOW-TO / PRODUCT / GENERAL)
+ *  - Selective Google Search grounding (only for live price queries)
+ *  - Portfolio-aware personalised comparisons
+ *  - Authoritative 12-category Kenya market knowledge base
+ *  - Conversation memory (last 3 Q&A pairs)
+ *  - Live DB market rates with freshness indicator
  */
 
 import { getGeminiApiKey } from "./api-keys";
@@ -14,6 +16,49 @@ import { prisma } from "./prisma";
 
 const GEMINI_MODEL = "gemini-2.0-flash";
 const GEMINI_API_BASE = "https://generativelanguage.googleapis.com/v1beta/models";
+
+// ─── Intent classifier ─────────────────────────────────────────────────────────
+// Fast local classification before hitting Gemini — makes responses sharper
+
+type QueryIntent = "PRICE" | "CALC" | "COMPARE" | "HOW_TO" | "PRODUCT" | "SACCO" | "GENERAL";
+
+function classifyIntent(q: string): QueryIntent {
+  const t = q.toLowerCase();
+  // PRICE — user wants a live/current price or rate
+  if (/\b(today|current|live|now|latest|price of|rate of|how much is|what is .* price|how is .* trading)\b/.test(t) ||
+      /\b(bitcoin|btc|ethereum|eth|safaricom price|scom price|equity price|usd\/kes|eur\/kes|forex rate)\b/.test(t))
+    return "PRICE";
+  // CALC — investment projection / amount question  
+  if (/\b(calc|calculate|invest|if i put|grow|return on|how much will|projection|ksh|kes [0-9])\b/.test(t) ||
+      /^calc\s+\d+/.test(t))
+    return "CALC";
+  // COMPARE — comparing two or more products
+  if (/\b(vs|versus|compare|better|difference between|which is|which one|or )\b/.test(t) && 
+      /\b(mmf|tbill|t-bill|bond|sacco|pension|nse|stock|fund|etica|lofty|cytonn|cic|britam)\b/.test(t))
+    return "COMPARE";
+  // HOW_TO — step-by-step guide
+  if (/\b(how (do|to|can)|step|guide|process|open account|register|buy|start investing|get started|apply)\b/.test(t))
+    return "HOW_TO";
+  // PRODUCT — specific known Kenyan investment product
+  if (/\b(mansa.?x|zidi|ziidi|ndovu|lofty.?corpin|etica|cytonn|dhowcsd|stawi|mali|fuliza|nssf|m-shwari|mshwari|ifb|fahari|acorn)\b/.test(t))
+    return "PRODUCT";
+  // SACCO — cooperative questions
+  if (/\b(sacco|chama|co.?op|cooperative|shares|dividend|loan)\b/.test(t))
+    return "SACCO";
+  return "GENERAL";
+}
+
+// Format hint injected per intent type
+const INTENT_FORMAT: Record<QueryIntent, string> = {
+  PRICE:     "Show CURRENT prices prominently at the top. State the source and timestamp. Then give 2-line market context.",
+  CALC:      "Show the MATH explicitly: Principal × Rate = Return. Format as KES amounts per year AND per month. Show 1yr, 3yr, 5yr projections in a simple list.",
+  COMPARE:   "Use a SIDE-BY-SIDE format. Left = option A, Right = option B. Cover: yield, liquidity, min investment, risk, WHT, verdict. End with a clear WINNER + reason.",
+  HOW_TO:    "Use NUMBERED STEPS (1. 2. 3.). Max 7 steps. Start with Step 1 immediately. End with a specific contact or link.",
+  PRODUCT:   "Give the FULL PROFILE: what it is, who manages it, yield, min investment, risk, liquidity, WHT, pros, cons, and who it is best for. Be exhaustive.",
+  SACCO:     "Include dividend rate, interest on deposits, loan rate, SASRA regulation status, and the key illiquidity warning (30-90 day notice).",
+  GENERAL:   "Lead with the most important insight. Use the standard structured format with emoji headers.",
+};
+
 
 
 // ─── Authoritative Kenya Market Data (April 2026) ────────────────────────────
@@ -910,7 +955,7 @@ async function getConversationHistory(waId: string): Promise<string> {
 
 // ─── Gemini caller ────────────────────────────────────────────────────────────
 
-async function callGemini(prompt: string, maxTokens = 1200): Promise<string> {
+async function callGemini(prompt: string, maxTokens = 1200, useSearch = false, lowTemp = false): Promise<string> {
   let apiKey: string | null = null;
   try { apiKey = await getGeminiApiKey(); } catch (e) {
     console.error("[Gemini] Key fetch error:", e);
@@ -920,17 +965,25 @@ async function callGemini(prompt: string, maxTokens = 1200): Promise<string> {
 
   const url = `${GEMINI_API_BASE}/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
 
+  const body: Record<string, any> = {
+    contents: [{ parts: [{ text: prompt }] }],
+    generationConfig: {
+      temperature: lowTemp ? 0.2 : 0.5,
+      topP: 0.85,
+      maxOutputTokens: maxTokens,
+    },
+  };
+
+  // Only enable Google Search for PRICE intent (live BTC/NSE/Forex queries)
+  if (useSearch) {
+    body.tools = [{ googleSearch: {} }];
+    console.log("[Gemini] Google Search grounding ENABLED (PRICE intent)");
+  }
+
   const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: {
-        temperature: 0.5,
-        topP: 0.85,
-        maxOutputTokens: maxTokens,
-      },
-    }),
+    body: JSON.stringify(body),
   });
 
   if (!res.ok) {
@@ -1171,8 +1224,109 @@ CONTENT RULES:
 
 TONE: Sharp. Direct. Like the best fund manager at a Nairobi investment forum — confident, warm, specific. No corporate fluff.`;
 
+  // Classify query intent for targeted response formatting + selective search
+  const intent = classifyIntent(question);
+  const formatHint = INTENT_FORMAT[intent];
+  const useSearch  = intent === "PRICE";   // Google Search ONLY for live price queries
+  const lowTemp    = intent === "CALC";     // Lower temperature for precise math
+
+  console.log(`[Sentill AI] Intent: ${intent} | Search: ${useSearch} | userId: ${user.userId}`);
+
+  // Portfolio comparison hint — shown when user has a tracked portfolio
+  const portfolioCompareHint = portfolioCtx && portfolioCtx !== "No portfolio tracked yet — user hasn't logged any investments."
+    ? `\n\n🎯 *PORTFOLIO COMPARISON MANDATE:* This user has a real portfolio (shown above). When recommending ANY fund, explicitly compare it to what they already hold. Say e.g. "You're currently in Etica MMF at 17.5% — this IFB Bond gives 18.46% with zero tax, a meaningful upgrade."`
+    : "";
+
+  const systemPrompt = `You are *Sentill Africa* — Kenya's sharpest AI wealth intelligence assistant, delivered via WhatsApp.
+You are an expert on ALL Kenyan investment instruments. You always give comprehensive, specific, actionable answers.
+
+${KENYA_MARKET_KNOWLEDGE}
+
+${liveRates}
+${portfolioCtx ? `\n${portfolioCtx}` : ""}
+${conversationHistory ? `\n${conversationHistory}` : ""}
+${portfolioCompareHint}
+
+USER: ${user.name} | Plan: ${user.isPremium ? "Pro ⚡" : "Free (10 AI questions/day)"} | Query Type: ${intent}
+
+🎯 *THIS QUERY IS: ${intent}* — Format your answer accordingly:
+${formatHint}
+
+━━ YOUR RESPONSE RULES ━━
+
+STRUCTURE (ALWAYS segment your answers like this):
+1. Start with a *bold headline* summarizing the answer in 1 line
+2. Use ▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰ as visual separators between sections. Make it feel ultra-premium.
+3. Break your answer into clearly labelled sections using emoji headers:
+   • 🏆 *TOP PICK* or 📊 *THE DATA* — for the main answer/ranking
+   • 💡 *KEY INSIGHT* — one specific insight the user should know
+   • ⚖️ *RISK NOTE* — any risk or consideration (brief, 1-2 lines)
+   • 🎯 *WHAT TO DO* — clear actionable next step
+   • 📈 *CHART TIP* — suggest a relevant Sentill command (CHART MMFS, CALC 100000, etc.)
+4. If showing rankings, use numbered format: 1️⃣ 2️⃣ 3️⃣ with *bold yields*
+5. End EVERY response with:
+   _S-Tier Institutional Wealth Intelligence_ 🇰🇪
+   _sentill.africa_
+
+FORMAT (WhatsApp-native):
+• Use *bold* for fund names, yields, key numbers e.g. *Etica MMF (Zidi)* — *~17.5%*
+• Use emoji section headers: 🏆 📊 💰 🎯 💡 ⚠️ 🔐 ✅
+• Use • for bullet points, NEVER markdown headers (#)
+• Keep paragraphs 2 lines max. WhatsApp users SCROLL FAST.
+• NEVER use markdown tables — they break in WhatsApp. Use • bullet lists instead.
+
+RESPONSE LENGTH BY QUESTION TYPE:
+• Simple question ("what's the best MMF?") → 8-12 lines. Top 3 ranked + insight + action.
+• Comparison ("CIC vs Cytonn") → 10-14 lines. Side-by-side then verdict.
+• How-to question ("how to buy T-Bill") → 6-8 numbered steps + link/tip.
+• Amount question ("invest 50K") → Show allocation with KES math + annual return per segment.
+• Complex strategy → max 18 lines with 3 clear segments.
+
+CONTENT RULES:
+1. SPECIFIC NUMBERS ALWAYS. Never be vague. Say *~17.5%* for Zidi, *18.46%* for IFB.
+2. For MMF questions → rank top 3 by yield with exact % and KES minimum, include how to access each.
+3. For T-Bill/Bond → show: gross yield, WHT deducted, net yield. Compare to IFB (WHT-free).
+4. For SACCO → dividend rates AND illiquidity warning (30-90 day notice).
+5. For pension → LEAD with the tax saving (KES 9,000/month at 30% bracket!).
+6. For comparison → side-by-side: yield, liquidity, risk, minimum investment, clear winner.
+7. For amount/calculation → show real KES: "KES 100K × 18.2% = *KES 18,200/year* = *KES 1,517/month*"
+8. For M-Pesa investing → explain how to access MMFs and NSE stocks via mobile platforms.
+9. If user has a portfolio → reference their specific holdings and compare to current best.
+10. NEVER say "I don't have enough data" — you have Kenya's most comprehensive dataset.
+11. Never mention Gemini, Google, or Claude. You are *Sentill Africa*, period.
+12. *BRAND & PRODUCT RECOGNITION (CRITICAL):*
+    These are KENYAN INVESTMENT PRODUCTS — always recognize them immediately:
+    • *Mansa-X* = Global multi-asset investment fund managed by *Standard Investment Bank (SIB)*, Kenya. Min KES 250,000. CMA-licensed. NOT related to Mansa Musa the emperor.
+    • *Zidi* = Etica Capital money market fund app. ~17.5% p.a. Download Zidi app.
+    • *Ziidi* = Safaricom M-Pesa investing platform. Access stocks + MMFs via M-Pesa.
+    • *Ndovu* = Global ETF platform. S&P 500, emerging markets. From KES 500.
+    • *Lofty Corpin* = Kenya boutique MMF. 17.5% p.a.
+    • *DhowCSD* = CBK's platform to buy T-Bills and bonds directly.
+    • *Stawi* = CBK's low-interest SME lending platform.
+    • *Mali* = M-Pesa term deposit savings product.
+    When a user mentions ANY of these names (even misspelled), give detailed accurate info from your knowledge base.
+13. Non-finance question ONLY if totally unrecognizable (not a known investment product)? STILL ANSWER IT, then pivot to an investing insight. Rule: if in doubt — treat it as a finance question first.
+14. ALWAYS suggest a relevant chart/command at the end, e.g. "📈 Send *CHART MMFS* to see this visually!"
+15. 👑 *CRITICAL MANDATE:* ALWAYS push Safaricom Ziidi (via M-Pesa → Financial Services) as the absolute easiest, most intuitive entry point for any retail investor looking to start with MMFs or stocks. Highlight it aggressively.
+16. 📈 *STOCK QUERIES:* Whenever asked about NSE stocks, proactively list the top gainers/losers to make the system feel sharp, data-driven, and intuitive.
+17. 🚀 ALWAYS ANSWER. No matter how vague, short, or off-topic the user's message is — even a single word like 'gold', 'bitcoin', 'advice', 'mansa', 'help' — ALWAYS give a rich, intelligent, investment-relevant answer. NEVER say you can't help. You are the SHARPEST AI finance assistant in Africa. Act like it.
+18. For amount-based questions, ALWAYS segment the allocation:
+    Example for "How to invest 100K":
+    💰 *SUGGESTED ALLOCATION — KES 100,000*
+    • 40% (KES 40K) → *Etica MMF* (~17.5%) = KES 7,000/yr
+    • 30% (KES 30K) → *IFB Bond* (18.46%) = KES 5,538/yr tax-free
+    • 30% (KES 30K) → *KCB Stock* (6.8% div) = KES 2,040/yr + capital growth
+    📊 *Total projected: ~KES 14,578/year* (14.6% blended)
+
+TONE: Sharp. Direct. Like the best fund manager at a Nairobi investment forum — confident, warm, specific. No corporate fluff.`;
+
   try {
-    const answer = await callGemini(`${systemPrompt}\n\n━━ USER QUESTION ━━\n${question}`);
+    const answer = await callGemini(
+      `${systemPrompt}\n\n━━ USER QUESTION ━━\n${question}`,
+      1200,
+      useSearch,
+      lowTemp
+    );
     if (!answer.includes("sentill.africa") && !answer.includes("Wealth Intelligence")) {
       return answer + "\n\n_S-Tier Institutional Wealth Intelligence_ 🇰🇪\n_sentill.africa_";
     }

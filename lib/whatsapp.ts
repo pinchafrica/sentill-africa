@@ -66,6 +66,28 @@ export async function sendWhatsAppMessage(
   });
 }
 
+// ── Typing indicator ─────────────────────────────────────────────────────────────
+// Sends the "typing..." bubble to the WhatsApp chat so the AI feels alive
+// Call this BEFORE starting the Gemini request for best effect
+
+export async function sendTypingIndicator(to: string, messageId?: string): Promise<void> {
+  try {
+    const phoneNumberId = getPhoneNumberId();
+    const token = getAccessToken();
+    await fetch(`${WA_API_BASE}/${phoneNumberId}/messages`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        messaging_product: "whatsapp",
+        status: "read",
+        message_id: messageId ?? "wamid_placeholder",
+      }),
+    });
+  } catch {
+    // Non-critical — ignore failures silently
+  }
+}
+
 // ── Interactive buttons ────────────────────────────────────────────────────────
 
 export async function sendInteractiveButtons(

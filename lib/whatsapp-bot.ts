@@ -17,6 +17,7 @@ import {
   sendImageMessage,
   sendListMessage,
   sendCTAButton,
+  sendTypingIndicator,
   generateOTP,
   formatKES,
   normalizePhone,
@@ -706,6 +707,20 @@ async function handleGeminiQuestion(waId: string, question: string, userId: stri
       // Show remaining prompts
       const remaining = FREE_AI_LIMIT - aiQueriesCount;
       await sendWhatsAppMessage(waId, `🧠 *Sentill Africa* is thinking... _(${remaining} free question${remaining !== 1 ? "s" : ""} left today)_`);
+
+      // Mid-session nudge at 5th question — soft conversion touch
+      if (aiQueriesCount === 4) {
+        sendWhatsAppMessage(waId,
+          `⚡ *You're on a roll, ${user?.name?.split(" ")[0] ?? "Investor"}!*\n` +
+          `You've asked 5 smart questions today.\n\n` +
+          `🔓 *Sentill Pro* gives you:\n` +
+          `• UNLIMITED AI questions (no daily cap)\n` +
+          `• Priority responses with deeper analysis\n` +
+          `• Portfolio tracker + daily market alerts\n\n` +
+          `*KES 490/month \u2248 KES 16/day* \u2014 less than a chai!\n` +
+          `Reply *SUBSCRIBE* to upgrade ⚡`
+        ).catch(() => {}); // Non-blocking
+      }
     } else {
       await sendWhatsAppMessage(waId, "🧠 *Sentill Africa* is thinking...");
     }
