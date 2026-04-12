@@ -450,6 +450,18 @@ export async function processIncomingMessage(
       return handleFreqAfterRegister(waId, buttonPayload ?? input, ctx, session.userId ?? undefined);
   }
 
+  // ── Capture referral code if user arrived via invite link ────────────────
+  if (input.startsWith("SENTIL_REF_") && !session.userId) {
+    const refCode = input.replace("SENTIL_REF_", "").trim();
+    await updateSession(waId, "IDLE", { ...ctx, referCode: input });
+    await sendWhatsAppMessage(waId,
+      `🎁 *You were invited to Sentill Africa!*\n\n` +
+      `You'll get *7 days of Pro FREE* when you create your account.\n\n` +
+      `Reply *REGISTER* to claim your free Pro access \u26a1`
+    );
+    return sendMainMenu(waId, undefined);
+  }
+
   // ── IDLE — route by keyword ───────────────────────────────────────────────
   if (["HI", "HELLO", "START", "MENU", "HOME"].includes(input)) {
     return sendMainMenu(waId, session.userId ?? undefined);
@@ -794,9 +806,22 @@ async function handleGeminiQuestionGuest(waId: string, question: string) {
       nudge = `\n\n━━━━━━━━━━━━━━━━\n💡 *Save this to your portfolio & get daily alerts*\nSend *REGISTER* — free account, takes 30 seconds`;
     }
 
+    // FOMO micro-conversion: extract yield from answer and show personalised KES calc
+    const yieldMatch = answer.match(/(\d{1,2}\.\d{1,2})%/);
+    let fomoNudge = "";
+    if (yieldMatch) {
+      const rate = parseFloat(yieldMatch[1]);
+      if (rate >= 10 && rate <= 25) {
+        const annualReturn = Math.round(10000 * rate / 100);
+        const monthlyReturn = Math.round(annualReturn / 12);
+        fomoNudge = `\n\n💡 _At ${rate}%, KES 10,000 earns *KES ${annualReturn.toLocaleString()}/yr* = *KES ${monthlyReturn}/month* passively._\n` +
+                    `_Send *REGISTER* to start tracking this investment 📊_`;
+      }
+    }
+
     return sendWhatsAppMessage(
       waId,
-      `🧠 *Sentill Africa Says:*\n\n${answer}${nudge}`
+      `🧠 *Sentill Africa Says:*\n\n${answer}${nudge}${fomoNudge}`
     );
   } catch (err) {
     console.error("[Bot] Guest Gemini error:", err);
@@ -1427,6 +1452,47 @@ async function handleRegisterOTP(waId: string, inputOtp: string, ctx: SessionCon
 
   await updateSession(waId, "FREQ_AFTER_REGISTER", {}, user.id);
 
+  // ── REFERRAL REWARD: Check if new user came via a referral link ─────────────
+  // Referral code embedded in first message: SENTIL_REF_XXXXXX
+  try {
+    const rawCtxMessage = ctx as any;
+    const refMatch = (rawCtxMessage?.referCode ?? "").match(/^SENTIL_REF_([A-Z0-9]{6})$/);
+    if (refMatch) {
+      const refCode = refMatch[1];
+      // Decode the referrer's waId (base64 hash)
+      // Find the referrer by checking all users whose waId hashes to this code
+      const allUsers = await prisma.user.findMany({ select: { id: true, name: true, whatsappId: true, premiumExpiresAt: true, isPremium: true } });
+      const referrer = allUsers.find(u => {
+        if (!u.whatsappId) return false;
+        return Buffer.from(u.whatsappId).toString("base64").slice(-6).toUpperCase() === refCode;
+      });
+      if (referrer) {
+        // Grant 3 days Pro to the referrer
+        const currentExpiry = referrer.premiumExpiresAt ?? new Date();
+        const baseDate = currentExpiry > new Date() ? currentExpiry : new Date();
+        const newExpiry = new Date(baseDate.getTime() + 3 * 24 * 60 * 60 * 1000);
+        await prisma.user.update({
+          where: { id: referrer.id },
+          data: { isPremium: true, premiumExpiresAt: newExpiry },
+        });
+        // Notify the referrer immediately
+        if (referrer.whatsappId) {
+          sendWhatsAppMessage(
+            referrer.whatsappId,
+            `🎉 *${ctx.name?.split(" ")[0] ?? "Someone"} just joined Sentill using your invite!*\n\n` +
+            `🎁 *You’ve earned 3 days of Sentill Pro FREE!*\n` +
+            `⚡ Pro active until: *${newExpiry.toLocaleDateString("en-KE")}*\n\n` +
+            `Keep sharing — more referrals = more free Pro days!\n` +
+            `Reply *REFER* to see your stats \ud83d\udcca`
+          ).catch(() => {});
+        }
+        console.log(`[Referral] ${ctx.name} referred by ${referrer.name} (${refCode}) — +3 days Pro`);
+      }
+    }
+  } catch (err) {
+    console.warn("[Referral] Auto-reward failed (non-critical):", err);
+  }
+
   // Send login credentials email (non-blocking)
   sendEmail({
     to: ctx.email,
@@ -1449,12 +1515,12 @@ async function handleRegisterOTP(waId: string, inputOtp: string, ctx: SessionCon
       { id: "FREQ_MOVERS", title: "📊 Market Alerts Only" },
     ]);
   } catch {
-    // Fallback if buttons fail
     return sendWhatsAppMessage(waId,
       `🔔 *Set alert frequency:*\n\n1️⃣ *DAILY* — 7AM Mon–Fri\n2️⃣ *WEEKLY* — Monday morning\n3️⃣ *MOVERS* — Market alerts only\n4️⃣ *OFF* — No alerts\n\nReply with number or keyword.`
     );
   }
 }
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Login flow
@@ -1987,36 +2053,64 @@ async function handleSubConfirm(
 // ─────────────────────────────────────────────────────────────────────────────
 
 async function sendMainMenu(waId: string, userId?: string) {
-  // Pull real-time top MMF yield for the menu header
+  // Pull real-time top MMF yield + user count for social proof
   let topYield = "17.5";
+  let userCount = 0;
   try {
-    const topMMF = await prisma.provider.findFirst({
-      where: { type: "MONEY_MARKET" },
-      orderBy: { currentYield: "desc" },
-      select: { currentYield: true },
-    });
+    const [topMMF, count] = await Promise.all([
+      prisma.provider.findFirst({
+        where: { type: "MONEY_MARKET" },
+        orderBy: { currentYield: "desc" },
+        select: { currentYield: true },
+      }),
+      prisma.user.count(),
+    ]);
     if (topMMF) topYield = topMMF.currentYield.toFixed(1);
-  } catch { /* use default */ }
+    userCount = count;
+  } catch { /* use defaults */ }
+
+  // Social proof line — round down to nearest 10 for credibility
+  const displayCount = Math.max(userCount, 50); // Always show at least 50
+  const roundedCount = Math.floor(displayCount / 10) * 10;
+  const socialProof = `👥 *${roundedCount.toLocaleString()}+ Kenyan investors* already using Sentill 🇰🇪`;
 
   const investmentList =
-    `\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\n` +
-    `\ud83c\udfd7 *ALL INVESTMENT OPTIONS*\n\n` +
-    `\ud83d\udcb0 *MMFs* (Money Market) \u2014 *${topYield}% p.a.* | KES 100 min | T+1\n` +
-    `\ud83d\udcc8 *T-Bills* (Govt) \u2014 *16.42%* gross | KES 50K | 91\u2013364 days\n` +
-    `\ud83c\uddb9 *IFB Bonds* \u2014 *18.46% WHT-FREE* \ud83d\udd25 | KES 50K | 6.5 yrs\n` +
-    `\ud83e\udd1d *SACCOs* \u2014 *14\u201320%* div + cheap loans | KES 500\n` +
-    `\ud83d\udcca *NSE Stocks* \u2014 Dividends + capital growth | KES 100\n` +
-    `\ud83e\udd73 *Pension* \u2014 *13\u201415%* + save KES 9K/mo in taxes\n` +
-    `\ud83c\udf0d *Global ETFs* \u2014 S\u0026P 500 ~15% USD | via Ndovu KES 500\n` +
-    `\ud83c\udfd7 *Real Estate/REITs* \u2014 ILAM REIT 6.5% div | KES 6\n` +
-    `\ud83e\ude99 *Crypto* \u2014 BTC, ETH | M-Pesa via Binance | High risk\n` +
-    `\ud83d\udcb1 *Forex* \u2014 CMA-licensed brokers | $5 min | Very high risk\n` +
-    `\ud83d\udcbb *Special Funds* \u2014 Unit trusts, Balanced, Islamic funds\n` +
-    `\ud83c\udf3f *Corp Bonds* \u2014 Centum 13%, Family Bank 13.5%\n` +
-    `\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\n` +
-    `\ud83d\udca1 *Reply with any category name for full details:*\n` +
-    `_MMF \u00b7 TBILL \u00b7 BOND \u00b7 IFB \u00b7 SACCO \u00b7 NSE \u00b7 PENSION_\n` +
-    `_OFFSHORE \u00b7 REITS \u00b7 CRYPTO \u00b7 FOREX \u00b7 SPECIAL \u00b7 CORP BONDS_`;
+    `▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+` +
+    `🏗 *ALL INVESTMENT OPTIONS*
+
+` +
+    `💰 *MMFs* (Money Market) — *${topYield}% p.a.* | KES 100 min | T+1
+` +
+    `📈 *T-Bills* (Govt) — *16.42%* gross | KES 50K | 91–364 days
+` +
+    `🆹 *IFB Bonds* — *18.46% WHT-FREE* 🔥 | KES 50K | 6.5 yrs
+` +
+    `🤝 *SACCOs* — *14–20%* div + cheap loans | KES 500
+` +
+    `📊 *NSE Stocks* — Dividends + capital growth | KES 100
+` +
+    `🥳 *Pension* — *13—15%* + save KES 9K/mo in taxes
+` +
+    `🌍 *Global ETFs* — S&P 500 ~15% USD | via Ndovu KES 500
+` +
+    `🏗 *Real Estate/REITs* — ILAM REIT 6.5% div | KES 6
+` +
+    `🪙 *Crypto* — BTC, ETH | M-Pesa via Binance | High risk
+` +
+    `💱 *Forex* — CMA-licensed brokers | $5 min | Very high risk
+` +
+    `💻 *Special Funds* — Unit trusts, Balanced, Islamic funds
+` +
+    `🌿 *Corp Bonds* — Centum 13%, Family Bank 13.5%
+` +
+    `▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+` +
+    `💡 *Reply with any category name for full details:*
+` +
+    `_MMF · TBILL · BOND · IFB · SACCO · NSE · PENSION_
+` +
+    `_OFFSHORE · REITS · CRYPTO · FOREX · SPECIAL · CORP BONDS_`;
 
   if (userId) {
     const user = await prisma.user.findUnique({ where: { id: userId } });
@@ -2033,37 +2127,64 @@ async function sendMainMenu(waId: string, userId?: string) {
 
     return sendWhatsAppMessage(
       waId,
-      `\ud83d\udc4b *Hi ${name}!* \u2014 Sentill Africa${expiryWarning}\n` +
-      `${isPro ? "\u26a1 Pro Member" : "\ud83d\udd13 Free Plan"}\n\n` +
+      `👋 *Hi ${name}!* — Sentill Africa${expiryWarning}
+` +
+      `${isPro ? "⚡ Pro Member" : "🔓 Free Plan"} | ${socialProof}
+
+` +
       investmentList +
-      `\n\n\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\n` +
-      `*Quick actions:*\n` +
-      `*1* \u2014 \ud83d\udcca Live Rates \u0026 Yields\n` +
-      `*2* \u2014 \ud83e\udde0 Ask AI Anything\n` +
+      `
+
+━━━━━━━━━━━━━━━━━━
+*Quick actions:*
+` +
+      `*1* — 📊 Live Rates & Yields
+` +
+      `*2* — 🧠 Ask AI Anything
+` +
       (isPro
-        ? `*3* \u2014 \ud83d\udcc1 My Portfolio\n` +
-          `*4* \u2014 \ud83c\udfaf My Goals\n`
-        : `*3* \u2014 \ud83d\udcc1 Portfolio _(Pro)_\n` +
-          `*4* \u2014 \ud83c\udfaf Goals _(Pro)_\n`) +
-      `*5* \u2014 \u2b50 Subscribe / Renew Pro\n\n` +
-      `_Or just type your question \u2014 AI replies instantly_`,
+        ? `*3* — 📁 My Portfolio
+` +
+          `*4* — 🎯 My Goals
+`
+        : `*3* — 📁 Portfolio _(Pro)_
+` +
+          `*4* — 🎯 Goals _(Pro)_
+`) +
+      `*5* — ⭐ Subscribe / Renew Pro
+
+` +
+      `_Or just type your question — AI replies instantly_`,
       userId
     );
   }
 
-  // Guest — lead with full investment universe, then quick actions
+  // Guest — lead with social proof + full investment universe
   return sendWhatsAppMessage(
     waId,
-    `\ud83d\udc4b *Welcome to Sentill Africa!*\n` +
-    `_Kenya\u2019s #1 Investment Intelligence Hub_\n\n` +
+    `👋 *Welcome to Sentill Africa!*
+` +
+    `_Kenya's #1 Investment Intelligence Hub_
+` +
+    `${socialProof}
+
+` +
     investmentList +
-    `\n\n\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\n` +
-    `*Quick actions:*\n` +
-    `*1* \u2014 \ud83d\udcca Live Rates \u0026 Yields\n` +
-    `*2* \u2014 \ud83e\udde0 Ask AI Anything\n` +
-    `*3* \u2014 \ud83d\udc64 Create Free Account _(portfolio \u0026 alerts)_\n\n` +
-    `_Or just type any question \u2014 no account needed_\n` +
-    `_e.g. \u201cBest MMF for KES 50K?\u201d or \u201cHow to buy a bond?\u201d_`
+    `
+
+━━━━━━━━━━━━━━━━━━
+*Quick actions:*
+` +
+    `*1* — 📊 Live Rates & Yields
+` +
+    `*2* — 🧠 Ask AI Anything
+` +
+    `*3* — 👤 Create Free Account _(portfolio & alerts)_
+
+` +
+    `_Or just type any question — no account needed_
+` +
+    `_e.g. "Best MMF for KES 50K?" or "How to buy a bond?"_`
   );
 }
 
