@@ -8,6 +8,13 @@ import crypto from "crypto";
 import { prisma } from "./prisma";
 
 const WA_API_BASE = "https://graph.facebook.com/v19.0";
+const WA_TIMEOUT_MS = 10000;
+
+function waFetch(url: string, init: RequestInit): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), WA_TIMEOUT_MS);
+  return fetch(url, { ...init, signal: controller.signal }).finally(() => clearTimeout(timer));
+}
 
 function getPhoneNumberId(): string {
   const id = process.env.WHATSAPP_PHONE_NUMBER_ID;
@@ -39,7 +46,7 @@ export async function sendWhatsAppMessage(
     text: { preview_url: false, body: text },
   };
 
-  const res = await fetch(`${WA_API_BASE}/${phoneNumberId}/messages`, {
+  const res = await waFetch(`${WA_API_BASE}/${phoneNumberId}/messages`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -74,7 +81,7 @@ export async function sendTypingIndicator(to: string, messageId?: string): Promi
   try {
     const phoneNumberId = getPhoneNumberId();
     const token = getAccessToken();
-    await fetch(`${WA_API_BASE}/${phoneNumberId}/messages`, {
+    await waFetch(`${WA_API_BASE}/${phoneNumberId}/messages`, {
       method: "POST",
       headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
       body: JSON.stringify({

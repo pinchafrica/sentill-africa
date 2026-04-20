@@ -145,7 +145,7 @@ Rules:
   const defaultRates = [
     { symbol: "Zidi MMF", price: 18.2 },
     { symbol: "91-Day T-Bill", price: 15.78 },
-    { symbol: "IFB1/2024 Bond", price: 18.5 },
+    { symbol: "IFB1/2024 Bond", price: 18.46 },
     { symbol: "CIC MMF", price: 13.6 },
   ];
   const displayRates = market.allRates.length >= 3 ? market.allRates.slice(0, 4) : defaultRates;
@@ -254,7 +254,7 @@ One sentence. Start with an emoji. Be specific and actionable. WhatsApp plain te
     `📊 *LIVE YIELD SNAPSHOT*\n\n` +
     `🏆 *Highest MMF:* ${market.topMMF?.symbol ?? "Zidi MMF"} @ *${(market.topMMF?.yield ?? 18.2).toFixed(2)}%*\n` +
     `🏦 *91-Day T-Bill:* *${market.tBill91.toFixed(2)}%* _(CBK auction)_\n` +
-    `🏛️ *IFB1/2024:* *18.5%* _(tax-free)_\n\n` +
+    `🏛️ *IFB1/2024:* *18.46%* _(tax-free)_\n\n` +
     (portfolio.totalInvested > 0
       ? `💼 *Your portfolio:* ${formatKES(portfolio.totalInvested)} @ *${portfolio.avgYield.toFixed(1)}%*\n`
         + `📅 *Running annual:* ~${formatKES(Math.round(portfolio.projectedAnnual))}\n\n`
@@ -300,7 +300,7 @@ Give ONE specific action to do tomorrow morning (2 sentences max). Start with �
     `📊 *TODAY'S MARKET CLOSE*\n\n` +
     `🏆 *Best yield available:* *${(market.topMMF?.yield ?? 18.2).toFixed(2)}%* (${market.topMMF?.symbol ?? "Zidi MMF"})\n` +
     `🏦 *T-Bill opportunity:* *${market.tBill91.toFixed(2)}%* avg\n` +
-    `🏛️ *IFB1 Bond:* *18.5% net* _(WHT exempt)_\n\n` +
+    `🏛️ *IFB1 Bond:* *18.46% net* _(WHT exempt)_\n\n` +
     (portfolio.totalInvested > 0
       ? `━━━━━━━━━━━━━━━━━━\n` +
         `💼 *YOUR DAY IN NUMBERS*\n\n` +
@@ -341,7 +341,7 @@ Write a weekly investment intelligence brief for a Kenyan investor named ${first
 ${portfolio.totalInvested > 0
     ? `Their portfolio: KES ${portfolio.totalInvested.toLocaleString()} across ${portfolio.topProviders.map((p: any) => p.name).join(", ")} with ${portfolio.avgYield.toFixed(1)}% blended yield.`
     : "No portfolio tracked."}
-Current market: ${market.topMMF?.symbol} at ${market.topMMF?.yield}%, 91-Day T-Bill at ${market.tBill91}%, IFB1/2024 at 18.5% tax-free.
+Current market: ${market.topMMF?.symbol} at ${market.topMMF?.yield}%, 91-Day T-Bill at ${market.tBill91}%, IFB1/2024 at 18.46% tax-free.
 
 Write 3 distinct weekly insights:
 1. 📈 ONE trend happening this week in Kenya's capital markets
@@ -356,9 +356,9 @@ Each point = 2 sentences. WhatsApp plain text only. No bullet points — use lin
 
   // Full market league table
   const defaultLeague = [
-    { symbol: "IFB1/2024 Bond", price: 18.5, note: "tax-free" },
+    { symbol: "IFB1/2024 Bond", price: 18.46, note: "tax-free" },
     { symbol: "Zidi MMF", price: 18.2, note: "" },
-    { symbol: "Etica Capital MMF", price: 17.5, note: "" },
+    { symbol: "Etica Capital MMF (Zidi)", price: 18.20, note: "" },
     { symbol: "364-Day T-Bill", price: 16.42, note: "CBK" },
     { symbol: "91-Day T-Bill", price: 15.78, note: "CBK" },
     { symbol: "CIC MMF", price: 13.6, note: "" },

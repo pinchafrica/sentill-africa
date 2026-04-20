@@ -4,16 +4,16 @@ import { useState, useMemo } from "react";
 import { Calculator, TrendingUp, ArrowRight } from "lucide-react";
 
 const PRESETS = [
-  { label: "IFB Tax-Free", rate: 18.5 },
-  { label: "91-Day T-Bill", rate: 15.8 },
-  { label: "CIC MMF", rate: 15.9 },
-  { label: "Conservative MMF", rate: 14.0 },
+  { label: "IFB Tax-Free", rate: 18.46 },
+  { label: "Etica (Zidi) MMF", rate: 18.20 },
+  { label: "91-Day T-Bill", rate: 15.78 },
+  { label: "CIC MMF", rate: 13.60 },
 ];
 
 export default function InvestmentGrowthCalculator() {
   const [principal, setPrincipal] = useState(100000);
   const [monthly, setMonthly] = useState(5000);
-  const [rate, setRate] = useState(18.5);
+  const [rate, setRate] = useState(18.46);
   const [years, setYears] = useState(5);
 
   const results = useMemo(() => {

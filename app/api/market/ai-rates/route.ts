@@ -7,7 +7,7 @@ const API_KEY = process.env.GEMINI_API_KEY;
 const AUTHORITATIVE_RATES: Record<string, number> = {
   // Money Market Funds (yields in % p.a.)
   "ZIDI":        18.20,
-  "ETCA":        17.55, // Etica Capital MMF
+  "ETCA":        18.20, // Etica Capital MMF (Zidi app)
   "LOFTY":       17.50, // Lofty-Corpin MMF
   "CYTONN-MMF":  16.90,
   "NCBA-MMF":    16.20,
@@ -46,7 +46,7 @@ const MARKET_CONTEXT = `
 Kenya Investment Market — April 2026:
 - CBK base rate: 10.75% (held steady)
 - Inflation: ~4.9% (KNBS Feb 2026)
-- Top MMF: Zidi at 18.20%, Etica at 17.55%, Lofty at 17.50%
+- Top MMF: Zidi/Etica at 18.20%, Lofty Corpin at 17.50%, Cytonn at 16.90%
 - Best T-Bill: 364-Day at 16.42% (net 13.96% after 15% WHT)
 - Best Bond: IFB1/2024 at 18.46% — WHT exempt (tax-free)
 - USD/KES: 129.50

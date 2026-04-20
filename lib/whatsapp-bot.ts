@@ -22,7 +22,7 @@ import {
   formatKES,
   normalizePhone,
 } from "./whatsapp";
-import { askGeminiBot, generateInvestmentSummary } from "./whatsapp-gemini";
+import { askGeminiBot, generateInvestmentSummary, ADVISOR_ROSTER } from "./whatsapp-gemini";
 import {
   mmfYieldChartUrl,
   tbillYieldCurveUrl,
@@ -278,6 +278,10 @@ interface SessionContext {
   reallocateToId?: string;
   reallocateToName?: string;
   reallocateAmount?: number;
+  // Financial advisor selection
+  advisorId?: string;
+  // Referral
+  referCode?: string;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -551,6 +555,16 @@ export async function processIncomingMessage(
   // ── Authenticated commands ────────────────────────────────────────────────
   const userId = session.userId!;
 
+  // ── Financial Advisor selection ───────────────────────────────────────────
+  if (input === "ADVISOR" || input === "ADVISORS" || input === "TEAM") return handleAdvisorMenu(waId, session);
+  if (input === "ADVISOR RESET" || input === "RESET ADVISOR") {
+    const ctx: SessionContext = session.context ? JSON.parse(session.context as string) : {};
+    delete ctx.advisorId;
+    await updateSession(waId, session.state, ctx, session.userId ?? undefined);
+    return sendWhatsAppMessage(waId, "✅ Advisor reset — you're back with the general *Sentill Africa* AI.\n\nAsk any investment question or reply *ADVISOR* to pick a specialist.");
+  }
+  if (["AMARA", "JABARI", "NADIA", "OMAR"].includes(input)) return handleAdvisorSelect(waId, input.toLowerCase(), session);
+
   if (input === "PORTFOLIO" || input === "P") return handlePortfolio(waId, userId);
   if (input === "MARKETS"   || input === "M" || input === "RATES" || input === "R") return handleMarkets(waId);
   if (input === "GOALS"     || input === "G") return handleGoals(waId, userId);
@@ -692,7 +706,56 @@ export async function processIncomingMessage(
 // Sentill Africa handler
 // ─────────────────────────────────────────────────────────────────────────────
 
+async function handleAdvisorMenu(waId: string, session: Awaited<ReturnType<typeof getOrCreateSession>>) {
+  const ctx: SessionContext = session.context ? JSON.parse(session.context as string) : {};
+  const current = ctx.advisorId ? ADVISOR_ROSTER.find(a => a.id === ctx.advisorId) : null;
+
+  let msg = `👥 *SENTILL AFRICA — YOUR FINANCIAL ADVISORS*\n`;
+  msg += `━━━━━━━━━━━━━━━━━━\n\n`;
+  msg += `Choose your specialist advisor. They will answer all your questions with their unique expertise.\n\n`;
+
+  ADVISOR_ROSTER.forEach((a, i) => {
+    const active = current?.id === a.id ? " ✅ *ACTIVE*" : "";
+    msg += `${["1️⃣","2️⃣","3️⃣","4️⃣"][i]} *${a.name}*${active}\n`;
+    msg += `   ${a.emoji} ${a.title}\n`;
+    msg += `   _"${a.tagline}"_\n\n`;
+  });
+
+  msg += `━━━━━━━━━━━━━━━━━━\n`;
+  msg += `Reply with the advisor's name to select them:\n`;
+  msg += `*AMARA* · *JABARI* · *NADIA* · *OMAR*\n\n`;
+  if (current) {
+    msg += `Current advisor: *${current.name}* ${current.emoji}\n`;
+    msg += `Reply *ADVISOR RESET* to return to the general AI.\n`;
+  }
+
+  return sendWhatsAppMessage(waId, msg);
+}
+
+async function handleAdvisorSelect(waId: string, advisorId: string, session: Awaited<ReturnType<typeof getOrCreateSession>>) {
+  const advisor = ADVISOR_ROSTER.find(a => a.id === advisorId);
+  if (!advisor) return;
+  const ctx: SessionContext = session.context ? JSON.parse(session.context as string) : {};
+  await updateSession(waId, session.state, { ...ctx, advisorId }, session.userId ?? undefined);
+
+  const msg =
+    `${advisor.emoji} *${advisor.name} is now your advisor*\n` +
+    `━━━━━━━━━━━━━━━━━━\n\n` +
+    `*Specialty:* ${advisor.title}\n` +
+    `*Tagline:* _"${advisor.tagline}"_\n\n` +
+    `All your investment questions will now be answered by *${advisor.name}*.\n\n` +
+    `Ask anything — I'm ready. 🚀\n\n` +
+    `_Reply *ADVISOR* to switch advisors or *ADVISOR RESET* to return to the general AI._`;
+
+  return sendWhatsAppMessage(waId, msg);
+}
+
 async function handleGeminiQuestion(waId: string, question: string, userId: string) {
+  // Read the user's selected advisor from their session context
+  const session = await getOrCreateSession(waId);
+  const ctx: SessionContext = session.context ? JSON.parse(session.context as string) : {};
+  const advisorId = ctx.advisorId;
+
   try {
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -741,9 +804,13 @@ async function handleGeminiQuestion(waId: string, question: string, userId: stri
       name: user?.name ?? "Investor",
       userId,
       isPremium: user?.isPremium ?? false,
-    }, waId);
+    }, waId, advisorId);
 
-    return sendWhatsAppMessage(waId, `🧠 *Sentill Africa Says:*\n\n${answer}`);
+    const advisor = advisorId ? ADVISOR_ROSTER.find(a => a.id === advisorId) : null;
+    const header = advisor
+      ? `${advisor.emoji} *${advisor.name} Says:*`
+      : `🧠 *Sentill Africa Says:*`;
+    return sendWhatsAppMessage(waId, `${header}\n\n${answer}`);
   } catch (err) {
     console.error("[Bot] Gemini AI error:", err);
     return sendWhatsAppMessage(
@@ -754,7 +821,7 @@ async function handleGeminiQuestion(waId: string, question: string, userId: stri
       `▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰\n\n` +
       `🏆 *Top Yields Right Now:*\n` +
       `• *IFB Bond* — *18.46%* WHT-free\n` +
-      `• *Etica MMF (Zidi)* — *~17.5%* liquid\n` +
+      `• *Etica MMF (Zidi)* — *18.20%* liquid\n` +
       `• *Lofty Corpin MMF* — *17.50%*\n\n` +
       `📲 *Easiest way to start:*\n` +
       `M-Pesa → Financial Services → *Ziidi* → Invest from KES 100\n\n` +
@@ -1679,7 +1746,7 @@ async function handleMarkets(waId: string) {
 
   // Authoritative April 2026 rates — always shown, never stale
   const MMF_TABLE = [
-    { name: "Etica MMF (Zidi)",       yield: 17.50, min: "KES 100",   note: "Download Zidi App — T+1/T+2 withdrawal" },
+    { name: "Etica MMF (Zidi)",       yield: 18.20, min: "KES 100",   note: "Download Zidi App — T+1/T+2 withdrawal" },
 
     { name: "Lofty Corpin MMF",       yield: 17.50, min: "KES 1,000", note: "" },
     { name: "Safaricom Ziidi",        yield: 16.80, min: "KES 100",   note: "via M-Pesa Ziidi menu" },
@@ -1725,7 +1792,7 @@ async function handleMarkets(waId: string) {
   msg += `\n━━━━━━━━━━━━━━━━━━\n`;
   msg += `💡 *ALPHA INSIGHT*\n`;
   msg += `IFB Bond beats T-Bills on net yield AND is WHT-exempt.\n`;
-  msg += `Best liquid option: *Etica (Zidi)* at *~17.5%* (withdraw in 1–2 business days)\n`;
+  msg += `Best liquid option: *Etica (Zidi)* at *18.20%* (withdraw in 1–2 business days)\n`;
 
   msg += `Easiest entry: *Safaricom Ziidi* — invest from M-Pesa with KES 100!\n\n`;
   msg += `📱 *QUICK COMMANDS*\n`;
@@ -2201,6 +2268,7 @@ async function sendHelp(waId: string) {
     `• *LEADERBOARD* — best yields ranked\n\n` +
     `*2️⃣ GET AI ADVICE*\n` +
     `• Just *type any question* — e.g. _best MMF for KES 50K?_\n` +
+    `• *ADVISOR* — pick your specialist: Amara 🏦 · Jabari 📈 · Nadia 💰 · Omar 🌍\n` +
     `• *COMPARE CIC vs Sanlam* — side-by-side analysis\n` +
     `• *TIPS* — get today's investment tip\n` +
     `• *CALC 50000* — quick return projections\n\n` +
@@ -2427,7 +2495,7 @@ async function handleAssetsDashboard(waId: string, userId: string) {
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user?.isPremium) {
     return sendWhatsAppMessage(waId,
-      `📊 *Asset Tracker Pro*\n\nFull asset management is a *Pro feature*.\n\n⚡ Send *SUBSCRIBE* to upgrade — starting at *KES 99*.`
+      `📊 *Asset Tracker Pro*\n\nFull asset management is a *Sentill Pro* feature.\n\n⚡ *KES 490/month* — less than KES 16/day.\nSend *SUBSCRIBE* to unlock unlimited assets + AI advisor.`
     );
   }
 
@@ -3027,7 +3095,7 @@ async function handleTableCommand(waId: string, userId?: string) {
   msg += `┌─────────────────────────────┐\n`;
   msg += `│ # │ Fund          │  Yield  │\n`;
   msg += `├─────────────────────────────┤\n`;
-  msg += `│ 1 │ Etica (Zidi)  │ *~17.5%*│\n`;
+  msg += `│ 1 │ Etica (Zidi)  │ *18.20%*│\n`;
 
   msg += `│ 2 │ Lofty Corpin  │ *16.80%*│\n`;
   msg += `│ 3 │ Kuza MMF      │ *16.50%*│\n`;
@@ -3090,7 +3158,7 @@ async function handleMMFListMenu(waId: string, userId?: string) {
       {
         title: "🏆 Highest Yield Funds",
         rows: [
-          { id: "CAT_MONEY_MARKET", title: "Etica MMF (Zidi)", description: "~17.5% p.a. · Min KES 100 · Download Zidi App" },
+          { id: "CAT_MONEY_MARKET", title: "Etica MMF (Zidi)", description: "18.20% p.a. · Min KES 100 · Download Zidi App" },
 
           { id: "CAT_MONEY_MARKET", title: "Lofty Corpin MMF",  description: "16.80% p.a. · Min KES 1,000" },
           { id: "CAT_MONEY_MARKET", title: "Kuza MMF",          description: "16.50% p.a. · Min KES 1,000" },

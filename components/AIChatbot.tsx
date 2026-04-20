@@ -28,7 +28,7 @@ export default function AIChatbot() {
     setTimeout(() => {
       const aiMsg = { 
         role: "ai", 
-        text: "Analyzing market data... Under currently regulated CMA protocols, that fund shows a 17.5% gross yield. Would you like to view the full factsheet?" 
+        text: "Analyzing market data... Under currently regulated CMA protocols, Etica MMF (Zidi) shows an 18.20% gross yield — Kenya's highest. Would you like to view the full factsheet?"
       };
       setMessages(prev => [...prev, aiMsg]);
     }, 1000);

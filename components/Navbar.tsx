@@ -437,7 +437,7 @@ export default function Navbar() {
                         <span className="text-[9px] font-black uppercase tracking-widest text-amber-600 bg-amber-100/50 px-2 py-0.5 rounded">Yield Update</span>
                         <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">1h ago</span>
                       </div>
-                      <p className="text-[10px] font-medium text-slate-700 leading-relaxed">91-Day T-Bill yield rose to 15.82%. Consider shifting short-term capital.</p>
+                      <p className="text-[10px] font-medium text-slate-700 leading-relaxed">91-Day T-Bill: 15.78%. IFB1/2024 Bond at 18.46% tax-free — best risk-adjusted rate in Kenya.</p>
                     </div>
                   </div>
                   <button className="w-full mt-3 py-3 text-[9px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-900 transition-colors">

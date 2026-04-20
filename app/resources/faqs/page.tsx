@@ -21,7 +21,7 @@ const faqCategories = [
       },
       {
         q: "Is Sentill Africa free to use?",
-        a: "Yes. The core Sentill platform — including provider directories, yield comparisons, and market intelligence — is 100% free. Our Pro tier unlocks AI projections, yield alerts, and advanced portfolio modelling at KES 999/month."
+        a: "Yes. The core Sentill platform — including provider directories, yield comparisons, and market intelligence — is 100% free. Our Pro tier unlocks AI projections, yield alerts, and advanced portfolio modelling at KES 490/month — less than KES 16/day."
       },
       {
         q: "How do I report a provider that is unlicensed or acting fraudulently?",

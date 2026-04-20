@@ -7,7 +7,7 @@ export default function LoanVsInvestCalculator() {
   const [loanAmount, setLoanAmount] = useState(500000);
   const [loanRate, setLoanRate] = useState(14.0);
   const [loanTerm, setLoanTerm] = useState(36);
-  const [investRate, setInvestRate] = useState(17.5);
+  const [investRate, setInvestRate] = useState(18.20);
   const [extraCash, setExtraCash] = useState(50000);
 
   const results = useMemo(() => {
