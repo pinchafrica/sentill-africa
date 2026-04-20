@@ -11,8 +11,10 @@ export async function GET() {
     }
 
     // Fetch live premium status + expiry from DB
+    // Dev bypass uses email as the session id, so try both lookups
+    const isEmail = session.id.includes("@");
     const user = await prisma.user.findUnique({
-      where: { id: session.id },
+      where: isEmail ? { email: session.id } : { id: session.id },
       select: { id: true, name: true, email: true, role: true, isPremium: true, premiumExpiresAt: true, createdAt: true }
     });
 

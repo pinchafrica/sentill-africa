@@ -28,7 +28,7 @@ export async function POST(req: Request) {
     // but better to just hash everything in seed.
     const isMatch = await bcrypt.compare(password, user.password);
 
-    if (!isMatch && user.password !== password) { // Fallback for plain text during dev transition
+    if (!isMatch) {
        return NextResponse.json({ error: "Invalid email or password." }, { status: 401 });
     }
 

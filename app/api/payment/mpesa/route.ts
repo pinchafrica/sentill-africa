@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY || "sk_live_2556e89c8307a374a20aa29a17e9b7acfba3bb1e";
+const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
+if (!PAYSTACK_SECRET_KEY) throw new Error("PAYSTACK_SECRET_KEY is not set in environment variables");
 
 export async function POST(req: NextRequest) {
   try {

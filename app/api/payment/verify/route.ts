@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-// MUST use the same key as mpesa/route.ts - hardcoded fallback ensures it always works
-const PAYSTACK_SECRET = process.env.PAYSTACK_SECRET_KEY || "sk_live_2556e89c8307a374a20aa29a17e9b7acfba3bb1e";
+const PAYSTACK_SECRET = process.env.PAYSTACK_SECRET_KEY;
+if (!PAYSTACK_SECRET) throw new Error("PAYSTACK_SECRET_KEY is not set in environment variables");
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);

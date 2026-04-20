@@ -68,7 +68,7 @@ export function buildWelcomeEmail(name: string): string {
         GO TO MY DASHBOARD →
       </a>
     </div>
-    <p style="color:#94a3b8;font-size:12px;text-align:center;margin:0">© 2025 Sentill Africa · <a href="https://sentill.africa" style="color:#3b82f6">sentill.africa</a> · You received this because you created an account.</p>
+    <p style="color:#94a3b8;font-size:12px;text-align:center;margin:0">© 2026 Sentill Africa · <a href="https://sentill.africa" style="color:#3b82f6">sentill.africa</a> · You received this because you created an account.</p>
   </div>
 </body>
 </html>`;
@@ -189,7 +189,7 @@ export function buildLoginCredentialsEmail(name: string, email: string, password
         </div>
       </div>
     </div>
-    <p style="color:#94a3b8;font-size:11px;text-align:center;margin:0">© 2025 Sentill Africa · <a href="https://www.sentill.africa" style="color:#10b981;font-weight:700">www.sentill.africa</a> · Need help? WhatsApp us at +254 703 469 525</p>
+    <p style="color:#94a3b8;font-size:11px;text-align:center;margin:0">© 2026 Sentill Africa · <a href="https://www.sentill.africa" style="color:#10b981;font-weight:700">www.sentill.africa</a> · Need help? WhatsApp us at +254 703 469 525</p>
   </div>
 </body>
 </html>`;

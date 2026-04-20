@@ -9,18 +9,15 @@ const JWT_SECRET = new TextEncoder().encode(secret);
 
 // ── DEV BYPASS ────────────────────────────────────────────────────────────────
 // On localhost (NODE_ENV=development) skip JWT verification entirely.
-// Returns a hardcoded admin session so you can work without logging in.
+// Looks up the admin user from DB by email so session route can find them.
 // In production this block is completely ignored.
-const DEV_SESSION = {
-  id: "edwinmule-admin",
-  email: "edwinmule@gmail.com",
-  role: "ADMIN",
-};
+const DEV_EMAIL = "edwinmule@gmail.com";
 
 export async function getSession() {
   // Auto-login in development — no cookie required
   if (process.env.NODE_ENV === "development") {
-    return DEV_SESSION;
+    // Return a static session — the session route will look up the real user from DB
+    return { id: DEV_EMAIL, email: DEV_EMAIL, role: "ADMIN" };
   }
 
   try {

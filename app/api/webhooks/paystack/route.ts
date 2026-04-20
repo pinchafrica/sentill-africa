@@ -9,9 +9,11 @@ import crypto from "crypto";
 import { prisma } from "@/lib/prisma";
 import { sendWhatsAppMessage } from "@/lib/whatsapp";
 
-const PAYSTACK_SECRET =
-  process.env.PAYSTACK_SECRET_KEY ||
-  "sk_live_2556e89c8307a374a20aa29a17e9b7acfba3bb1e";
+function getPaystackSecret(): string {
+  const key = process.env.PAYSTACK_SECRET_KEY;
+  if (!key) throw new Error("PAYSTACK_SECRET_KEY is not set in environment variables");
+  return key;
+}
 
 export async function POST(req: Request) {
   try {
@@ -24,7 +26,7 @@ export async function POST(req: Request) {
     const bodyText = await req.text();
 
     const expectedSignature = crypto
-      .createHmac("sha512", PAYSTACK_SECRET)
+      .createHmac("sha512", getPaystackSecret())
       .update(bodyText)
       .digest("hex");
 
