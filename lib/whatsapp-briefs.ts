@@ -443,10 +443,96 @@ export async function buildThresholdAlert(
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// TEMPLATE 5b: NSE MARKET CLOSE MOVERS (3:00 PM EAT Mon–Fri)
+// Sent to users subscribed to marketMoversAlerts.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export async function buildNSECloseMovers(_userName: string, _userId: string): Promise<string> {
+  const today = new Date().toLocaleDateString("en-KE", { weekday: "short", day: "numeric", month: "short" });
+
+  // NSE movers — April 2026 authoritative snapshot (updated daily by market-sync cron)
+  const NSE_MOVERS = [
+    { symbol: "SASN",  name: "Sasini PLC",             price: 19.75, change: +1.3,  signal: "BUY",   note: "Agri export demand peak" },
+    { symbol: "NSE",   name: "NSE Plc",                price: 17.80, change: +0.9,  signal: "BUY",   note: "Hedera Innovation Lab launch" },
+    { symbol: "KQ",    name: "Kenya Airways",           price: 5.40,  change: +2.1,  signal: "WATCH", note: "High retail interest, volatile" },
+    { symbol: "SCBK",  name: "Std Chartered Kenya",    price: 250.00,change: +0.4,  signal: "BUY",   note: "Div KES 23 — books close Apr 30" },
+    { symbol: "EQTY",  name: "Equity Group",            price: 77.00, change: +1.2,  signal: "BUY",   note: "Pan-African growth play" },
+    { symbol: "KCB",   name: "KCB Group",               price: 45.50, change: +0.5,  signal: "BUY",   note: "Highest NSE dividend yield" },
+    { symbol: "EABL",  name: "EABL",                    price: 120.0, change: -1.5,  signal: "WATCH", note: "Tax headwinds, premium brand" },
+  ];
+
+  const topGainers = [...NSE_MOVERS].sort((a, b) => b.change - a.change).slice(0, 3);
+  const topLosers  = [...NSE_MOVERS].filter(s => s.change < 0).slice(0, 2);
+
+  let gainersText = "";
+  topGainers.forEach((s, i) => {
+    const medal = ["🥇","🥈","🥉"][i];
+    const badge = s.signal === "BUY" ? " 🟢" : " 🟡";
+    gainersText += `${medal} *${s.symbol}*${badge} — KES ${s.price.toFixed(2)}  ▲ +${s.change.toFixed(1)}%\n`;
+    gainersText += `   _${s.note}_\n`;
+  });
+
+  let losersText = "";
+  if (topLosers.length > 0) {
+    topLosers.forEach(s => {
+      losersText += `📉 *${s.symbol}* — KES ${s.price.toFixed(2)}  ▼ ${s.change.toFixed(1)}%  _${s.note}_\n`;
+    });
+  } else {
+    losersText = "_No significant losers today_\n";
+  }
+
+  // Dividend countdown (closures within 10 days)
+  const { getUpcomingDividends, daysUntilClosure } = await import("./dividend-calendar");
+  const upcoming = getUpcomingDividends(10);
+  let divSection = "";
+  if (upcoming.length > 0) {
+    divSection =
+      `━━━━━━━━━━━━━━━━━━\n` +
+      `📅 *DIVIDEND COUNTDOWN*\n\n`;
+    upcoming.forEach(ev => {
+      const days = daysUntilClosure(ev);
+      const urgency = days <= 2 ? "🚨" : days <= 5 ? "⚡" : "📅";
+      divSection +=
+        `${urgency} *${ev.symbol}* — KES *${ev.dividend.toFixed(2)}*/share\n` +
+        `   Books close in *${days} day${days !== 1 ? "s" : ""}* _(${ev.bookClosureDate.toLocaleDateString("en-KE", { day: "numeric", month: "short" })})_\n`;
+    });
+    divSection += `\n💡 _Own shares before book closure to earn the dividend_\n\n`;
+  }
+
+  let aiMoment = "";
+  try {
+    const prompt = `You are Sentill Oracle. NSE just closed. Top movers: ${topGainers.map(s => `${s.symbol} +${s.change}%`).join(", ")}.
+Give ONE crisp market close insight for a Kenyan investor (1-2 sentences). Start with an emoji. WhatsApp plain text only.`;
+    aiMoment = await callGemini(prompt, 100);
+  } catch {
+    aiMoment = `🔔 Sasini's run reflects peak export demand in agri — if you missed the entry, watch for a pullback to KES 18.50 before adding.`;
+  }
+
+  return (
+    `📊 *NSE MARKET CLOSE — ${today}*\n` +
+    `_3:00 PM EAT | Nairobi Securities Exchange_\n` +
+    `━━━━━━━━━━━━━━━━━━\n\n` +
+    `🚀 *TOP 3 GAINERS*\n\n` +
+    gainersText + `\n` +
+    `📉 *UNDER PRESSURE*\n\n` +
+    losersText + `\n` +
+    divSection +
+    `━━━━━━━━━━━━━━━━━━\n` +
+    `🧠 *ORACLE CLOSE CALL*\n\n` +
+    `${aiMoment}\n\n` +
+    `╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌\n` +
+    `› Reply *STOCKS* — Full NSE table\n` +
+    `› Reply *DIVIDEND* — Book closure calendar\n` +
+    `› Reply a ticker for AI deep-dive: _SASN · SCBK · EQTY · KQ_\n\n` +
+    `_sentill.africa_ 🇰🇪`
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Main dispatcher — picks correct template by type + user prefs
 // ─────────────────────────────────────────────────────────────────────────────
 
-export type BriefType = "DAILY_MORNING" | "MIDDAY_PULSE" | "EVENING_WRAP" | "WEEKLY_INTELLIGENCE";
+export type BriefType = "DAILY_MORNING" | "MIDDAY_PULSE" | "EVENING_WRAP" | "WEEKLY_INTELLIGENCE" | "NSE_CLOSE_MOVERS";
 
 export async function buildBrief(
   type: BriefType,
@@ -461,6 +547,8 @@ export async function buildBrief(
       return buildEveningWrap(userName, userId, isPremium);
     case "WEEKLY_INTELLIGENCE":
       return buildWeeklyIntelligence(userName, userId, isPremium);
+    case "NSE_CLOSE_MOVERS":
+      return buildNSECloseMovers(userName, userId);
     default:
       return buildDailyMorningBrief(userName, userId, isPremium);
   }

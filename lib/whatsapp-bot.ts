@@ -32,6 +32,7 @@ import {
   parseCalcCommand,
 } from "./chart-generator";
 import { sendEmail, buildLoginCredentialsEmail } from "./email";
+import { getAllUpcomingDividends, daysUntilClosure } from "./dividend-calendar";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 
@@ -61,6 +62,10 @@ const NSE_SYMBOLS: Record<string, string> = {
   ARM:   "ARM Cement",
   WTK:   "Williamson Tea",
   TOTL:  "Total Energies Marketing Kenya",
+  SCBK:  "Standard Chartered Bank Kenya",
+  BOC:   "BOC Kenya",
+  NSE:   "Nairobi Securities Exchange",
+  KQ:    "Kenya Airways",
 };
 
 // Hardcoded NSE data (fallback when Yahoo Finance unavailable)
@@ -69,9 +74,14 @@ const NSE_FALLBACK: Record<string, { price: number; change: number; pe: number; 
   EQTY: { price: 77.00, change: +1.2,  pe: 6.8, div: 5.2,  signal: "BUY",   why: "Pan-African expansion, cheap valuation, strong EPS growth." },
   KCB:  { price: 45.50, change: +0.5,  pe: 5.2, div: 6.8,  signal: "BUY",   why: "Highest dividend yield on NSE, trading below book value." },
   COOP: { price: 18.50, change: -0.3,  pe: 6.1, div: 5.5,  signal: "BUY",   why: "Consistent profits, SACCO banking network advantage." },
-  NCBA: { price: 91.25, change: +0.9,  pe: 8.2, div: 4.8,  signal: "HOLD",  why: "Post-merger benefits showing, watch for NIM expansion." },
-  ABSA: { price: 16.50, change: +0.2,  pe: 7.4, div: 5.1,  signal: "HOLD",  why: "Global backing, improving ROE — good for long-term hold." },
+  NCBA: { price: 91.25, change: +0.9,  pe: 8.2, div: 4.8,  signal: "HOLD",  why: "Post-merger benefits showing, watch for NIM expansion. Div books close Apr 30 — KES 4.60/share." },
+  ABSA: { price: 16.50, change: +0.2,  pe: 7.4, div: 11.2, signal: "BUY",   why: "High dividend yield at current price (~11.2%). Books close Apr 30 — KES 1.85/share." },
   EABL: { price: 120.0, change: -1.5,  pe: 18,  div: 3.2,  signal: "WATCH", why: "Premium brand but expensive. Tax pressures on alcohol." },
+  SCBK: { price: 250.0, change: +0.4,  pe: 9.1, div: 9.2,  signal: "BUY",   why: "Massive KES 23/share final dividend — books close Apr 30. One of the highest per-share payouts on NSE." },
+  SASN: { price: 19.75, change: +1.3,  pe: 11,  div: 3.8,  signal: "BUY",   why: "April momentum leader. Agricultural export demand at peak — Sasini is the top agri play right now." },
+  KQ:   { price: 5.40,  change: +2.1,  pe: 0,   div: 0,    signal: "WATCH", why: "High retail interest. Recovery from January lows but still volatile — speculative only." },
+  BOC:  { price: 123.0, change: +0.3,  pe: 12,  div: 8.4,  signal: "BUY",   why: "Industrial gases — KES 10.35/share dividend (books close May 31). Niche but consistent earner." },
+  NSE:  { price: 17.80, change: +0.9,  pe: 14,  div: 5.6,  signal: "BUY",   why: "Momentum play: Hedera/Hashgraph Innovation Lab launch + KES 1.00 dividend. Books close Apr 30." },
 };
 
 async function fetchNSEData(): Promise<any[]> {
@@ -118,7 +128,38 @@ async function handleNSEStocks(waId: string, userId?: string) {
   msg += `_SCOM · EQTY · KCB · COOP · NCBA · EABL_\n\n`;
   msg += `📱 *How to buy NSE stocks:*\n`;
   msg += `Use your mobile broker app or M-Pesa investing platforms\n\n`;
-  msg += `_Send *NSE GUIDE* for the beginner's investing guide_`;
+  msg += `_Send *NSE GUIDE* for the beginner's investing guide_\n`;
+  msg += `_Send *DIVIDEND* for upcoming book closure calendar_`;
+
+  return sendWhatsAppMessage(waId, msg);
+}
+
+async function handleDividendCalendar(waId: string) {
+  const events = getAllUpcomingDividends();
+
+  let msg = `📅 *NSE DIVIDEND CALENDAR — April/May 2026*\n`;
+  msg += `━━━━━━━━━━━━━━━━━━\n\n`;
+  msg += `_Own shares BEFORE book closure date to qualify for the dividend._\n\n`;
+
+  events.forEach(ev => {
+    const days = daysUntilClosure(ev);
+    const urgency = days <= 2 ? "🚨" : days <= 7 ? "⚡" : "📅";
+    const closureStr = ev.bookClosureDate.toLocaleDateString("en-KE", { weekday: "short", day: "numeric", month: "short" });
+    msg += `${urgency} *${ev.symbol}* — ${ev.name}\n`;
+    msg += `   💰 Dividend: *KES ${ev.dividend.toFixed(2)}/share*`;
+    if (ev.dividendYield) msg += ` _(~${ev.dividendYield}% yield)_`;
+    msg += `\n`;
+    msg += `   📅 Book Closure: *${closureStr}* — in *${days} day${days !== 1 ? "s" : ""}*\n`;
+    if (ev.notes) msg += `   💡 _${ev.notes}_\n`;
+    msg += `\n`;
+  });
+
+  msg += `━━━━━━━━━━━━━━━━━━\n`;
+  msg += `📊 *WHAT IS BOOK CLOSURE?*\n\n`;
+  msg += `The cut-off date the company uses to determine who gets paid.\n`;
+  msg += `You must hold shares on or before this date to receive the dividend.\n\n`;
+  msg += `🟢 _Reply *STOCKS* for live NSE prices_\n`;
+  msg += `📈 _Reply ticker symbol (e.g. SCBK) for AI analysis_`;
 
   return sendWhatsAppMessage(waId, msg);
 }
@@ -539,6 +580,7 @@ export async function processIncomingMessage(
     if (input === "SPECIAL") return handleSpecialFunds(waId);
     if (["NSE GUIDE", "STOCKS GUIDE", "HOW TO BUY STOCKS", "BUY STOCKS", "ZIIDI", "ZIIDI GUIDE"].includes(input)) return handleNSEBeginnersGuide(waId);
     if (["STOCKS", "NSE", "SHARES", "NSE LIVE", "EQUITY", "EQUITIES"].includes(input)) return handleNSEStocks(waId, undefined);
+    if (["DIVIDEND", "DIVIDENDS", "DIV", "BOOK CLOSURE", "NSE DIV"].includes(input)) return handleDividendCalendar(waId);
     if (NSE_SYMBOLS[input]) return handleNSEStockLookup(waId, input, undefined);
     if (input.startsWith("CHART") || input.startsWith("GRAPH")) return handleChartCommand(waId, input, undefined);
     if (input === "TABLE" || input === "RANKED") return handleTableCommand(waId, undefined);
@@ -571,6 +613,7 @@ export async function processIncomingMessage(
   if (input === "WATCHLIST" || input === "W") return handleWatchlist(waId, userId);
   if (["NSE GUIDE", "STOCKS GUIDE", "HOW TO BUY STOCKS", "BUY STOCKS", "ZIIDI", "ZIIDI GUIDE"].includes(input)) return handleNSEBeginnersGuide(waId);
   if (["STOCKS", "NSE", "SHARES", "NSE LIVE", "EQUITY", "EQUITIES"].includes(input)) return handleNSEStocks(waId, userId);
+  if (["DIVIDEND", "DIVIDENDS", "DIV", "BOOK CLOSURE", "NSE DIV"].includes(input)) return handleDividendCalendar(waId);
   if (["SPECIAL", "SPECIAL FUNDS", "UNIT TRUST", "UNIT TRUSTS", "DOLLAR FUND", "TRADE"].includes(input)) return handleSpecialFunds(waId);
   // New investment category keywords from the Investment Hub menu
   if (["OFFSHORE", "GLOBAL", "ETF", "ETFS", "GLOBAL ETFS", "USD FUND"].includes(input))

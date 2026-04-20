@@ -24,6 +24,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendWhatsAppMessage } from "@/lib/whatsapp";
 import { buildBrief, BriefType } from "@/lib/whatsapp-briefs";
+import { getUpcomingDividends, formatDividendAlert, daysUntilClosure } from "@/lib/dividend-calendar";
 
 // Pre-warm: sync live market rates before broadcasts go out
 async function refreshMarketRates() {
@@ -47,12 +48,12 @@ const VIP_RECIPIENTS = [
 
 // ── Slot detection ────────────────────────────────────────────────────────────
 
-type Slot = "MORNING" | "MIDDAY" | "EVENING" | "WEEKLY";
+type Slot = "MORNING" | "MIDDAY" | "EVENING" | "WEEKLY" | "NSE_CLOSE";
 
 function detectSlot(req: Request): Slot {
   const url = new URL(req.url);
   const manual = url.searchParams.get("slot")?.toUpperCase() as Slot | undefined;
-  if (manual && ["MORNING", "MIDDAY", "EVENING", "WEEKLY"].includes(manual)) return manual;
+  if (manual && ["MORNING", "MIDDAY", "EVENING", "WEEKLY", "NSE_CLOSE"].includes(manual)) return manual;
 
   const nowUTC = new Date();
   const hourUTC = nowUTC.getUTCHours();
@@ -62,6 +63,7 @@ function detectSlot(req: Request): Slot {
   if (hourUTC === 4 && minuteUTC >= 30 && dayOfWeek === 1) return "WEEKLY";
   if (hourUTC === 4) return "MORNING";
   if (hourUTC === 9) return "MIDDAY";
+  if (hourUTC === 12) return "NSE_CLOSE";
   if (hourUTC === 15) return "EVENING";
 
   return "MORNING";
@@ -69,20 +71,22 @@ function detectSlot(req: Request): Slot {
 
 function shouldReceiveSlot(frequency: string, slot: Slot): boolean {
   switch (slot) {
-    case "MORNING":  return ["DAILY", "TWICE_DAILY", "THREE_DAILY"].includes(frequency);
-    case "MIDDAY":   return frequency === "THREE_DAILY";
-    case "EVENING":  return ["TWICE_DAILY", "THREE_DAILY"].includes(frequency);
-    case "WEEKLY":   return frequency === "WEEKLY";
-    default:         return false;
+    case "MORNING":    return ["DAILY", "TWICE_DAILY", "THREE_DAILY"].includes(frequency);
+    case "MIDDAY":     return frequency === "THREE_DAILY";
+    case "EVENING":    return ["TWICE_DAILY", "THREE_DAILY"].includes(frequency);
+    case "WEEKLY":     return frequency === "WEEKLY";
+    case "NSE_CLOSE":  return ["TWICE_DAILY", "THREE_DAILY"].includes(frequency);
+    default:           return false;
   }
 }
 
 function slotToBriefType(slot: Slot): BriefType {
   switch (slot) {
-    case "MIDDAY":  return "MIDDAY_PULSE";
-    case "EVENING": return "EVENING_WRAP";
-    case "WEEKLY":  return "WEEKLY_INTELLIGENCE";
-    default:        return "DAILY_MORNING";
+    case "MIDDAY":     return "MIDDAY_PULSE";
+    case "EVENING":    return "EVENING_WRAP";
+    case "WEEKLY":     return "WEEKLY_INTELLIGENCE";
+    case "NSE_CLOSE":  return "NSE_CLOSE_MOVERS";
+    default:           return "DAILY_MORNING";
   }
 }
 
@@ -432,7 +436,61 @@ export async function GET(req: Request) {
     }
   }
 
-  console.log(`[Cron] ✅ ${slot} done — briefs:${sent} expiry:${expiryNotified} ifb:${ifbCampaignSent} cross-sell:${crossSellSent} winback:${winbackSent} expired:${autoExpired}`);
+  // ── 10. 📅 Dividend Countdown — alert NSE subscribers 7 days before book closure ──
+  let dividendAlertSent = 0;
+  if (slot === "MORNING") {
+    try {
+      const upcoming = getUpcomingDividends(7);
+      if (upcoming.length > 0) {
+        // Target users who have marketMoversAlerts ON or are TWICE_DAILY/THREE_DAILY
+        const nseSubscribers: any[] = await prisma.$queryRaw`
+          SELECT u.id, u.name, u."whatsappId", u."isPremium"
+          FROM "User" u
+          LEFT JOIN "AlertPreference" a ON a."userId" = u.id
+          WHERE u."whatsappVerified" = true
+            AND u."whatsappId" IS NOT NULL
+            AND (
+              a."marketMoversAlerts" = true
+              OR a.frequency IN ('TWICE_DAILY', 'THREE_DAILY')
+            )
+        `;
+
+        const alertLines = upcoming.map(ev => formatDividendAlert(ev)).join("\n\n");
+        const soonest = upcoming[0];
+        const soonestDays = daysUntilClosure(soonest);
+        const urgencyHeader = soonestDays <= 3 ? "🚨 *URGENT — BOOK CLOSURES THIS WEEK*" : "📅 *DIVIDEND COUNTDOWN ALERT*";
+
+        for (const user of nseSubscribers) {
+          if (!user.whatsappId) continue;
+          const firstName = (user.name as string)?.split(" ")[0] ?? "Investor";
+          try {
+            await sendWhatsAppMessage(
+              user.whatsappId,
+              `${urgencyHeader}\n` +
+              `━━━━━━━━━━━━━━━━━━\n\n` +
+              `Hi *${firstName}* — these NSE stocks close their dividend books soon.\n` +
+              `_You must own shares BEFORE book closure to qualify for the dividend._\n\n` +
+              alertLines + `\n\n` +
+              `━━━━━━━━━━━━━━━━━━\n` +
+              `📱 Reply *DIVIDEND* for the full dividend calendar\n` +
+              `📊 Reply *STOCKS* for live NSE prices\n` +
+              `_sentill.africa_ 🇰🇪`,
+              user.id
+            );
+            dividendAlertSent++;
+            await new Promise(r => setTimeout(r, 1100));
+          } catch (err) {
+            console.error(`[Cron] Dividend alert failed for ${user.name}:`, err);
+          }
+        }
+        console.log(`[Cron] 📅 Dividend alerts: ${dividendAlertSent} sent for ${upcoming.length} upcoming closures`);
+      }
+    } catch (err) {
+      console.error("[Cron] Dividend countdown section failed:", err);
+    }
+  }
+
+  console.log(`[Cron] ✅ ${slot} done — briefs:${sent} expiry:${expiryNotified} ifb:${ifbCampaignSent} cross-sell:${crossSellSent} winback:${winbackSent} dividend:${dividendAlertSent} expired:${autoExpired}`);
 
   return NextResponse.json({
     success: true,
@@ -446,6 +504,7 @@ export async function GET(req: Request) {
     ifbCampaignSent,
     crossSellSent,
     winbackSent,
+    dividendAlertSent,
     authMethod,
     timestamp: new Date().toISOString(),
   });
