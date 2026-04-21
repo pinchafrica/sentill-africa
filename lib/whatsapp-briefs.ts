@@ -50,7 +50,7 @@ async function getMarketData(): Promise<MarketData> {
   const tBill91 = rates.find(r => r.symbol.includes("91"))?.price ?? 15.78;
   const tBill364 = rates.find(r => r.symbol.includes("364"))?.price ?? 16.42;
   const mmfRates = rates.filter(r => r.symbol.toLowerCase().includes("mmf") || r.symbol.includes("ETCA") || r.symbol.includes("CIC") || r.symbol.includes("SNLM"));
-  const topMMF = mmfRates[0] ? { symbol: mmfRates[0].symbol, yield: mmfRates[0].price } : { symbol: "Zidi MMF", yield: 18.2 };
+  const topMMF = mmfRates[0] ? { symbol: mmfRates[0].symbol, yield: mmfRates[0].price } : { symbol: "Etica (Zidi)", yield: 18.20 };
   return { topMMF, tBill91, tBill364, allRates: rates };
 }
 
@@ -80,9 +80,9 @@ async function getPortfolio(userId: string): Promise<Portfolio> {
 
 function gradeYield(y: number): string {
   if (y >= 18) return "🏆 *Exceptional*";
-  if (y >= 16) return "🥇 *Excellent*";
-  if (y >= 14) return "🥈 *Strong*";
-  if (y >= 12) return "🥉 *Competitive*";
+  if (y >= 12) return "🥇 *Excellent*";
+  if (y >= 10) return "🥈 *Strong*";
+  if (y >= 8) return "🥉 *Competitive*";
   return "📊 *Moderate*";
 }
 
@@ -138,15 +138,15 @@ Rules:
 - Sound like a sharp Nairobi fund manager talking to a friend`;
     aiInsight = await callGemini(prompt, 200);
   } catch {
-    aiInsight = `💡 With the 91-Day T-Bill at ${market.tBill91}% and top MMFs crossing 18%, your idle cash in a savings account is losing ground daily. Move it now.`;
+    aiInsight = `💡 With the IFB bond at 18.46% (tax-free) and top MMFs at ${market.topMMF?.yield ?? 12.9}%, your idle savings account cash is losing ground daily. Move it now.`;
   }
 
   // Build market pulse section (top 4 rates)
   const defaultRates = [
-    { symbol: "Zidi MMF", price: 18.2 },
-    { symbol: "91-Day T-Bill", price: 15.78 },
     { symbol: "IFB1/2024 Bond", price: 18.46 },
-    { symbol: "CIC MMF", price: 13.6 },
+    { symbol: "Nabo MMF", price: 12.90 },
+    { symbol: "91-Day T-Bill", price: 7.40 },
+    { symbol: "CIC MMF", price: 6.95 },
   ];
   const displayRates = market.allRates.length >= 3 ? market.allRates.slice(0, 4) : defaultRates;
 
@@ -286,7 +286,7 @@ Top market today: ${market.topMMF?.symbol} at ${market.topMMF?.yield}%, T-Bill a
 Give ONE specific action to do tomorrow morning (2 sentences max). Start with 🌙. WhatsApp plain text.`;
     eveningInsight = await callGemini(prompt, 150);
   } catch {
-    eveningInsight = `🌙 Before the market opens tomorrow — check if your MMF yield has moved. The best rate today is ${market.topMMF?.yield ?? 18.2}% and you should be benchmarking against it monthly.`;
+    eveningInsight = `🌙 Before the market opens tomorrow — check if your MMF yield has moved. The best rate today is ${market.topMMF?.yield ?? 12.9}% and you should be benchmarking against it monthly.`;
   }
 
   // Today's earnings estimate
@@ -357,11 +357,11 @@ Each point = 2 sentences. WhatsApp plain text only. No bullet points — use lin
   // Full market league table
   const defaultLeague = [
     { symbol: "IFB1/2024 Bond", price: 18.46, note: "tax-free" },
-    { symbol: "Zidi MMF", price: 18.2, note: "" },
-    { symbol: "Etica Capital MMF (Zidi)", price: 18.20, note: "" },
-    { symbol: "364-Day T-Bill", price: 16.42, note: "CBK" },
-    { symbol: "91-Day T-Bill", price: 15.78, note: "CBK" },
-    { symbol: "CIC MMF", price: 13.6, note: "" },
+    { symbol: "Nabo MMF", price: 12.90, note: "" },
+    { symbol: "Etica MMF (Zidi)", price: 11.35, note: "" },
+    { symbol: "Cytonn MMF", price: 11.11, note: "" },
+    { symbol: "364-Day T-Bill", price: 7.80, note: "CBK" },
+    { symbol: "91-Day T-Bill", price: 7.40, note: "CBK" },
   ];
   const leagueData = market.allRates.length >= 4 ? market.allRates.slice(0, 6) : defaultLeague;
 

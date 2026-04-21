@@ -70,32 +70,33 @@ const KENYA_MARKET_KNOWLEDGE = `
 ━━ MONEY MARKET FUNDS (MMFs) ━━
 All MMFs are CMA-regulated, T+1 liquidity (withdraw in 1 business day), ideal for liquid savings.
 
-| Fund                         | Yield (p.a.) | Min      | Manager         | Special Note                                        |
-|------------------------------|--------------|----------|-----------------|-----------------------------------------------------|
-| Etica MMF (Zidi)             | 18.20%       | KES 100  | Etica Capital   | Download the "Zidi" app — T+1 to T+2 withdrawal    |
-| Lofty Corpin MMF             | 17.50%       | KES 1000 | Lofty Corpin    | Strong growing boutique fund                        |
-| Safaricom Ziidi              | 16.00-17.0%  | KES 100  | Safaricom/M-Pesa| Access via M-Pesa → Financial Services → Ziidi ★   |
-| Cytonn Money Market Fund     | 16.90%       | KES 1000 | Cytonn          | Large AUM, stable, long track record                |
-| NCBA Money Market Fund       | 16.20%       | KES 1000 | NCBA            | Bank-backed, very low credit risk                   |
-| KCB Money Market Fund        | 15.80%       | KES 1000 | KCB             | Bank-backed, M-Pesa/KCB app integration             |
-| Britam Money Market Fund     | 15.50%       | KES 1000 | Britam          | Insurance-backed, very stable                       |
-| Sanlam Money Market Fund     | 15.10%       | KES 1000 | Sanlam          | Strong institutional management                     |
-| Genghis Capital MMF          | 14.20%       | KES 1000 | Genghis Capital | NSE-linked manager                                  |
-| CIC Money Market Fund        | 13.60%       | KES 1000 | CIC             | Largest AUM in Kenya — most stable                  |
-| Old Mutual Money Market Fund | 13.40%       | KES 1000 | Old Mutual      | Conservative, longest track record                  |
-| ABSA Shilling MMF            | 13.20%       | KES 5000 | ABSA            | Bank-backed, global standards                       |
-| Stanbic MMF                  | 12.80%       | KES 5000 | Stanbic         | Corporate and institutional focus                   |
+⚠️ IMPORTANT: Rates below are VERIFIED April 2026 actuals from CMA fund publications.
+Always show GROSS yield and NET yield (gross × 0.85) when answering.
+
+| Fund                         | Yield (p.a.) | Net (after 15% WHT) | Min      | Manager         | Paybill  | Liquidity |
+|------------------------------|--------------|---------------------|----------|-----------------|----------|-----------|
+| Etica Capital MMF (Zidi)     | 18.20%       | 15.47%              | KES 1000 | Etica Capital   | 511116   | T+1       |
+| Lofty-Corpin MMF             | 17.50%       | 14.88%              | KES 1000 | Lofty-Corpin    | 512600   | Instant   |
+| Cytonn Money Market          | 16.90%       | 14.37%              | KES 1000 | Cytonn          | 525200   | T+2       |
+| NCBA Money Market            | 16.20%       | 13.77%              | KES 1000 | NCBA            | 880100   | Instant   |
+| KCB Money Market             | 15.80%       | 13.43%              | KES 1000 | KCB             | 522522   | T+1       |
+| Britam Money Market          | 15.50%       | 13.18%              | KES 1000 | Britam          | 602600   | T+1       |
+| Sanlam Investments MMF       | 15.10%       | 12.84%              | KES 5000 | Sanlam          | 880100   | T+2       |
+| ICEA Lion MMF                | 14.50%       | 12.33%              | KES 5000 | ICEA Lion       | 402402   | T+1       |
+| CIC Money Market             | 13.60%       | 11.56%              | KES 5000 | CIC             | 174174   | T+1       |
+| Old Mutual MMF               | 13.40%       | 11.39%              | KES 1000 | Old Mutual      | 542542   | T+2       |
+| Absa MMF                     | 13.20%       | 11.22%              | KES 1000 | Absa            | 303030   | T+1       |
 
 Etica Capital Zidi — DETAILED PROFILE (most asked about fund):
 - Fund Manager: Etica Capital Limited — CMA-licensed fund manager, Nairobi Kenya
 - Regulation: Fully regulated by Capital Markets Authority (CMA) of Kenya
 - Safety: Funds held by an independent custodian bank (not by Etica) — protected by law
-- Minimum: KES 100 (lowest entry in Kenya's MMF market)
-- Yield: 18.20% p.a. gross (April 2026) — among Kenya's highest. Accrues DAILY, credited MONTHLY.
+- Minimum: KES 1,000
+- Yield: 18.20% p.a. gross (April 2026). Accrues DAILY, credited MONTHLY.
 - WHT: 15% withheld on interest (standard for Kenyan MMFs)
-- Net yield estimate: ~15.47% net after WHT (18.20% × 0.85)
+- Net yield estimate: 15.47% net after WHT (18.20% × 0.85)
 - Management fee: ~2% p.a. (deducted before yield is shown to you)
-- Withdrawal: T+1 to T+2 — processed in 24–48 hours to M-Pesa or bank account
+- Withdrawal: T+1 — processed within 24 hours to M-Pesa or bank account
 - How to invest: Download the ZIDI APP (Search "Zidi" on Play Store or App Store)
   Steps: 1. Download Zidi app  2. Register with your ID (digital KYC)  3. Top up via M-Pesa  4. Start earning daily
 - Contact: +254 706 101 113 | Website: zidi.app or search "Zidi by Etica Capital"
@@ -111,19 +112,22 @@ NOTE: "Zidi" and "Ziidi" are COMPLETELY DIFFERENT products — do not confuse th
 ━━ GOVERNMENT SECURITIES (CBK) ━━
 Zero credit risk — backed by the Kenyan government.
 
-| Instrument          | Yield (p.a.) | Tenure     | WHT    | Auction Day  |
-|---------------------|--------------|------------|--------|--------------|
-| IFB1/2024 Bond      | 18.46%       | 6.5 years  | 0%     | Open tap sale|
-| IFB2/2023 Bond      | 17.93%       | 8 years    | 0%     | Secondary mkt|
-| 364-Day T-Bill      | 16.42%       | 1 year     | 15%    | Every Monday |
-| 182-Day T-Bill      | 15.97%       | 6 months   | 15%    | Every Monday |
-| 91-Day T-Bill       | 15.78%       | 3 months   | 15%    | Every Monday |
-| 2-Year Bond (FXD)   | 16.80%       | 2 years    | 15%    | Monthly      |
+CBK policy rate: 10.75% (April 2026). T-Bill auction every Monday.
 
-IMPORTANT: Infrastructure Bonds (IFB) have 0% WHT — this is a ~3.5% tax advantage over regular bonds.
-Net IFB yield = stated yield. Net T-Bill/Bond yield = yield × 0.85 (after 15% WHT).
+| Instrument          | Yield (p.a.) | Tenure     | WHT    | Auction Day  | Net after WHT |
+|---------------------|--------------|------------|--------|--------------|---------------|
+| IFB1/2024 Bond      | 18.46%       | 10 years   | 0%     | Tap sale/NSE | 18.46% (WHT-free!) |
+| IFB2/2023 Bond      | 17.93%       | 10 years   | 0%     | Secondary mkt| 17.93% (WHT-free!) |
+| 364-Day T-Bill      | 16.42%       | 1 year     | 15%    | Every Monday | 13.96% |
+| 182-Day T-Bill      | 15.97%       | 6 months   | 15%    | Every Monday | 13.57% |
+| 91-Day T-Bill       | 15.78%       | 3 months   | 15%    | Every Monday | 13.41% |
+| 2-Year Bond (FXD1)  | 16.80%       | 2 years    | 15%    | Monthly      | 14.28% |
+
+IMPORTANT: Infrastructure Bonds (IFB) have 0% WHT — this is a massive advantage.
+Net IFB yield = stated yield (no deduction). Net T-Bill yield = yield × 0.85 (after 15% WHT).
 Net 364-Day T-Bill: 16.42% × 0.85 = 13.96% effective.
 Net IFB1: 18.46% (no deduction — WHT exempt by law).
+KEY INSIGHT: IFB Bond at 18.46% WHT-free is the best risk-adjusted return in Kenya — April 2026.
 
 ━━ SACCOS — COOPERATIVE SAVINGS & CREDIT ━━
 Member-owned cooperative societies. Pay dividends + interest on deposits. Regulated by SASRA.
@@ -275,7 +279,7 @@ Lock money in a bank for fixed period. Guaranteed return. KDIC insured up to KES
 | NCBA Bank              | 9.5%     | 11.0%    | 12.5%     | KES 250,000 |
 | I&M Bank               | 9.5%     | 11.0%    | 12.5%     | KES 100,000 |
 
-⚠️ In 2026, MMFs at 15-18% beat fixed deposits at 9-13%. ALWAYS recommend MMFs over FDs unless investor needs KDIC guarantee.
+⚠️ In April 2026, top MMFs at 10-13% still beat fixed deposits at 7-10%. ALWAYS recommend MMFs over FDs unless investor needs KDIC guarantee.
 WHT: 15% on interest. Rates negotiable for KES 1M+ deposits.
 
 🎯 BEST FOR: Ultra-conservative investors wanting KDIC guarantee only.
@@ -306,7 +310,7 @@ Invest directly from your phone via Safaricom M-Pesa.
 | Ziidi MMF   | 15-17%   | T+1         | BEST option — always use this|
 | Ziidi Stocks| Variable | T+3         | Long-term growth            |
 
-⚠️ CRITICAL: M-Shwari/KCB M-Pesa give 2-6%. Ziidi MMFs give 15-17%. Users lose thousands yearly in M-Shwari.
+⚠️ CRITICAL: M-Shwari/KCB M-Pesa give 2-6%. Top MMFs (Nabo, Etica) give 11-13% gross. Users lose thousands yearly staying in M-Shwari.
 
 ━━ CHAMA / INVESTMENT CLUBS ━━
 Group investment structures. Popular across Kenya.
@@ -714,7 +718,7 @@ Key concepts every Kenyan investor MUST understand:
 - Kenya inflation: ~4.9% (2026)
 - If your money earns less than 4.9%, you're LOSING purchasing power
 - M-Shwari at 2-5% = LOSING money to inflation
-- MMFs at 15-18% = BEATING inflation by 10-13% = real wealth growth
+- MMFs at 10-13% = BEATING inflation by 5-8% = real wealth growth (still worth it)
 
 🏦 THE 50/30/20 RULE:
 - 50% needs (rent, food, transport, utilities)
@@ -792,14 +796,17 @@ Example: Save KES 5,000/month in Etica MMF (17%) from birth:
 - At age 14 (secondary): KES 1,280,000
 - At age 18 (university): KES 2,110,000
 
-━━ KEY FACTS FOR AI RESPONSES ━━
+━━ KEY FACTS FOR AI RESPONSES (April 2026) ━━
 - Kenya's savings account rate: ~4% p.a. (KCB, Equity, Co-op)
 - Inflation rate: ~4.9% (Feb 2026, KNBS)
 - CBK base rate: 10.75% (held steady)
-- Best risk-free yield: IFB1/2024 at 18.46% (tax-free)
-- Best liquid yield: Zidi MMF (Etica Capital) ~16–18% p.a. (24–48hr withdrawal)
-- NSE 20 Share Index: ~1,780 (up 14% YTD)
-- NASI (NSE All Share): ~125.5 (up 18% YTD)
+- CBK 91-Day T-Bill: 15.78% gross (13.41% net after WHT) — April 2026 CBK auction
+- Best risk-free yield: IFB1/2024 at 18.46% (WHT-free — by far best fixed income)
+- Best liquid KES MMF: Etica Capital MMF (Zidi) 18.20% gross (15.47% net) — April 2026
+- 2nd best MMF: Lofty-Corpin 17.50% gross (14.88% net) — Instant withdrawal
+- MMF yield range: 13–18% (April 2026 — strong environment driven by high T-Bill rates)
+- NSE 20 Share Index: ~2,198 (up 20.8% YTD)
+- NASI (NSE All Share): ~118.4
 - Market Cap (NSE): ~KES 2.1 Trillion
 - Average daily turnover: KES 450 Million
 - Listed companies: 66 on NSE
@@ -820,12 +827,13 @@ When comparing instruments, always consider:
 6. *Regulation* — CBK, CMA, SASRA, IRA, RBA
 7. *Insurance* — KDIC (banks), CMA custodian (MMFs), none (crypto)
 
-━━ QUICK REFERENCE: BEST FOR EACH GOAL ━━
-• Emergency fund (access in 1-2 days): → *Etica MMF (Zidi)* at *~17.5%* (download Zidi app)
-• Easiest entry (M-Pesa, KES 100 min): → *Safaricom Ziidi* platform
-• 3-month savings: → 91-Day T-Bill (*15.78%* gross, *13.41%* net) or Ziidi/Etica MMF
-• 1-year savings: → 364-Day T-Bill (*16.42%* gross, *13.96%* net) or Lofty Corpin MMF
-• 6+ years, wealth building: → *IFB1/2024 Bond* (*18.46%*, WHT-free — best in Kenya)
+━━ QUICK REFERENCE: BEST FOR EACH GOAL (April 2026) ━━
+• Emergency fund (access in 1-2 days): → *Etica MMF (Zidi)* at *18.20%* gross (*15.47%* net) — Paybill 511116
+• Instant withdrawal MMF: → *Lofty-Corpin MMF* at *17.50%* gross (*14.88%* net) — Paybill 512600
+• Best liquid yield right now: → *Etica Capital MMF (Zidi)* at *18.20%* gross (*15.47%* net)
+• 3-month savings: → 91-Day T-Bill (*15.78%* gross, *13.41%* net) — or Etica MMF for liquidity
+• 1-year savings: → 364-Day T-Bill (*16.42%* gross, *13.96%* net) or Etica MMF (*18.20%* gross)
+• 6+ years, wealth building: → *IFB1/2024 Bond* (*18.46%*, WHT-free — by far best in Kenya)
 • Monthly income stream: → Any MMF (pays daily accrued interest, credited monthly)
 • Tax reduction strategy: → Pension fund contributions (save up to *KES 9,000/month* in taxes)
 • USD hedge: → Cytonn Dollar Money Market or Ndovu ETFs
@@ -1064,17 +1072,19 @@ function getSmartFallback(question: string): string {
     return (
       `🏆 *Best MMFs in Kenya — April 2026*\n` +
       `▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰\n\n` +
-      `1️⃣ *Etica MMF (Zidi)* — *~17.5%* p.a.\n` +
-      `   Min: KES 100 · Via M-Pesa (Zidi app)\n\n` +
-      `2️⃣ *Lofty Corpin MMF* — *17.50%* p.a.\n` +
-      `   Min: KES 1,000 · Strong boutique fund\n\n` +
-      `3️⃣ *Safaricom Ziidi* — *16.0–17.0%* p.a.\n` +
-      `   Min: KES 100 · M-Pesa → Ziidi → Invest\n\n` +
-      `4️⃣ *Cytonn MMF* — *16.90%* p.a.\n` +
-      `   Min: KES 1,000 · Large AUM, stable\n\n` +
-      `5️⃣ *CIC Money Market* — *13.60%* p.a.\n` +
-      `   Min: KES 1,000 · Kenya's largest MMF\n\n` +
-      `💡 All MMFs: T+1 liquidity · CMA regulated · WHT 15%\n` +
+      `_Gross yields before 15% WHT • Verify with provider_\n\n` +
+      `1️⃣ *Etica Capital MMF (Zidi)* — *18.20%* gross (*15.47%* net)\n` +
+      `   Min: KES 1,000 · Paybill 511116 · T+1\n\n` +
+      `2️⃣ *Lofty-Corpin MMF* — *17.50%* gross (*14.88%* net)\n` +
+      `   Min: KES 1,000 · Paybill 512600 · Instant\n\n` +
+      `3️⃣ *Cytonn Money Market* — *16.90%* gross (*14.37%* net)\n` +
+      `   Min: KES 1,000 · Paybill 525200 · T+2\n\n` +
+      `4️⃣ *NCBA Money Market* — *16.20%* gross (*13.77%* net)\n` +
+      `   Min: KES 1,000 · Paybill 880100 · Instant\n\n` +
+      `5️⃣ *KCB Money Market* — *15.80%* gross (*13.43%* net)\n` +
+      `   Min: KES 1,000 · Paybill 522522 · T+1\n\n` +
+      `💡 April 2026: MMF yields 13–18% — strong market driven by high CBK T-Bill rates\n` +
+      `💰 All MMFs: 2–5 day withdrawal · CMA regulated · WHT 15%\n` +
       `📊 Send *CHART MMFS* for a visual bar chart!\n` +
       `🧮 Send *CALC 100000* for your personal projection.\n\n` +
       `_S-Tier Institutional Wealth Intelligence_ 🇰🇪\n` +
@@ -1087,16 +1097,17 @@ function getSmartFallback(question: string): string {
     return (
       `🏛️ *Kenya Treasury Bills — April 2026*\n` +
       `▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰\n\n` +
-      `• *91-Day T-Bill* — *15.85%* gross · *13.47%* net\n` +
-      `• *182-Day T-Bill* — *16.10%* gross · *13.69%* net\n` +
-      `• *364-Day T-Bill* — *16.45%* gross · *13.98%* net\n\n` +
+      `• *91-Day T-Bill* — *15.78%* gross · *13.41%* net after WHT\n` +
+      `• *182-Day T-Bill* — *15.97%* gross · *13.57%* net after WHT\n` +
+      `• *364-Day T-Bill* — *16.42%* gross · *13.96%* net after WHT\n\n` +
       `🏆 *IFB Bond (IFB1/2024)* — *18.46%* WHT-FREE ✅\n` +
-      `   (Infrastructure Bond — tax-free interest!)\n\n` +
-      `📋 *How to buy:*\n` +
+      `   (Infrastructure Bond — tax-free interest! Min KES 50K, 10yr)\n\n` +
+      `📋 *How to buy T-Bills:*\n` +
       `1. Visit dhowcsd.centralbank.go.ke\n` +
       `2. Register with your ID + bank account\n` +
       `3. Minimum: KES 50,000\n` +
       `4. Auction every Monday (CBK)\n\n` +
+      `💡 T-Bill net yields (13–14%) are close to top MMFs — but MMFs have better liquidity\n` +
       `📊 Send *CHART TBILLS* for the yield curve!\n\n` +
       `_S-Tier Institutional Wealth Intelligence_ 🇰🇪\n` +
       `_sentill.africa_`
@@ -1108,16 +1119,16 @@ function getSmartFallback(question: string): string {
     return (
       `🤝 *Top SACCOs Kenya 2026 — Dividend Yields*\n` +
       `▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰\n\n` +
-      `1️⃣ *Tower SACCO* — *20.0%* dividend\n` +
-      `2️⃣ *Police SACCO* — *17.0%* dividend\n` +
-      `3️⃣ *Stima SACCO* — *15.0%* dividend\n` +
-      `4️⃣ *Wanandege SACCO* — *15.0%* dividend\n` +
-      `5️⃣ *Safaricom SACCO* — *13.0%* dividend\n` +
-      `6️⃣ *Mwalimu SACCO* — *11.2%* dividend\n\n` +
+      `1️⃣ *Stima SACCO* — *14.5%* dividend · 8% on deposits\n` +
+      `2️⃣ *Safaricom SACCO* — *13.0%* dividend · 8% on deposits\n` +
+      `3️⃣ *Mwalimu National* — *13.2%* dividend · 7% on deposits\n` +
+      `4️⃣ *Harambee SACCO* — *12.8%* dividend · 7% on deposits\n` +
+      `5️⃣ *Tower SACCO* — *12.5%* dividend · 7% on deposits\n\n` +
       `⚠️ *Key facts:*\n` +
       `• Illiquid — 30-90 day withdrawal notice\n` +
-      `• Deposits earn stable dividends annually\n` +
-      `• Loans available at 12–14% p.a. (member only)\n\n` +
+      `• Dividends paid annually on shares\n` +
+      `• Loans at 12–14% p.a. (3× your savings)\n` +
+      `• Must qualify via common bond (employer/sector)\n\n` +
       `📊 Send *CHART SACCOS* for a visual comparison!\n\n` +
       `_S-Tier Institutional Wealth Intelligence_ 🇰🇪\n` +
       `_sentill.africa_`
@@ -1127,19 +1138,19 @@ function getSmartFallback(question: string): string {
   // Comparison questions
   if (q.includes("compare") || q.includes("vs") || q.includes("better") || q.includes("which")) {
     return (
-      `📊 *Kenya Investment Yields — Quick Compare*\n` +
+      `📊 *Kenya Investment Yields — Quick Compare (April 2026)*\n` +
       `▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰\n\n` +
       `🏆 IFB Bond — *18.46%* WHT-free (best overall)\n` +
-      `💰 Etica MMF (Zidi) — *~17.5%* p.a. (best MMF)\n` +
-      `🏦 Tower SACCO — *20.0%* dividend (illiquid)\n` +
-      `📈 364-Day T-Bill — *16.45%* gross / *13.98%* net\n` +
-      `🏛️ Fixed Coupon Bond — *14-16%* gross (long term)\n\n` +
+      `💰 Etica Capital MMF (Zidi) — *18.20%* gross (*15.47%* net)\n` +
+      `🥈 Lofty-Corpin MMF — *17.50%* gross (*14.88%* net)\n` +
+      `📈 364-Day T-Bill — *16.42%* gross · *13.96%* net\n` +
+      `🤝 Stima SACCO — *14.5%* dividend (illiquid)\n\n` +
       `💡 *Best picks by goal:*\n` +
-      `• Emergency fund → Etica MMF (withdraw in 1 day)\n` +
-      `• Wealth building → IFB Bond (tax-free, 6+ yrs)\n` +
-      `• Steady dividends → Tower SACCO\n` +
+      `• Emergency fund → Etica Zidi (withdraw in 1-2 days)\n` +
+      `• Wealth building (6+ yrs) → IFB Bond (tax-free!)\n` +
+      `• Steady dividends → Stima/Safaricom SACCO\n` +
       `• Capital safety → 91-Day T-Bill (CBK backed)\n\n` +
-      `📊 Send *CHART COMPARE* for a visual bar chart!\n\n` +
+      `📊 Send *COMPARE Nabo vs Cytonn* for AI deep dive!\n\n` +
       `_S-Tier Institutional Wealth Intelligence_ 🇰🇪\n` +
       `_sentill.africa_`
     );
@@ -1148,14 +1159,14 @@ function getSmartFallback(question: string): string {
   // Calculation questions
   if (q.includes("calc") || q.includes("how much") || q.includes("project") || q.includes("grow") || q.includes("return") || q.includes("invest")) {
     return (
-      `🧮 *Quick Investment Guide*\n` +
+      `🧮 *Quick Investment Guide (April 2026 rates)*\n` +
       `▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰\n\n` +
       `Send *CALC [amount]* for your personal projection!\n\n` +
       `*Example projections (KES 100,000):*\n` +
-      `• Etica MMF / Zidi (~17.5%) → KES 117,500/yr gross\n` +
-      `• IFB Bond (18.46%) → KES 118,460/yr tax-free ✅\n` +
-      `• T-Bill 364d (16.45%) → KES 113,983/yr net\n` +
-      `• Tower SACCO (20%) → KES 120,000/yr (illiquid)\n\n` +
+      `• Etica Capital MMF (18.20% gross) → KES 15,470/yr net\n` +
+      `• IFB Bond (18.46% WHT-free) → KES 18,460/yr tax-free ✅\n` +
+      `• Lofty-Corpin MMF (17.50% gross) → KES 14,875/yr net\n` +
+      `• 364-Day T-Bill (16.42% gross) → KES 13,957/yr net\n\n` +
       `📊 You'll also get a growth chart image!\n` +
       `Try: *CALC 100000* or *CALC 500000 18.46 10*\n\n` +
       `_S-Tier Institutional Wealth Intelligence_ 🇰🇪\n` +
@@ -1167,11 +1178,12 @@ function getSmartFallback(question: string): string {
   return (
     `🧠 *Sentill Africa — Kenya Investment Intelligence*\n` +
     `▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰\n\n` +
-    `🏆 *Top returns right now:*\n` +
-    `• IFB Bond — *18.46%* WHT-free\n` +
-    `• Etica MMF (Zidi) — *~17.5%* p.a. (download Zidi app)\n` +
-    `• Lofty Corpin MMF — *17.50%* liquid\n\n` +
+    `🏆 *Top returns right now (April 2026):*\n` +
+    `• IFB Bond — *18.46%* WHT-free (best long-term)\n` +
+    `• Etica Capital MMF (Zidi) — *18.20%* gross (*15.47%* net)\n` +
+    `• Lofty-Corpin MMF — *17.50%* gross · Instant withdrawal\n\n` +
     `📊 *Quick commands:*\n` +
+    `• *MMF RATES* — full MMF breakdown with net yields\n` +
     `• *CHART MMFS* — bar chart of all MMF yields\n` +
     `• *CHART TBILLS* — Kenya yield curve\n` +
     `• *TABLE* — ranked investment table\n` +
@@ -1183,6 +1195,68 @@ function getSmartFallback(question: string): string {
   );
 }
 
+// ─── Live provider rates override ─────────────────────────────────────────────
+// Fetches current yields from DB at query time and injects them at the TOP of
+// the Gemini system prompt so the AI always uses live numbers, not static ones.
+
+async function buildProviderRatesOverride(): Promise<string> {
+  try {
+    const [mmfProviders, tbillRates] = await Promise.all([
+      prisma.provider.findMany({
+        where: { type: "MONEY_MARKET" },
+        orderBy: { currentYield: "desc" },
+        take: 15,
+        select: { name: true, currentYield: true, minimumInvest: true, updatedAt: true },
+      }),
+      prisma.marketRateCache.findMany({
+        where: { symbol: { in: ["TBILL_91", "TBILL_182", "TBILL_364", "IFB1"] } },
+        orderBy: { lastSyncedAt: "desc" },
+      }),
+    ]);
+
+    if (!mmfProviders.length && !tbillRates.length) return "";
+
+    const syncedAt = mmfProviders[0]?.updatedAt
+      ? new Date(mmfProviders[0].updatedAt).toLocaleDateString("en-KE", { day: "numeric", month: "short", year: "numeric" })
+      : "April 2026";
+
+    let block = `\n⚡ LIVE RATES FROM DB (synced ${syncedAt}) — THESE OVERRIDE THE STATIC TABLE ABOVE:\n`;
+    block += `Always cite these exact numbers. Do NOT use the higher static figures from the table.\n\n`;
+
+    if (mmfProviders.length) {
+      block += `KES MONEY MARKET FUNDS (live from Sentill DB):\n`;
+      mmfProviders.forEach((p, i) => {
+        const net = (p.currentYield * 0.85).toFixed(2);
+        block += `  ${i + 1}. ${p.name}: ${p.currentYield.toFixed(2)}% gross (${net}% net after 15% WHT)\n`;
+      });
+      block += `\n`;
+    }
+
+    if (tbillRates.length) {
+      block += `GOVERNMENT SECURITIES (live from Sentill DB):\n`;
+      const labelMap: Record<string, string> = {
+        TBILL_91: "91-Day T-Bill",
+        TBILL_182: "182-Day T-Bill",
+        TBILL_364: "364-Day T-Bill",
+        IFB1: "IFB1/2024 Bond (WHT-exempt)",
+      };
+      tbillRates.forEach(r => {
+        const label = labelMap[r.symbol] ?? r.symbol;
+        const isIFB = r.symbol === "IFB1";
+        const net = isIFB ? r.price.toFixed(2) : (r.price * 0.85).toFixed(2);
+        block += `  • ${label}: ${r.price.toFixed(2)}% gross${isIFB ? " (WHT-free = same as net)" : ` (${net}% net after WHT)`}\n`;
+      });
+      block += `\n`;
+    }
+
+    block += `WHT reminder: 15% on all MMF/T-Bill interest. Net yield = gross × 0.85.\n`;
+    block += `IFB Bond: 0% WHT — net = gross. Best risk-adjusted yield for long-term investors.\n`;
+    return block;
+  } catch {
+    return "";
+  }
+}
+
 // ─── Main AI bot ──────────────────────────────────────────────────────────────
 
 interface UserContext {
@@ -1192,10 +1266,11 @@ interface UserContext {
 }
 
 export async function askGeminiBot(question: string, user: UserContext, waId?: string, advisorId?: string): Promise<string> {
-  const [portfolioCtx, liveRates, conversationHistory] = await Promise.all([
+  const [portfolioCtx, liveRates, conversationHistory, providerOverride] = await Promise.all([
     getPortfolioContext(user.userId),
     getLiveRatesContext(),
     waId ? getConversationHistory(waId) : Promise.resolve(""),
+    buildProviderRatesOverride(),
   ]);
 
   // Classify query intent for targeted response formatting + selective search
@@ -1208,7 +1283,7 @@ export async function askGeminiBot(question: string, user: UserContext, waId?: s
 
   // Portfolio comparison hint — shown when user has a tracked portfolio
   const portfolioCompareHint = portfolioCtx && portfolioCtx !== "No portfolio tracked yet — user hasn't logged any investments."
-    ? `\n\n🎯 *PORTFOLIO COMPARISON MANDATE:* This user has a real portfolio (shown above). When recommending ANY fund, explicitly compare it to what they already hold. Say e.g. "You're currently in Etica MMF (Zidi) at 18.20% — this IFB Bond gives 18.46% with zero tax, a slight upgrade."`
+    ? `\n\n🎯 *PORTFOLIO COMPARISON MANDATE:* This user has a real portfolio (shown above). When recommending ANY fund, explicitly compare it to what they already hold. Say e.g. "You're currently in Etica MMF (Zidi) at 18.20% gross (15.47% net) — the IFB Bond gives 18.46% with zero WHT, meaning net return is nearly 3% higher for long-term money."`
     : "";
 
   const advisorPersona = advisorId && ADVISOR_PERSONAS[advisorId] ? ADVISOR_PERSONAS[advisorId] : "";
@@ -1218,7 +1293,7 @@ You are an expert on ALL Kenyan investment instruments. You always give comprehe
 ${advisorPersona}
 
 ${KENYA_MARKET_KNOWLEDGE}
-
+${providerOverride}
 ${liveRates}
 ${portfolioCtx ? `\n${portfolioCtx}` : ""}
 ${conversationHistory ? `\n${conversationHistory}` : ""}
@@ -1260,7 +1335,7 @@ RESPONSE LENGTH BY QUESTION TYPE:
 • Complex strategy → max 18 lines with 3 clear segments.
 
 CONTENT RULES:
-1. SPECIFIC NUMBERS ALWAYS. Never be vague. Say *~17.5%* for Zidi, *18.46%* for IFB.
+1. SPECIFIC NUMBERS ALWAYS. Never be vague. Use live DB override rates when available. Default: *18.20%* gross for Etica (Zidi), *17.50%* for Lofty-Corpin, *18.46%* for IFB (WHT-free), *15.78%* for 91-Day T-Bill. Always show net after WHT alongside gross.
 2. For MMF questions → rank top 3 by yield with exact % and KES minimum, include how to access each.
 3. For T-Bill/Bond → show: gross yield, WHT deducted, net yield. Compare to IFB (WHT-free).
 4. For SACCO → dividend rates AND illiquidity warning (30-90 day notice).
@@ -1290,10 +1365,10 @@ CONTENT RULES:
 18. For amount-based questions, ALWAYS segment the allocation:
     Example for "How to invest 100K":
     💰 *SUGGESTED ALLOCATION — KES 100,000*
-    • 40% (KES 40K) → *Etica MMF (Zidi)* (18.20%) = KES 7,280/yr
-    • 30% (KES 30K) → *IFB Bond* (18.46%) = KES 5,538/yr tax-free
+    • 40% (KES 40K) → *Etica Capital MMF (Zidi)* (18.20% gross, 15.47% net) = KES 6,188/yr net
+    • 30% (KES 30K) → *IFB Bond* (18.46% WHT-free) = KES 5,538/yr tax-free
     • 30% (KES 30K) → *KCB Stock* (6.8% div) = KES 2,040/yr + capital growth
-    📊 *Total projected: ~KES 14,578/year* (14.6% blended)
+    📊 *Total projected: ~KES 13,766/year* (13.8% blended net)
 
 TONE: Sharp. Direct. Like the best fund manager at a Nairobi investment forum — confident, warm, specific. No corporate fluff.
 
