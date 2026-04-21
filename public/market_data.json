@@ -1,6 +1,6 @@
 {
-  "scraped_at": "2026-04-21T03:45:00.000Z",
-  "source": "cbk-cma-verified-apr2026",
+  "scraped_at": "2026-04-21T05:32:03.373290+00:00",
+  "source": "sentill-scraper-v2",
   "mmfs": [
     { "name": "Etica Capital MMF (Zidi)", "code": "etca",   "yield": 18.20, "net_yield": 15.47, "aum": "15.2B",  "min": 1000,  "wht": 15, "risk": "Low", "liquidity": "T+1",    "paybill": "511116" },
     { "name": "Lofty-Corpin MMF",         "code": "lofty",  "yield": 17.50, "net_yield": 14.88, "aum": "3.4B",   "min": 1000,  "wht": 15, "risk": "Low", "liquidity": "Instant", "paybill": "512600" },
@@ -47,13 +47,11 @@
     "BOC":    123.00
   },
   "macro": {
-    "cbk_rate":  10.75,
-    "inflation":  4.90,
-    "usd_kes":  129.50,
-    "eur_kes":  141.00,
-    "gbp_kes":  165.00,
-    "nse20":    3610,
-    "nse20_date": "2026-04-21",
-    "nasi":     211.0
+    "cbk_rate": 13.0,
+    "inflation": 6.3,
+    "usd_kes": 129.06,
+    "nse20": 2198,
+    "nse20_ytd": 20.8,
+    "nasi": 118.4
   }
 }
