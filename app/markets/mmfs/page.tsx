@@ -24,8 +24,8 @@ import AssetModal from "@/components/AssetModal";
 const MMF_FUNDS = [
   {
     id: 1, name: "Etica Wealth MMF", code: "ETCA", manager: "Etica Capital",
-    yield7d: 17.55, yield30d: 17.21, yield90d: 16.89, yield1y: 16.2,
-    aum: 4.2, minInvest: 100, liquidity: "T+1", risk: "Low",
+    yield7d: 18.20, yield30d: 18.05, yield90d: 17.90, yield1y: 17.5,
+    aum: 15.2, minInvest: 1000, liquidity: "T+1", risk: "Low",
     taxCategory: "WHT 15%", cmaLicensed: true, esgScore: 82, inceptionDate: "2019",
     currency: "KES", category: "Income", status: "Open",
     fees: { management: 1.5, performance: 0 },
@@ -167,7 +167,7 @@ const AUM_DISTRIBUTION = [
 // ─── RISK-RETURN DATA ─────────────────────────────────────────────────────────
 
 const RISK_RETURN = [
-  { name: "Etica", risk: 1.8, ret: 17.55, size: 4.2 },
+  { name: "Etica (Zidi)", risk: 1.8, ret: 18.20, size: 15.2 },
   { name: "Sanlam", risk: 2.1, ret: 14.78, size: 8.7 },
   { name: "Britam", risk: 2.3, ret: 14.2, size: 12.4 },
   { name: "Equity", risk: 2.0, ret: 13.8, size: 22.1 },

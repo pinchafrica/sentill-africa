@@ -14,7 +14,7 @@ const providers = [
     name: "Etica Wealth Fund",
     slug: "etica-wealth-fund",
     type: "MMF",
-    currentYield: 17.55,
+    currentYield: 18.20,
     aum: "KES 15B+",
     paybill: "511116",
     isHalal: false,
@@ -29,9 +29,9 @@ const providers = [
     website: "https://etica.co.ke",
     description: "Etica Wealth Fund is Kenya's highest-yielding CMA-regulated Money Market Fund. Delivering consistent daily compound interest since 2018, with over KES 15B in assets under management and a portfolio heavily weighted in government securities and top-tier commercial paper.",
     history3Year: genHistory(16.5, 1.2),
-    taxNotes: "Subject to 15% Withholding Tax (WHT) on interest. Net yield after WHT ≈ 14.92%. WHT is deducted automatically by the fund manager before distributions. No additional tax filing required for resident Kenyans.",
+    taxNotes: "Subject to 15% Withholding Tax (WHT) on interest. Net yield after WHT ≈ 15.47%. WHT is deducted automatically by the fund manager before distributions. No additional tax filing required for resident Kenyans.",
     highlights: j([
-      "Kenya's top-ranked MMF yield at 17.55% gross p.a.",
+      "Kenya's top-ranked MMF yield at 18.20% gross p.a.",
       "Daily interest compounded — money works 24/7",
       "CMA License No. IFM/MMF/001/2018 — fully regulated",
       "Accessible via M-Pesa Paybill 511116 instantly",
@@ -50,7 +50,7 @@ const providers = [
       { q: "How quickly can I withdraw my money?", a: "Withdrawal requests submitted before 2:00 PM on any business day are processed by the next business day (T+1). Amounts above KES 500,000 may take up to T+3 due to fund settlement rules." },
       { q: "Is my money safe?", a: "Etica Wealth Fund is licensed and regulated by the Capital Markets Authority (CMA) of Kenya under License No. IFM/MMF/001/2018. Your investment is held in a segregated custodial account at a reputable Kenyan bank, separate from Etica's own balance sheet." },
       { q: "Is interest paid daily?", a: "Yes. Interest accrues every calendar day (365 days a year, including weekends and holidays). It is compounded and reflected in your unit price daily. Monthly statements are sent automatically." },
-      { q: "What is the effective net yield after tax?", a: "The published yield of 17.55% is the gross yield. After 15% Withholding Tax (WHT), your effective net yield is approximately 14.92%. WHT is automatically remitted to KRA by Etica — you don't need to do anything." },
+      { q: "What is the effective net yield after tax?", a: "The published yield of 18.20% is the gross yield. After 15% Withholding Tax (WHT), your effective net yield is approximately 15.47%. WHT is automatically remitted to KRA by Etica — you don't need to do anything." },
       { q: "Can I set up a standing order or recurring investment?", a: "Yes. You can set up a monthly standing order from your bank account or use Etica's M-Pesa recurring payment feature. This automates dollar-cost averaging into your fund." }
     ]),
     officeLocations: j([

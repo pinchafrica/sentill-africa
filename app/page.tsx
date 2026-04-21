@@ -178,7 +178,7 @@ export default function HomePage() {
 
   const getLiveRate = (symbol: string) => {
      if (symbol === "ETICA") {
-        const rate = aiRatesData?.rates?.["ETCA"] || 17.55;
+        const rate = aiRatesData?.rates?.["ETCA"] || 18.20;
         return { display: `${rate}%`, verified: true };
      }
      

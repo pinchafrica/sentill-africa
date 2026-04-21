@@ -133,8 +133,8 @@ const menuData = {
         title: "Newer Funds",
         viewAllHref: "/markets/mmfs",
         items: [
-          { title: "Etica Wealth MMF", desc: "17.55% p.a. · 🏆 Highest Yield", href: "/markets/mmfs/etica", icon: Zap, color: "text-emerald-500" },
-          { title: "Zidi High Yield MMF", desc: "18.20% p.a. · Institutional Grade", href: "/markets/mmfs/zidi", icon: Activity, color: "text-indigo-500" },
+          { title: "Etica Capital MMF (Zidi)", desc: "18.20% p.a. · 🏆 Highest Yield", href: "/markets/mmfs/etca", icon: Zap, color: "text-emerald-500" },
+          { title: "Lofty-Corpin MMF", desc: "17.50% p.a. · Instant Withdrawal", href: "/markets/mmfs/lofty", icon: Activity, color: "text-indigo-500" },
           { title: "Kuza MMF", desc: "16.50% p.a. · Boutique Alpha", href: "/markets/mmfs/kuza", icon: TrendingUp, color: "text-blue-400" },
           { title: "Lofty Corban MMF", desc: "16.80% p.a. · Alternative Credit", href: "/markets/mmfs/lofty", icon: Target, color: "text-rose-500" },
           { title: "GenCap Hela MMF", desc: "16.20% p.a. · Dynamic Allocation", href: "/markets/mmfs/gencap", icon: PieChart, color: "text-purple-600" }

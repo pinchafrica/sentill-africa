@@ -15,7 +15,7 @@ import {
 
 const PRODUCTS = [
   // MMFs
-  { id: "etca",   name: "Etica Wealth MMF",    manager: "Etica Capital",          type: "MMF",         risk: "Low",    yield: 17.55, netYield: 14.92, aum: 4.2,   minInv: 100,    liquidity: "T+1",  taxRate: 15, esg: 82, sharpe: 2.8, cma: true,  sector: "Money Market", tenor: "Open-ended" },
+  { id: "etca",   name: "Etica Capital MMF (Zidi)", manager: "Etica Capital",     type: "MMF",         risk: "Low",    yield: 18.20, netYield: 15.47, aum: 15.2,  minInv: 1000,   liquidity: "T+1",  taxRate: 15, esg: 82, sharpe: 2.8, cma: true,  sector: "Money Market", tenor: "Open-ended" },
   { id: "snlm",   name: "Sanlam MMF",          manager: "Sanlam Investments",     type: "MMF",         risk: "Low",    yield: 14.78, netYield: 12.56, aum: 8.7,   minInv: 1000,   liquidity: "T+1",  taxRate: 15, esg: 74, sharpe: 2.1, cma: true,  sector: "Money Market", tenor: "Open-ended" },
   { id: "brtm",   name: "Britam MMF",          manager: "Britam Asset Managers",  type: "MMF",         risk: "Low",    yield: 14.2,  netYield: 12.07, aum: 12.4,  minInv: 500,    liquidity: "T+1",  taxRate: 15, esg: 71, sharpe: 2.3, cma: true,  sector: "Money Market", tenor: "Open-ended" },
   { id: "eqty",   name: "Equity MMF",          manager: "Equity Bank",            type: "MMF",         risk: "Low",    yield: 13.8,  netYield: 11.73, aum: 22.1,  minInv: 100,    liquidity: "T+0",  taxRate: 15, esg: 69, sharpe: 2.2, cma: true,  sector: "Money Market", tenor: "Open-ended" },

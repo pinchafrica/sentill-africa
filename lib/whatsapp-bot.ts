@@ -38,6 +38,24 @@ import crypto from "crypto";
 
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Data freshness helper
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function getRatesFreshness(): Promise<string> {
+  try {
+    const latest = await prisma.marketRateCache.findFirst({ orderBy: { lastSyncedAt: "desc" } });
+    if (!latest) return "_⚠️ Rates: manual update — sync pending_";
+    const hoursOld = Math.round((Date.now() - new Date(latest.lastSyncedAt).getTime()) / 3600000);
+    const dateStr = new Date(latest.lastSyncedAt).toLocaleDateString("en-KE", { day: "numeric", month: "short", year: "numeric" });
+    if (hoursOld < 6)  return `_✅ Rates synced today (${dateStr}) • Verify with provider before investing_`;
+    if (hoursOld < 48) return `_🕐 Rates synced ${hoursOld}h ago (${dateStr}) • Verify with provider before investing_`;
+    return `_⚠️ Rates last synced ${dateStr} • May be outdated — verify with provider_`;
+  } catch {
+    return "_ℹ️ Rates as at April 2026 • Verify with provider before investing_";
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // NSE Stock Intelligence
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -301,6 +319,8 @@ interface SessionContext {
   name?: string;
   email?: string;
   otp?: string;
+  otpAttempts?: number;
+  otpLockedUntil?: number;
   plan?: PlanKey;
   // Investment browser
   category?: string;
@@ -410,6 +430,30 @@ export async function processIncomingMessage(
 
   // Update lastSeen
   await prisma.whatsAppSession.update({ where: { waId }, data: { lastSeen: new Date() } }).catch(() => {});
+
+  // ── Session timeout: stale non-IDLE sessions older than 24h reset to IDLE ─
+  const ACTIVE_STATES = ["REGISTER_NAME", "REGISTER_EMAIL", "REGISTER_OTP", "LOGIN_OTP", "SUB_CONFIRM",
+    "LOG_ASSET_PROVIDER", "LOG_ASSET_AMOUNT", "LOG_ASSET_CONFIRM", "REMOVE_ASSET_SELECT",
+    "REMOVE_ASSET_CONFIRM", "REALLOCATE_FROM", "REALLOCATE_TO", "REALLOCATE_AMOUNT", "REALLOCATE_CONFIRM",
+    "ALERT_FREQ_SELECT", "ALERT_THRESHOLD_INPUT", "ALERT_WATCHLIST_ADD", "ALERT_WATCHLIST_REMOVE"];
+  if (ACTIVE_STATES.includes(session.state) && session.lastSeen) {
+    const hoursIdle = (Date.now() - new Date(session.lastSeen).getTime()) / 3600000;
+    if (hoursIdle > 24) {
+      await updateSession(waId, "IDLE", {}, session.userId ?? undefined);
+      await sendWhatsAppMessage(waId, "⏱ Your previous session expired after 24 hours. Starting fresh.\n\nSend *MENU* to see all options.");
+      // Re-fetch fresh session
+      session.state = "IDLE";
+      (ctx as any) = {};
+    }
+  }
+
+  // ── CANCEL: exits any active flow and returns to IDLE ──────────────────────
+  if (input === "CANCEL" || input === "EXIT" || input === "STOP IT" || input === "QUIT") {
+    if (session.state !== "IDLE") {
+      await updateSession(waId, "IDLE", {}, session.userId ?? undefined);
+      return sendWhatsAppMessage(waId, "✅ Cancelled. You're back at the main menu.\n\nSend *MENU* to see all options or just ask a question.");
+    }
+  }
 
   // ── Button payloads: route directly regardless of state ─────────────────
   // This ensures interactive button taps always work even if state is IDLE
@@ -577,6 +621,7 @@ export async function processIncomingMessage(
       );
     }
     if (input === "RATES" || input === "R") return handleMarkets(waId);
+    if (input === "MMF RATES" || input === "MMF RATE") return handleMMFRates(waId);
     if (input === "SPECIAL") return handleSpecialFunds(waId);
     if (["NSE GUIDE", "STOCKS GUIDE", "HOW TO BUY STOCKS", "BUY STOCKS", "ZIIDI", "ZIIDI GUIDE"].includes(input)) return handleNSEBeginnersGuide(waId);
     if (["STOCKS", "NSE", "SHARES", "NSE LIVE", "EQUITY", "EQUITIES"].includes(input)) return handleNSEStocks(waId, undefined);
@@ -609,6 +654,7 @@ export async function processIncomingMessage(
 
   if (input === "PORTFOLIO" || input === "P") return handlePortfolio(waId, userId);
   if (input === "MARKETS"   || input === "M" || input === "RATES" || input === "R") return handleMarkets(waId);
+  if (input === "MMF RATES" || input === "MMF RATE") return handleMMFRates(waId);
   if (input === "GOALS"     || input === "G") return handleGoals(waId, userId);
   if (input === "WATCHLIST" || input === "W") return handleWatchlist(waId, userId);
   if (["NSE GUIDE", "STOCKS GUIDE", "HOW TO BUY STOCKS", "BUY STOCKS", "ZIIDI", "ZIIDI GUIDE"].includes(input)) return handleNSEBeginnersGuide(waId);
@@ -864,8 +910,8 @@ async function handleGeminiQuestion(waId: string, question: string, userId: stri
       `▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰\n\n` +
       `🏆 *Top Yields Right Now:*\n` +
       `• *IFB Bond* — *18.46%* WHT-free\n` +
-      `• *Etica MMF (Zidi)* — *18.20%* liquid\n` +
-      `• *Lofty Corpin MMF* — *17.50%*\n\n` +
+      `• *Etica Capital MMF (Zidi)* — *18.20%* (15.47% net)\n` +
+      `• *Lofty-Corpin MMF* — *17.50%* · Instant withdrawal\n\n` +
       `📲 *Easiest way to start:*\n` +
       `M-Pesa → Financial Services → *Ziidi* → Invest from KES 100\n\n` +
       `💬 Try your question again! I'm ready.\n\n` +
@@ -1006,7 +1052,7 @@ async function sendInvestmentCategories(waId: string, userId: string) {
     prisma.provider.findFirst({ where: { type: "Pension" },      orderBy: { currentYield: "desc" } }),
   ]);
 
-  const mmfYield    = topMMF?.currentYield?.toFixed(1)     ?? "17.5";
+  const mmfYield    = topMMF?.currentYield?.toFixed(1)     ?? "12.9";
   const bondYield   = topBond?.currentYield?.toFixed(1)    ?? "18.46";
   const tbillYield  = topTBill?.currentYield?.toFixed(1)   ?? "16.42";
   const saccoYield  = topSacco?.currentYield?.toFixed(1)   ?? "14.5";
@@ -1520,14 +1566,39 @@ async function handleRegisterEmail(waId: string, email: string, ctx: SessionCont
 }
 
 async function handleRegisterOTP(waId: string, inputOtp: string, ctx: SessionContext) {
+  // Allow resend — regenerates OTP and stays in REGISTER_OTP
+  if (inputOtp === "RESEND OTP" || inputOtp === "RESEND") {
+    if (!ctx.email || !ctx.name) {
+      await updateSession(waId, "IDLE", {});
+      return sendWhatsAppMessage(waId, "❌ Session expired. Send *REGISTER* to start again.");
+    }
+    const otp = generateOTP();
+    const hashedOtp = await bcrypt.hash(otp, 10);
+    await updateSession(waId, "REGISTER_OTP", { ...ctx, otp: hashedOtp, otpAttempts: 0, otpLockedUntil: undefined });
+    return sendWhatsAppMessage(waId, `📲 *New verification code sent:*\n\n🔐 *${otp}*\n\n_(valid for 10 minutes)_\n\nEnter the code to verify:`);
+  }
+
   if (!ctx.otp || !ctx.name || !ctx.email) {
     await updateSession(waId, "IDLE", {});
     return sendWhatsAppMessage(waId, "❌ Session expired. Send *REGISTER* to start again.");
   }
 
+  // Check lockout
+  if (ctx.otpLockedUntil && Date.now() < ctx.otpLockedUntil) {
+    const minutesLeft = Math.ceil((ctx.otpLockedUntil - Date.now()) / 60000);
+    return sendWhatsAppMessage(waId, `🔒 Too many failed attempts. Try again in *${minutesLeft} min*.\nOr send *RESEND OTP* for a new code.`);
+  }
+
   const valid = await bcrypt.compare(inputOtp, ctx.otp);
   if (!valid) {
-    return sendWhatsAppMessage(waId, "❌ Invalid OTP. Try again:");
+    const attempts = (ctx.otpAttempts ?? 0) + 1;
+    if (attempts >= 3) {
+      const lockedUntil = Date.now() + 10 * 60 * 1000;
+      await updateSession(waId, "REGISTER_OTP", { ...ctx, otpAttempts: attempts, otpLockedUntil: lockedUntil });
+      return sendWhatsAppMessage(waId, `🔒 *3 failed attempts.* Locked for *10 minutes*.\n\nSend *RESEND OTP* to get a fresh code.`);
+    }
+    await updateSession(waId, "REGISTER_OTP", { ...ctx, otpAttempts: attempts });
+    return sendWhatsAppMessage(waId, `❌ Invalid OTP. *${3 - attempts} attempt${3 - attempts !== 1 ? "s" : ""} remaining.*\nSend *RESEND OTP* for a new code.`);
   }
 
   // Generate a website login password
@@ -1665,6 +1736,18 @@ async function handleLoginRequest(waId: string) {
 }
 
 async function handleLoginOTP(waId: string, inputOtp: string, ctx: SessionContext) {
+  // Allow resend at any time
+  if (inputOtp === "RESEND OTP" || inputOtp === "RESEND") {
+    await updateSession(waId, "IDLE", {});
+    return handleLoginRequest(waId);
+  }
+
+  // Check lockout
+  if (ctx.otpLockedUntil && Date.now() < ctx.otpLockedUntil) {
+    const minutesLeft = Math.ceil((ctx.otpLockedUntil - Date.now()) / 60000);
+    return sendWhatsAppMessage(waId, `🔒 Too many failed attempts. Try again in *${minutesLeft} min*.\nOr send *RESEND OTP* for a new code.`);
+  }
+
   const normalizedPhone = normalizePhone(waId);
   const user = await prisma.user.findUnique({ where: { whatsappId: normalizedPhone } });
 
@@ -1680,7 +1763,14 @@ async function handleLoginOTP(waId: string, inputOtp: string, ctx: SessionContex
 
   const valid = await bcrypt.compare(inputOtp, user.otpCode);
   if (!valid) {
-    return sendWhatsAppMessage(waId, "❌ Wrong code. Please try again:");
+    const attempts = (ctx.otpAttempts ?? 0) + 1;
+    if (attempts >= 3) {
+      const lockedUntil = Date.now() + 10 * 60 * 1000;
+      await updateSession(waId, "LOGIN_OTP", { ...ctx, otpAttempts: attempts, otpLockedUntil: lockedUntil });
+      return sendWhatsAppMessage(waId, `🔒 *3 failed attempts.* Locked for *10 minutes*.\n\nSend *RESEND OTP* to request a fresh code.`);
+    }
+    await updateSession(waId, "LOGIN_OTP", { ...ctx, otpAttempts: attempts });
+    return sendWhatsAppMessage(waId, `❌ Wrong code. *${3 - attempts} attempt${3 - attempts !== 1 ? "s" : ""} remaining.*\nSend *RESEND OTP* for a new code.`);
   }
 
   // If user has no website password yet, generate one and email it
@@ -1786,21 +1876,28 @@ async function handlePortfolio(waId: string, userId: string) {
 
 async function handleMarkets(waId: string) {
   const now = new Date().toLocaleDateString("en-KE", { day: "numeric", month: "long", year: "numeric" });
+  const freshness = await getRatesFreshness();
 
-  // Authoritative April 2026 rates — always shown, never stale
+  // April 2026 rates — effective annual yields (gross of WHT, net of mgmt fees)
   const MMF_TABLE = [
-    { name: "Etica MMF (Zidi)",       yield: 18.20, min: "KES 100",   note: "Download Zidi App — T+1/T+2 withdrawal" },
+    { name: "Etica Capital MMF (Zidi)", yield: 18.20, min: "KES 1,000", note: "Paybill 511116 · T+1" },
+    { name: "Lofty-Corpin MMF",         yield: 17.50, min: "KES 1,000", note: "Paybill 512600 · Instant" },
+    { name: "Cytonn Money Market",      yield: 16.90, min: "KES 1,000", note: "Paybill 525200 · T+2" },
+    { name: "NCBA Money Market",        yield: 16.20, min: "KES 1,000", note: "Paybill 880100 · Instant" },
+    { name: "KCB Money Market",         yield: 15.80, min: "KES 1,000", note: "Paybill 522522 · T+1" },
+    { name: "Britam Money Market",      yield: 15.50, min: "KES 1,000", note: "Paybill 602600 · T+1" },
+    { name: "Sanlam Investments MMF",   yield: 15.10, min: "KES 5,000", note: "T+2" },
+    { name: "ICEA Lion MMF",            yield: 14.50, min: "KES 5,000", note: "Paybill 402402 · T+1" },
+    { name: "CIC Money Market",         yield: 13.60, min: "KES 5,000", note: "Paybill 174174 · T+1" },
+    { name: "Old Mutual MMF",           yield: 13.40, min: "KES 1,000", note: "Paybill 542542 · T+2" },
+    { name: "Absa MMF",                 yield: 13.20, min: "KES 1,000", note: "Paybill 303030 · T+1" },
+  ];
 
-    { name: "Lofty Corpin MMF",       yield: 17.50, min: "KES 1,000", note: "" },
-    { name: "Safaricom Ziidi",        yield: 16.80, min: "KES 100",   note: "via M-Pesa Ziidi menu" },
-    { name: "Cytonn MMF",             yield: 16.90, min: "KES 1,000", note: "" },
-    { name: "NCBA MMF",               yield: 16.20, min: "KES 1,000", note: "bank-backed" },
-    { name: "KCB Money Market Fund",  yield: 15.80, min: "KES 1,000", note: "bank-backed" },
-    { name: "Britam MMF",             yield: 15.50, min: "KES 1,000", note: "" },
-    { name: "Sanlam MMF",             yield: 15.10, min: "KES 1,000", note: "" },
-    { name: "Genghis Capital MMF",    yield: 14.20, min: "KES 1,000", note: "" },
-    { name: "CIC Money Market Fund",  yield: 13.60, min: "KES 1,000", note: "largest AUM" },
-    { name: "Old Mutual MMF",         yield: 13.40, min: "KES 1,000", note: "" },
+  const USD_MMF_TABLE = [
+    { name: "Nabo Africa USD MMF",  yield: 5.91 },
+    { name: "Cytonn USD MMF",       yield: 5.69 },
+    { name: "Etica USD MMF",        yield: 5.51 },
+    { name: "Old Mutual USD MMF",   yield: 5.20 },
   ];
 
   const GOVT_TABLE = [
@@ -1810,40 +1907,55 @@ async function handleMarkets(waId: string) {
     { name: "91-Day T-Bill",   yield: 15.78, net: 13.41, note: "net after 15% WHT" },
   ];
 
-  const MEDALS = ["🥇", "🥈", "🥉", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣"];
+  const MEDALS = ["🥇", "🥈", "🥉", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"];
 
   let msg = `📊 *SENTILL LIVE YIELD TABLE*\n_${now}_\n\n`;
 
   msg += `━━━━━━━━━━━━━━━━━━\n`;
-  msg += `💰 *MONEY MARKET FUNDS*\n`;
-  msg += `_T+1 liquidity • CMA regulated • Monthly interest_\n\n`;
+  msg += `💰 *MONEY MARKET FUNDS (KES)*\n`;
+  msg += `_Gross yield • Net of fees • 15% WHT applies on interest_\n`;
+  msg += `_T+2–5 days withdrawal • CMA regulated_\n\n`;
   MMF_TABLE.forEach((f, i) => {
     const medal = MEDALS[i] ?? `${i+1}.`;
     const note = f.note ? ` _(${f.note})_` : "";
-    msg += `${medal} *${f.name}* — *${f.yield.toFixed(2)}%*${note}\n   Min: ${f.min}\n`;
+    const netYield = (f.yield * 0.85).toFixed(2);
+    msg += `${medal} *${f.name}* — *${f.yield.toFixed(2)}%* gross (*${netYield}%* net after WHT)${note}\n   Min: ${f.min}\n`;
+  });
+
+  msg += `\n━━━━━━━━━━━━━━━━━━\n`;
+  msg += `💵 *USD MONEY MARKET FUNDS*\n`;
+  msg += `_Dollar returns + KES depreciation hedge_\n\n`;
+  USD_MMF_TABLE.forEach((f, i) => {
+    const medal = MEDALS[i] ?? `${i+1}.`;
+    msg += `${medal} *${f.name}* — *${f.yield.toFixed(2)}% USD* p.a.\n`;
   });
 
   msg += `\n━━━━━━━━━━━━━━━━━━\n`;
   msg += `🏛️ *GOVERNMENT SECURITIES*\n`;
-  msg += `_Zero credit risk • CBK-issued • WHT applies_\n\n`;
+  msg += `_Zero credit risk • CBK-issued_\n\n`;
   GOVT_TABLE.forEach((g) => {
     const isIFB = g.name.includes("IFB");
-    msg += `• *${g.name}* — *${g.yield.toFixed(2)}%* _(${g.note})_\n`;
-    if (!isIFB) msg += `   Effective net: *${g.net.toFixed(2)}%* after WHT\n`;
+    msg += `• *${g.name}* — *${g.yield.toFixed(2)}%* gross _(${g.note})_\n`;
+    if (!isIFB) msg += `   Net after WHT: *${g.net.toFixed(2)}%*\n`;
   });
 
   msg += `\n━━━━━━━━━━━━━━━━━━\n`;
+  msg += `📌 *KEY MARKET CONTEXT*\n`;
+  msg += `• CBK 91-day T-Bill: *15.78%* — driving MMF yields to 13–18% range (April 2026)\n`;
+  msg += `• WHT: 15% on all MMF interest (rates above are *gross*)\n`;
+  msg += `• Effective net on an 18% fund ≈ *15.3%* after WHT\n`;
+  msg += `• Withdrawals: Lofty-Corpin Instant, Etica/KCB T+1, most others T+2\n\n`;
   msg += `💡 *ALPHA INSIGHT*\n`;
-  msg += `IFB Bond beats T-Bills on net yield AND is WHT-exempt.\n`;
-  msg += `Best liquid option: *Etica (Zidi)* at *18.20%* (withdraw in 1–2 business days)\n`;
-
-  msg += `Easiest entry: *Safaricom Ziidi* — invest from M-Pesa with KES 100!\n\n`;
+  msg += `IFB Bond at 18.46% (WHT-exempt) beats every MMF on a net basis (min KES 50K, 10yr tenor)\n`;
+  msg += `Best liquid KES option: *Etica Capital MMF (Zidi)* at *18.20%* gross (*15.47%* net)\n`;
+  msg += `Instant access: *Lofty-Corpin MMF* — 17.50% gross, withdraw same day\n\n`;
   msg += `📱 *QUICK COMMANDS*\n`;
+  msg += `• *MMF RATES* — full detailed MMF breakdown\n`;
   msg += `• *INVEST* — browse by category\n`;
-  msg += `• *COMPARE CIC vs Cytonn* — AI comparison\n`;
+  msg += `• *COMPARE Nabo vs Cytonn* — AI comparison\n`;
   msg += `• *CALC 100000* — project KES 100K returns\n`;
-  msg += `• *SPECIAL* — Unit Trusts, Pension, Offshore, Stocks\n\n`;
-  msg += `_ℹ️ Rates updated April 2026 • Invest via each provider directly_`;
+  msg += `• *SPECIAL* — Unit Trusts, Pension, Offshore\n\n`;
+  msg += freshness;
 
   await sendWhatsAppMessage(waId, msg);
 
@@ -1853,8 +1965,89 @@ async function handleMarkets(waId: string) {
       `What would you like to explore?`,
       [
         { id: "INVEST",    title: "💰 Browse Funds" },
-        { id: "SUBSCRIBE", title: "⚡ Go Pro" },
+        { id: "MMF RATES", title: "📋 MMF Detail" },
         { id: "MARKETS",   title: "🔄 Refresh Rates" },
+      ]
+    );
+  } catch { /* buttons optional */ }
+}
+
+async function handleMMFRates(waId: string) {
+  const now = new Date().toLocaleDateString("en-KE", { day: "numeric", month: "long", year: "numeric" });
+  const freshness = await getRatesFreshness();
+
+  let msg = `💰 *KENYA MMF RATES — ${now}*\n`;
+  msg += `_Effective annual yields • Gross before 15% WHT_\n\n`;
+
+  msg += `━━━━━━━━━━━━━━━━━━\n`;
+  msg += `🏆 *TOP PERFORMERS (KES)*\n\n`;
+  msg += `🥇 *Etica Capital MMF (Zidi)* — *18.20%* gross (*15.47%* net)\n`;
+  msg += `   Min: KES 1,000 | Paybill 511116 | T+1\n\n`;
+  msg += `🥈 *Lofty-Corpin MMF* — *17.50%* gross (*14.88%* net)\n`;
+  msg += `   Min: KES 1,000 | Paybill 512600 | Instant\n\n`;
+  msg += `🥉 *Cytonn Money Market* — *16.90%* gross (*14.37%* net)\n`;
+  msg += `   Min: KES 1,000 | Paybill 525200 | T+2\n\n`;
+  msg += `4️⃣ *NCBA Money Market* — *16.20%* gross (*13.77%* net)\n`;
+  msg += `   Min: KES 1,000 | Paybill 880100 | Instant\n\n`;
+  msg += `5️⃣ *KCB Money Market* — *15.80%* gross (*13.43%* net)\n`;
+  msg += `   Min: KES 1,000 | Paybill 522522 | T+1\n\n`;
+  msg += `6️⃣ *Britam Money Market* — *15.50%* gross (*13.18%* net)\n`;
+  msg += `   Min: KES 1,000 | Paybill 602600 | T+1\n\n`;
+
+  msg += `━━━━━━━━━━━━━━━━━━\n`;
+  msg += `📊 *MORE FUNDS (KES)*\n\n`;
+  msg += `• *Sanlam Investments MMF* — 15.10% gross (12.84% net) | Min KES 5,000\n`;
+  msg += `• *ICEA Lion MMF* — 14.50% gross (12.33% net) | Paybill 402402\n`;
+  msg += `• *CIC Money Market* — 13.60% gross (11.56% net) | Largest AUM\n`;
+  msg += `• *Old Mutual MMF* — 13.40% gross (11.39% net)\n`;
+  msg += `• *Absa MMF* — 13.20% gross (11.22% net)\n\n`;
+
+  msg += `━━━━━━━━━━━━━━━━━━\n`;
+  msg += `💵 *USD MONEY MARKET FUNDS*\n`;
+  msg += `_Hedge against KES depreciation + dollar returns_\n\n`;
+  msg += `🥇 *Cytonn USD MMF* — *5.69% USD* p.a.\n`;
+  msg += `🥈 *Etica USD MMF* — *5.51% USD* p.a.\n`;
+  msg += `🥉 *Old Mutual USD MMF* — *5.20% USD* p.a.\n\n`;
+
+  msg += `━━━━━━━━━━━━━━━━━━\n`;
+  msg += `📌 *KEY FACTS YOU NEED TO KNOW*\n\n`;
+  msg += `*1. Why are MMF yields so high?*\n`;
+  msg += `CBK T-Bill rates at *15.78–16.42%* (April 2026). MMF yields track T-Bills closely.\n\n`;
+  msg += `*2. Taxation (15% Withholding Tax)*\n`;
+  msg += `All KES MMF interest is subject to 15% WHT.\n`;
+  msg += `Formula: Net yield = Gross × 0.85\n`;
+  msg += `Example: 18.20% gross → *15.47% net*\n\n`;
+  msg += `*3. Management Fees*\n`;
+  msg += `Rates shown are already net of management fees (~1–2% p.a. already deducted).\n\n`;
+  msg += `*4. Liquidity / Withdrawals*\n`;
+  msg += `Fastest: *Lofty-Corpin* (Instant), *Etica Zidi* (T+1)\n`;
+  msg += `Most others: *T+1 to T+2* to your bank/M-Pesa\n\n`;
+  msg += `*5. Safety*\n`;
+  msg += `All CMA-licensed funds invest in CBK T-Bills & bank deposits.\n`;
+  msg += `Zero history of capital loss in Kenya MMF sector.\n\n`;
+
+  msg += `━━━━━━━━━━━━━━━━━━\n`;
+  msg += `📱 *HOW TO START*\n`;
+  msg += `• Etica/Zidi: Download *Zidi App* → KES 100 min\n`;
+  msg += `• Cytonn: Download *Cytonn App* → KES 1,000 min\n`;
+  msg += `• Lofty-Corpin: Paybill *512600* → KES 1,000 min\n`;
+  msg += `• Old Mutual: *oldmutual.co.ke* → KES 1,000 min\n\n`;
+  msg += `💡 *BETTER ALTERNATIVE FOR LONG TERM*\n`;
+  msg += `IFB Bond at *18.46%* (WHT-exempt!) beats every MMF.\n`;
+  msg += `Min KES 50,000 | 6.5yr tenor | Via DhowCSD\n`;
+  msg += `Reply *BOND* or *IFB* for the full guide.\n\n`;
+  msg += freshness;
+
+  await sendWhatsAppMessage(waId, msg);
+
+  try {
+    await sendInteractiveButtons(
+      waId,
+      "What would you like to do next?",
+      [
+        { id: "CALC 100000",  title: "🧮 Project Returns" },
+        { id: "IFB",          title: "🏛️ IFB Bond Guide" },
+        { id: "LIST",         title: "📋 Pick a Fund" },
       ]
     );
   } catch { /* buttons optional */ }
@@ -3195,28 +3388,27 @@ async function handleMMFListMenu(waId: string, userId?: string) {
   return sendListMessage(
     waId,
     "📊 Sentill Money Market Funds",
-    "Pick a fund below to get full details — yield, minimum investment, how to invest, and a personal projection.\n\nAll rates as at April 2026:",
+    "Pick a fund below to get full details — yield, minimum investment, how to invest, and a personal projection.\n\nAll rates as at April 2026 (gross, before 15% WHT):",
     "View Funds",
     [
       {
         title: "🏆 Highest Yield Funds",
         rows: [
-          { id: "CAT_MONEY_MARKET", title: "Etica MMF (Zidi)", description: "18.20% p.a. · Min KES 100 · Download Zidi App" },
-
-          { id: "CAT_MONEY_MARKET", title: "Lofty Corpin MMF",  description: "16.80% p.a. · Min KES 1,000" },
-          { id: "CAT_MONEY_MARKET", title: "Kuza MMF",          description: "16.50% p.a. · Min KES 1,000" },
-          { id: "CAT_MONEY_MARKET", title: "GenCap Hela MMF",   description: "16.20% p.a. · Min KES 1,000" },
-          { id: "CAT_MONEY_MARKET", title: "CIC Money Market",  description: "15.90% p.a. · Kenya's Largest" },
+          { id: "CAT_MONEY_MARKET", title: "Etica Capital MMF (Zidi)", description: "18.20% p.a. · Min KES 1,000 · Top performer" },
+          { id: "CAT_MONEY_MARKET", title: "Lofty-Corpin MMF",       description: "17.50% p.a. · Min KES 1,000 · Instant" },
+          { id: "CAT_MONEY_MARKET", title: "Cytonn Money Market",    description: "16.90% p.a. · Min KES 1,000" },
+          { id: "CAT_MONEY_MARKET", title: "NCBA Money Market",      description: "16.20% p.a. · Min KES 1,000 · Instant" },
+          { id: "CAT_MONEY_MARKET", title: "KCB Money Market",       description: "15.80% p.a. · Min KES 1,000" },
         ],
       },
       {
-        title: "🏦 Bank-Backed Funds",
+        title: "🏦 Bank-Backed & Popular Funds",
         rows: [
-          { id: "CAT_MONEY_MARKET", title: "NCBA Loop MMF",     description: "12.10% p.a. · Instant Liquidity" },
-          { id: "CAT_MONEY_MARKET", title: "KCB Wealth MMF",    description: "11.40% p.a. · Tier 1 Bank" },
-          { id: "CAT_MONEY_MARKET", title: "Co-op Trust MMF",   description: "13.20% p.a. · Co-op Stability" },
-          { id: "CAT_MONEY_MARKET", title: "Absa Asset Capital", description: "12.50% p.a. · Global Standards" },
-          { id: "CAT_MONEY_MARKET", title: "Sanlam Pesa MMF",   description: "14.78% p.a. · Institutional" },
+          { id: "CAT_MONEY_MARKET", title: "Britam Money Market",  description: "15.50% p.a. · Min KES 1,000" },
+          { id: "CAT_MONEY_MARKET", title: "Sanlam Investments MMF", description: "15.10% p.a. · Min KES 5,000" },
+          { id: "CAT_MONEY_MARKET", title: "ICEA Lion MMF",      description: "14.50% p.a. · Min KES 5,000" },
+          { id: "CAT_MONEY_MARKET", title: "CIC Money Market",   description: "13.60% p.a. · Largest AUM" },
+          { id: "CAT_MONEY_MARKET", title: "Old Mutual MMF",     description: "13.40% p.a. · Min KES 1,000" },
         ],
       },
     ],
