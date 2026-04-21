@@ -1,8 +1,20 @@
 {
   "crons": [
     {
+      "path": "/api/cron/rates-update",
+      "schedule": "45 3 * * *"
+    },
+    {
       "path": "/api/cron/market-sync",
       "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/rates-sync",
+      "schedule": "0 7 * * 1"
+    },
+    {
+      "path": "/api/cron/rates-sync",
+      "schedule": "0 7 * * 3"
     },
     {
       "path": "/api/cron/whatsapp-daily?slot=MORNING",

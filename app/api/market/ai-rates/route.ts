@@ -1,115 +1,116 @@
+/**
+ * app/api/market/ai-rates/route.ts
+ * Returns current Kenya market rates.
+ *
+ * Source priority:
+ *  1. MarketRateCache (DB) — written daily at 6:45 AM EAT by /api/cron/rates-update
+ *  2. AUTHORITATIVE_RATES — April 2026 verified fallback (used if DB empty or stale)
+ *
+ * The old pattern of calling Gemini on every GET request is removed —
+ * rates are now fetched once daily in the cron and cached in the DB.
+ */
+
 import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 
-const API_KEY = process.env.GEMINI_API_KEY;
-
-// ── Authoritative Kenya Market Data — April 2026 ─────────────────────────────
-// These values are ground truth used as base/override for AI outputs.
+// ── Authoritative fallback — April 2026, verified from CBK/CMA sources ────────
+// Only used when DB is empty or the cron hasn't run yet.
 const AUTHORITATIVE_RATES: Record<string, number> = {
-  // Money Market Funds (yields in % p.a.)
-  "ZIDI":        18.20,
-  "ETCA":        18.20, // Etica Capital MMF (Zidi app)
-  "LOFTY":       17.50, // Lofty-Corpin MMF
-  "CYTONN-MMF":  16.90,
-  "NCBA-MMF":    16.20,
-  "KCB-MMF":     15.80,
-  "BRITAM-MMF":  15.50,
-  "SANLAM-MMF":  15.10,
-  "CIC-MMF":     13.60,
-  "OLDMUT-MMF":  13.40,
-  "ABSA-MMF":    13.20,
+  // Money Market Funds (gross yield % p.a. before 15% WHT)
+  "ZIDI":         18.20,
+  "ETCA":         18.20,
+  "LOFTY-MMF":    17.50,
+  "CYTONN-MMF":   16.90,
+  "NCBA-MMF":     16.20,
+  "KCB-MMF":      15.80,
+  "BRITAM-MMF":   15.50,
+  "SANLAM-MMF":   15.10,
+  "CIC-MMF":      13.60,
+  "OLDMUT-MMF":   13.40,
+  "ABSA-MMF":     13.20,
+  "ICEA-MMF":     14.50,
   // Government Securities
-  "IFB1-2024":   18.46, // Infrastructure Bond — WHT exempt
-  "IFB2-2023":   17.93,
-  "364-TBILL":   16.42,
-  "182-TBILL":   15.97,
-  "91-TBILL":    15.78,
-  "2YR-BOND":    16.80,
-  // NSE Stocks (price, KES)
-  "SCOM":        30.60,
-  "EQTY":        77.00,
-  "KCB":         45.50,
-  "NCBA":        91.25,
-  "COOP":        18.50,
-  "ABSA":        16.50,
-  // Forex
+  "IFB1-2024":    18.46,  // WHT-exempt
+  "IFB2-2023":    17.93,  // WHT-exempt
+  "364-TBILL":    16.42,
+  "182-TBILL":    15.97,
+  "91-TBILL":     15.78,
+  "2YR-BOND":     16.80,
+  // NSE Stocks (KES price)
+  "SCOM":         30.60,
+  "EQTY":         77.00,
+  "KCB":          45.50,
+  "NCBA":         91.25,
+  "COOP":         18.50,
+  "ABSA":         16.50,
+  "EABL":        120.00,
+  "SCBK":        250.00,
+  // Macro
   "USD-KES":     129.50,
+  "CBK_RATE":     10.75,
+  "INFLATION":     4.90,
 };
 
-// Legacy-compatible aliases (for existing homepage chart code)
+// Legacy aliases kept for backward-compat with homepage chart code
 const LEGACY_ALIASES: Record<string, string> = {
+  "LOFTY":    "LOFTY-MMF",
   "IFB-2024": "IFB1-2024",
-  "ETCA":     "ETCA",
-  "LOFTY":    "LOFTY",
 };
-
-const MARKET_CONTEXT = `
-Kenya Investment Market — April 2026:
-- CBK base rate: 10.75% (held steady)
-- Inflation: ~4.9% (KNBS Feb 2026)
-- Top MMF: Zidi/Etica at 18.20%, Lofty Corpin at 17.50%, Cytonn at 16.90%
-- Best T-Bill: 364-Day at 16.42% (net 13.96% after 15% WHT)
-- Best Bond: IFB1/2024 at 18.46% — WHT exempt (tax-free)
-- USD/KES: 129.50
-- NSE NASI: ~211 level (stable)
-- Safaricom: KES 30.60 | Equity Group: KES 77.00 | NCBA: KES 91.25
-`;
 
 export async function GET() {
+  let dbRates: Record<string, number> = {};
+  let lastSynced: string | null = null;
+  let dbSource = "empty";
+
+  // ── 1. Read from MarketRateCache (DB) ──────────────────────────────────────
   try {
-    let aiRates: Record<string, number> = {};
+    const cached = await prisma.marketRateCache.findMany({
+      orderBy: { lastSyncedAt: "desc" },
+    });
 
-    if (API_KEY) {
-      try {
-        const prompt = `You are the Sentill Market Intelligence Hub for Kenya.
-Based on this context: ${MARKET_CONTEXT}
+    if (cached.length > 0) {
+      for (const row of cached) {
+        dbRates[row.symbol] = row.price;
+      }
+      lastSynced = cached[0].lastSyncedAt.toISOString();
 
-Output ONLY a raw JSON object with current market rates. Keys = instrument IDs, values = numbers.
-Include: SCOM, EQTY, KCB, NCBA, COOP, ABSA, USD-KES, ZIDI, ETCA, IFB1-2024, 91-TBILL, 364-TBILL
-Example format: { "SCOM": 30.60, "ZIDI": 18.20, "IFB1-2024": 18.46 }
-Output ONLY JSON, no explanation.`;
-
-        const res = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
-            signal: AbortSignal.timeout(6000),
-          }
-        );
-
-        if (res.ok) {
-          const data = await res.json();
-          const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
-          const jsonMatch = rawText.match(/\{[\s\S]*\}/);
-          if (jsonMatch) {
-            try {
-              const parsed = JSON.parse(jsonMatch[0]);
-              Object.entries(parsed).forEach(([k, v]) => {
-                aiRates[k.toUpperCase().replace(/_/g, "-")] = v as number;
-              });
-            } catch {}
-          }
-        }
-      } catch (aiErr) {
-        console.warn("[AI RATES] Gemini call failed, using authoritative data:", aiErr);
+      // Check freshness — warn if DB is stale (>26 hours)
+      const ageHours = (Date.now() - cached[0].lastSyncedAt.getTime()) / 3_600_000;
+      dbSource = ageHours < 26 ? "db-fresh" : "db-stale";
+      if (ageHours >= 26) {
+        console.warn(`[AI Rates] DB rates are ${ageHours.toFixed(1)}h old — cron may have missed`);
       }
     }
-
-    // Authoritative data always wins (override any AI hallucination)
-    const rates = { ...aiRates, ...AUTHORITATIVE_RATES };
-
-    return NextResponse.json({
-      success: true,
-      timestamp: new Date().toISOString(),
-      source: Object.keys(aiRates).length > 0 ? "Gemini + Authoritative" : "Authoritative",
-      rates,
-    });
-  } catch (error) {
-    return NextResponse.json({
-      success: true,
-      source: "Authoritative Fallback",
-      rates: AUTHORITATIVE_RATES,
-    });
+  } catch (err) {
+    console.error("[AI Rates] DB read failed:", err);
   }
+
+  // ── 2. Merge: DB rates override AUTHORITATIVE, then apply fixed IFB values ──
+  const rates: Record<string, number> = {
+    ...AUTHORITATIVE_RATES,
+    ...dbRates,
+    // IFB bonds are fixed — always override regardless of DB
+    "IFB1-2024": 18.46,
+    "IFB2-2023": 17.93,
+  };
+
+  // ── 3. Apply legacy aliases ────────────────────────────────────────────────
+  for (const [alias, canonical] of Object.entries(LEGACY_ALIASES)) {
+    if (rates[canonical] && !rates[alias]) {
+      rates[alias] = rates[canonical];
+    }
+  }
+
+  const source = Object.keys(dbRates).length > 0
+    ? dbSource
+    : "authoritative-fallback";
+
+  return NextResponse.json({
+    success: true,
+    timestamp: new Date().toISOString(),
+    lastSynced,
+    source,
+    rateCount: Object.keys(rates).length,
+    rates,
+  });
 }
