@@ -334,7 +334,7 @@ export async function GET(req: Request) {
         for (const user of mmfHolders) {
           if (!user.whatsappId) continue;
           const firstName = (user.name as string)?.split(" ")[0] ?? "Investor";
-          const fundYield  = Number(user.currentYield ?? 17.5);
+          const fundYield  = Number(user.currentYield ?? 12.9);
           const fundName   = (user.providerName as string) ?? "your MMF";
           const extra      = (18.46 - fundYield).toFixed(2);
           const mmfNet     = Math.round(100000 * fundYield / 100 * 0.85).toLocaleString();
@@ -400,9 +400,9 @@ export async function GET(req: Request) {
 
         // 5 rotating hooks — different each day of the week
         const hooks = [
-          { emoji: "📈", headline: "T-Bill rates are at 16.42% this week", cta: "Reply *TBILL* to see how to invest in under 5 minutes." },
+          { emoji: "📈", headline: "T-Bill rates are at 16.42% this week — government-backed, zero risk", cta: "Reply *TBILL* to see how to invest in under 5 minutes." },
           { emoji: "🔥", headline: "IFBs — 18.46% p.a. with ZERO withholding tax", cta: "Reply *IFB* for the full step-by-step guide." },
-          { emoji: "💰", headline: "Etica Zidi MMF is yielding 17.5% p.a. right now", cta: "Reply *MMF* to see the top-ranked funds." },
+          { emoji: "💰", headline: "Nabo Africa MMF is yielding 12.90% p.a. right now — Kenya's top fund", cta: "Reply *MMF* to see the top-ranked funds." },
           { emoji: "📊", headline: "NSE: Equity Group is one of Africa's fastest-growing banks", cta: "Reply *NSE* for live prices and AI stock analysis." },
           { emoji: "🎯", headline: "Your money is doing nothing. Let's change that.", cta: "Reply *MENU* to see all 12 investment options available to you." },
         ];

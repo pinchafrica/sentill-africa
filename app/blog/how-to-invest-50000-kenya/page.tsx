@@ -15,7 +15,7 @@ const jsonLd = { "@context": "https://schema.org", "@type": "Article", headline:
 const OPTIONS = [
   { rank:1, title:"Money Market Fund",   yield:"15.3% net", yr1:"KES 57,650",  yr3:"KES 73,600",  yr5:"KES 93,200",  min:"KES 100",    pro:"🔥 Best for liquidity",   con:"WHT reduces gross yield",   cta:"/markets/mmfs" },
   { rank:2, title:"Treasury Bill (91-Day)", yield:"13.4% net",yr1:"KES 56,700", yr3:"KES 68,400",  yr5:"KES 82,100",  min:"KES 50,000", pro:"Sovereign-backed, safest", con:"Locked till maturity",      cta:"/markets/treasuries" },
-  { rank:3, title:"Infrastructure Bond",yield:"17.5% net",   yr1:"KES 58,750", yr3:"KES 81,800",  yr5:"KES 113,600", min:"KES 3,000",  pro:"🏆 Tax-FREE returns",       con:"Multi-year commitment",     cta:"/markets/bonds" },
+  { rank:3, title:"Infrastructure Bond",yield:"18.46% net",  yr1:"KES 59,230", yr3:"KES 83,400",  yr5:"KES 116,800", min:"KES 3,000",  pro:"🏆 Tax-FREE returns",       con:"Multi-year commitment",     cta:"/markets/bonds" },
   { rank:4, title:"SACCO Shares",       yield:"16.5% total", yr1:"KES 58,250", yr3:"KES 79,100",  yr5:"KES 107,500", min:"Varies",     pro:"Loan access (3× shares)",  con:"Sector eligibility needed", cta:"/markets/saccos" },
   { rank:5, title:"NSE Equities",       yield:"Variable",    yr1:"Varies",     yr3:"Varies",       yr5:"Varies",      min:"KES 100",    pro:"Capital gains potential",  con:"High volatility risk",      cta:"/markets/nse" },
 ];

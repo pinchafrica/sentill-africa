@@ -38,8 +38,8 @@ const TOP_PERFORMERS = [
     name: "Etica Wealth MMF",
     fullName: "Etica Capital MMF",
     type: "MMF",
-    yield: 17.55,
-    netYield: 14.92,
+    yield: 18.20,
+    netYield: 15.47,
     taxCategory: "WHT_15",
     riskLevel: "Low",
     aum: "KES 18.2B",
@@ -128,13 +128,13 @@ const AI_RECOMMENDATIONS = [
     id: "mmf-ladder",
     category: "yield" as const,
     title: "MMF Ladder Strategy — Maximize Liquidity + Yield",
-    body: "Split your liquid savings across Etica (17.55%) and Lofty-Corban (17.50%). This slight diversification across two top MMFs reduces counterparty risk while maintaining excellent yield. Both are CMA-regulated Tier 1 funds.",
+    body: "Split your liquid savings across Etica (18.20%) and Lofty-Corpin (17.50%). This slight diversification across two top MMFs reduces counterparty risk while maintaining excellent yield. Both are CMA-regulated Tier 1 funds.",
     priority: "high" as const,
     action: "Explore MMFs",
     actionHref: "/dashboard/explore",
     icon: Layers,
     accentColor: "blue",
-    metric: "17.5% avg",
+    metric: "17.85% avg",
     metricLabel: "blended MMF yield"
   },
   {
@@ -426,7 +426,7 @@ export default function IntelligenceDashboard() {
                   {strategyGenerated && (
                     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="grid grid-cols-3 gap-3 mt-4">
                       {[
-                        { label: "Liquidity Shield", sublabel: "Etica MMF (40%)", amount: mmfAlloc, color: "emerald", yield: "17.55%" },
+                        { label: "Liquidity Shield", sublabel: "Etica MMF (40%)", amount: mmfAlloc, color: "emerald", yield: "18.20%" },
                         { label: "Tax-Free Anchor", sublabel: "IFB1/2024 (45%)", amount: bondsAlloc, color: "blue", yield: "18.46%" },
                         { label: "Growth Alpha", sublabel: "SCOM/EQTY (15%)", amount: stocksAlloc, color: "amber", yield: "~8.5%" }
                       ].map((t, i) => (

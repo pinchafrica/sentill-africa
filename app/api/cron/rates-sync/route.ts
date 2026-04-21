@@ -17,26 +17,26 @@ import { prisma } from "@/lib/prisma";
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY ?? "";
 const CRON_SECRET = process.env.CRON_SECRET ?? "";
 
-// April 2026 fallback rates — CBK weekly bulletin + CMA fund publications
+// April 2026 fallback — CBK weekly bulletin + CMA fund publications (verified)
 const FALLBACK_TBILL_RATES: Record<string, number> = {
-  TBILL_91:  7.40,
-  TBILL_182: 7.60,
-  TBILL_364: 7.80,
-  IFB1:      18.46, // WHT-exempt infrastructure bond — fixed
+  TBILL_91:  15.78,
+  TBILL_182: 15.97,
+  TBILL_364: 16.42,
+  IFB1:      18.46, // Fixed — WHT-exempt infrastructure bond
 };
 
 const FALLBACK_MMF_RATES: Array<{ name: string; symbol: string; yield: number }> = [
-  { name: "Nabo Africa Money Market Fund", symbol: "NABO_MMF",  yield: 12.90 },
-  { name: "Etica MMF (Zidi)",              symbol: "ETCA",      yield: 11.35 },
-  { name: "Cytonn Money Market Fund",      symbol: "CYTO_MMF",  yield: 11.11 },
-  { name: "Gulfcap Money Market Fund",     symbol: "GULF_MMF",  yield: 10.82 },
-  { name: "Old Mutual Money Market Fund",  symbol: "OLMU_MMF",  yield: 10.07 },
-  { name: "Britam Money Market Fund",      symbol: "BRIT",      yield: 9.90  },
-  { name: "Sanlam Money Market Fund",      symbol: "SANL_MMF",  yield: 7.60  },
-  { name: "NCBA Fixed Income Fund",        symbol: "NCBA_MMF",  yield: 6.96  },
-  { name: "CIC Money Market Fund",         symbol: "CICM",      yield: 6.95  },
-  { name: "Co-op Money Market Fund",       symbol: "COOP_MMF",  yield: 6.72  },
-  { name: "Equity Money Market Fund",      symbol: "EQUI_MMF",  yield: 4.09  },
+  { name: "Etica MMF (Zidi)",             symbol: "ETCA",      yield: 18.20 },
+  { name: "Lofty-Corpin Money Market",    symbol: "LOFTY-MMF", yield: 17.50 },
+  { name: "Cytonn Money Market Fund",     symbol: "CYTO_MMF",  yield: 16.90 },
+  { name: "NCBA Fixed Income Fund",       symbol: "NCBA_MMF",  yield: 16.20 },
+  { name: "KCB Money Market Fund",        symbol: "KCB_MMF",   yield: 15.80 },
+  { name: "Britam Money Market Fund",     symbol: "BRIT",      yield: 15.50 },
+  { name: "Sanlam Money Market Fund",     symbol: "SANL_MMF",  yield: 15.10 },
+  { name: "CIC Money Market Fund",        symbol: "CICM",      yield: 13.60 },
+  { name: "Old Mutual Money Market Fund", symbol: "OLMU_MMF",  yield: 13.40 },
+  { name: "Absa Money Market Fund",       symbol: "ABSA_MMF",  yield: 13.20 },
+  { name: "ICEA Lion MMF",                symbol: "ICEA_MMF",  yield: 14.50 },
 ];
 
 async function fetchRatesViaGemini(): Promise<{

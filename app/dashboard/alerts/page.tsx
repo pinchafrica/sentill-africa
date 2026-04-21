@@ -18,7 +18,7 @@ const LIVE_ALERTS = [
   { title: "IFB1/2024 Yield Update", desc: "Secondary market yield for IFB1/2024 has reached 18.6%+. This is an excellent opportunity for rotation from taxable MMFs.", type: "Market Alpha", time: "2h ago", priority: "High", icon: TrendingUp },
   { title: "Safaricom Dividend Confirmation", desc: "SCOM books closure confirmed for Jul 15. Dividend yield: 8.5% — buy before cutoff date to qualify.", type: "Corporate Action", time: "1d ago", priority: "Medium", icon: Bell },
   { title: "CBK Policy Rate Held at 10%", desc: "The Central Bank of Kenya held the MPR at 10.00% in the March 2025 MPC meeting, supporting continued strong bond yields.", type: "Macro Alert", time: "3d ago", priority: "Medium", icon: AlertCircle },
-  { title: "Etica MMF Yield: 17.55%", desc: "Etica Wealth MMF remains Kenya's top-performing money market fund for Q1 2025. Daily accrual active.", type: "Yield Update", time: "5d ago", priority: "Low", icon: Activity },
+  { title: "Etica MMF Yield: 18.20%", desc: "Etica Capital MMF remains Kenya's top-performing money market fund in 2026. Daily accrual active.", type: "Yield Update", time: "5d ago", priority: "Low", icon: Activity },
 ];
 
 export default function AlertsHubPage() {

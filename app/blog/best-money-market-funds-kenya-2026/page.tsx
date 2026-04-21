@@ -28,13 +28,13 @@ const jsonLd = {
 };
 
 const MMF_TABLE = [
-  { rank: 1,  name: "Zidi by Sanlam",             yield: "18.2%", min: "KES 100",    liquidity: "T+1",  manager: "Sanlam" },
-  { rank: 2,  name: "Etica Capital MMF",           yield: "18.0%", min: "KES 1,000",  liquidity: "T+1",  manager: "Etica" },
-  { rank: 3,  name: "CIC Money Market Fund",       yield: "17.5%", min: "KES 1,000",  liquidity: "T+1",  manager: "CIC Asset Mgmt" },
-  { rank: 4,  name: "Britam MMF",                  yield: "16.8%", min: "KES 1,000",  liquidity: "T+2",  manager: "Britam" },
-  { rank: 5,  name: "NCBA MMF",                    yield: "16.5%", min: "KES 5,000",  liquidity: "T+1",  manager: "NCBA" },
-  { rank: 6,  name: "Cytonn MMF",                  yield: "16.2%", min: "KES 1,000",  liquidity: "T+3",  manager: "Cytonn" },
-  { rank: 7,  name: "Old Mutual MMF",              yield: "15.8%", min: "KES 1,000",  liquidity: "T+1",  manager: "Old Mutual" },
+  { rank: 1,  name: "Etica Capital MMF (Zidi)",    yield: "18.20%", min: "KES 1,000",  liquidity: "T+1",  manager: "Etica Capital" },
+  { rank: 2,  name: "Lofty-Corpin MMF",            yield: "17.50%", min: "KES 1,000",  liquidity: "Instant", manager: "Lofty-Corpin" },
+  { rank: 3,  name: "Cytonn Money Market",         yield: "16.90%", min: "KES 1,000",  liquidity: "T+2",  manager: "Cytonn" },
+  { rank: 4,  name: "NCBA Money Market",           yield: "16.20%", min: "KES 1,000",  liquidity: "Instant", manager: "NCBA" },
+  { rank: 5,  name: "KCB Money Market",            yield: "15.80%", min: "KES 1,000",  liquidity: "T+1",  manager: "KCB" },
+  { rank: 6,  name: "Britam Money Market",         yield: "15.50%", min: "KES 1,000",  liquidity: "T+1",  manager: "Britam" },
+  { rank: 7,  name: "Sanlam Investments MMF",      yield: "15.10%", min: "KES 5,000",  liquidity: "T+2",  manager: "Sanlam" },
   { rank: 8,  name: "Sanlam MMF",                  yield: "15.5%", min: "KES 500",    liquidity: "T+1",  manager: "Sanlam" },
   { rank: 9,  name: "Dry Associates MMF",          yield: "15.2%", min: "KES 1,000",  liquidity: "T+2",  manager: "Dry Associates" },
   { rank: 10, name: "ICEA Lion MMF",               yield: "14.8%", min: "KES 1,000",  liquidity: "T+1",  manager: "ICEA Lion" },

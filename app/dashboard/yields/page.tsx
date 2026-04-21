@@ -10,7 +10,7 @@ import Link from "next/link";
 
 const YIELD_TABLE = [
   // MMFs
-  { name: "Etica Wealth MMF", category: "mmf", yield: 17.55, tenure: "Daily liquidity", risk: "Low", tax: "15% WHT", minInvest: "KES 1,000", trend: "up", change: "+0.12", regulated: "CMA" },
+  { name: "Etica Capital MMF (Zidi)", category: "mmf", yield: 18.20, tenure: "Daily liquidity", risk: "Low", tax: "15% WHT", minInvest: "KES 1,000", trend: "up", change: "+0.65", regulated: "CMA" },
   { name: "Lofty-Corban MMF", category: "mmf", yield: 17.50, tenure: "Daily liquidity", risk: "Low", tax: "15% WHT", minInvest: "KES 1,000", trend: "up", change: "+0.08", regulated: "CMA" },
   { name: "Sanlam USD MMF", category: "mmf", yield: 6.20, tenure: "Daily liquidity", risk: "Low", tax: "15% WHT", minInvest: "USD 100", trend: "stable", change: "0.00", regulated: "CMA" },
   { name: "CIC Money Market", category: "mmf", yield: 16.90, tenure: "Daily liquidity", risk: "Low", tax: "15% WHT", minInvest: "KES 1,000", trend: "down", change: "-0.05", regulated: "CMA" },
@@ -69,7 +69,7 @@ export default function YieldsPage() {
       {/* KPI Summary Row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: "Best MMF Yield", value: "17.55%", sub: "Etica Wealth", color: "text-violet-600", bg: "bg-violet-50", border: "border-violet-100", icon: ShieldCheck },
+          { label: "Best MMF Yield", value: "18.20%", sub: "Etica (Zidi)", color: "text-violet-600", bg: "bg-violet-50", border: "border-violet-100", icon: ShieldCheck },
           { label: "Best Bond (Tax-Free)", value: "18.46%", sub: "IFB1/2024 8.5yr", color: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-100", icon: Landmark },
           { label: "NSE Top Dividend", value: "9.10%", sub: "NCBA Group", color: "text-orange-500", bg: "bg-orange-50", border: "border-orange-100", icon: BarChart2 },
           { label: "Global ETF (USD)", value: "11.20%", sub: "US S&P 500 ETF", color: "text-slate-600", bg: "bg-slate-50", border: "border-slate-200", icon: Globe },

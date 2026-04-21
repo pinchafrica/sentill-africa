@@ -53,7 +53,7 @@ function generateRecommendations(assets: Asset[]): AIRecommendation[] {
       id: "start",
       category: "yield",
       title: "Start With a High-Alpha Foundation",
-      body: "The Etica Wealth MMF at 17.55% p.a. is the perfect first step for most Kenyan investors — liquid, regulated, and CMA-approved.",
+      body: "The Etica Capital MMF at 18.20% p.a. is the perfect first step for most Kenyan investors — liquid, regulated, and CMA-approved.",
       action: "Log Your First Asset",
       actionHref: "?logAsset=etica",
       priority: "high"
@@ -92,7 +92,7 @@ function generateRecommendations(assets: Asset[]): AIRecommendation[] {
       id: "yield-up",
       category: "yield",
       title: "Your Average Yield Can Be Improved",
-      body: `Your current blended yield is ${avgYield.toFixed(1)}%. Moving to higher-yielding instruments like Etica MMF (17.55%) or IFBs (18.46%) could significantly increase returns.`,
+      body: `Your current blended yield is ${avgYield.toFixed(1)}%. Moving to higher-yielding instruments like Etica MMF (18.20%) or IFBs (18.46%) could significantly increase returns.`,
       action: "Find Higher Yields",
       actionHref: "/dashboard/yields",
       priority: "medium"
@@ -611,7 +611,7 @@ function EmptyState() {
                   <span className="text-[9px] font-bold text-slate-500 uppercase">Liquid Money Market</span>
                 </div>
               </div>
-              <span className="text-[10px] font-black text-blue-600 bg-blue-50 px-3 py-1 rounded-lg">17.5% Annual</span>
+              <span className="text-[10px] font-black text-blue-600 bg-blue-50 px-3 py-1 rounded-lg">18.2% Annual</span>
             </Link>
           </div>
           <div className="pt-4 text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center justify-center gap-2">

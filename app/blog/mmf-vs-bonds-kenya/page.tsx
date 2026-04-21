@@ -43,7 +43,7 @@ export default function MMFvsBondsPage() {
           <div className="bg-violet-50 border border-violet-200 rounded-2xl p-6 mb-10">
             <h2 className="text-xs font-black text-violet-800 uppercase tracking-widest mb-3">📌 Short Answer</h2>
             <ul className="space-y-2">
-              {["Infrastructure Bonds (IFBs) win on yield + tax — up to 17.5% TAX-FREE", "MMFs win on liquidity — access your money in 24 hours vs months for bonds", "For long-term savings: IFB Bonds. For active/emergency funds: MMF", "Combining both is the optimal strategy for most Kenyan investors"].map((t, i) => (
+              {["Infrastructure Bonds (IFBs) win on yield + tax — up to 18.46% TAX-FREE", "MMFs win on liquidity — access your money in 24 hours vs months for bonds", "For long-term savings: IFB Bonds. For active/emergency funds: MMF", "Combining both is the optimal strategy for most Kenyan investors"].map((t, i) => (
                 <li key={i} className="flex items-start gap-2 text-sm text-violet-800 font-medium"><CheckCircle className="w-4 h-4 text-violet-600 shrink-0 mt-0.5" />{t}</li>
               ))}
             </ul>
@@ -71,9 +71,9 @@ export default function MMFvsBondsPage() {
             <div className="bg-slate-900 px-6 py-4"><p className="text-white font-black text-sm">KES 1,000,000 invested for 5 years</p></div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
-                <thead><tr className="border-b border-slate-100 bg-slate-50">{["", "MMF (17.5% gross)", "IFB Bond (17.5% gross)"].map(h=><th key={h} className="px-6 py-3 text-left text-[9px] font-black uppercase tracking-widest text-slate-500">{h}</th>)}</tr></thead>
+                <thead><tr className="border-b border-slate-100 bg-slate-50">{["", "MMF (18.20% gross)", "IFB Bond (18.46% gross, tax-free)"].map(h=><th key={h} className="px-6 py-3 text-left text-[9px] font-black uppercase tracking-widest text-slate-500">{h}</th>)}</tr></thead>
                 <tbody>
-                  {[["Gross Annual Return","KES 175,000","KES 175,000"],["Tax (15% WHT)","− KES 26,250","KES 0 ✓"],["Net Annual Return","KES 148,750","KES 175,000"],["5-Year Compounded","KES 2,059,000","KES 2,192,000"],["Tax Alpha","—","+ KES 133,000 more"]].map(([label,a,b],i)=>(
+                  {[["Gross Annual Return","KES 182,000","KES 184,600"],["Tax (15% WHT)","− KES 27,300","KES 0 ✓"],["Net Annual Return","KES 154,700","KES 184,600"],["5-Year Compounded","KES 2,098,000","KES 2,264,000"],["Tax Alpha","—","+ KES 166,000 more"]].map(([label,a,b],i)=>(
                     <tr key={i} className={`border-b border-slate-100 ${i===4?"bg-emerald-50 font-black":""}`}>
                       <td className="px-6 py-3 font-bold text-slate-700">{label}</td>
                       <td className="px-6 py-3 text-slate-600">{a}</td>
