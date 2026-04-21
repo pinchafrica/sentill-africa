@@ -19,15 +19,15 @@ import {
 } from "recharts";
 
 const NSE_STOCKS = [
-  { symbol: "SCOM", name: "Safaricom PLC", price: 19.35, change: 0.35, percent: 1.84, volume: "48.2M", pe: 14.2, divYield: 7.8, cap: "775B", sector: "Telecoms", high52: 24.50, low52: 16.00 },
-  { symbol: "EQTY", name: "Equity Group Holdings", price: 48.05, change: -0.45, percent: -0.93, volume: "12.4M", pe: 7.1, divYield: 5.2, cap: "181B", sector: "Banking", high52: 56.00, low52: 38.50 },
-  { symbol: "KCB", name: "KCB Group PLC", price: 37.20, change: 0.70, percent: 1.92, volume: "9.8M", pe: 5.8, divYield: 8.1, cap: "119B", sector: "Banking", high52: 43.25, low52: 30.00 },
-  { symbol: "EABL", name: "East African Breweries", price: 125.50, change: -2.50, percent: -1.95, volume: "1.2M", pe: 22.3, divYield: 3.8, cap: "100B", sector: "Manufacturing", high52: 168.00, low52: 118.00 },
-  { symbol: "COOP", name: "Co-operative Bank", price: 12.55, change: 0.15, percent: 1.21, volume: "6.7M", pe: 4.9, divYield: 9.3, cap: "74B", sector: "Banking", high52: 15.80, low52: 10.50 },
-  { symbol: "ABSA", name: "Absa Bank Kenya", price: 14.30, change: -0.20, percent: -1.38, volume: "3.4M", pe: 6.2, divYield: 7.5, cap: "78B", sector: "Banking", high52: 18.00, low52: 12.25 },
-  { symbol: "NCBA", name: "NCBA Group", price: 27.85, change: 0.85, percent: 3.15, volume: "4.1M", pe: 5.4, divYield: 6.8, cap: "46B", sector: "Banking", high52: 32.50, low52: 22.00 },
+  { symbol: "SCOM", name: "Safaricom PLC", price: 30.60, change: 0.40, percent: 1.32, volume: "48.2M", pe: 22.5, divYield: 4.9, cap: "1,227B", sector: "Telecoms", high52: 34.00, low52: 17.50 },
+  { symbol: "EQTY", name: "Equity Group Holdings", price: 77.00, change: 1.20, percent: 1.58, volume: "12.4M", pe: 13.6, divYield: 5.7, cap: "292B", sector: "Banking", high52: 82.00, low52: 42.00 },
+  { symbol: "KCB", name: "KCB Group PLC", price: 45.50, change: 0.50, percent: 1.11, volume: "9.8M", pe: 9.4, divYield: 6.6, cap: "146B", sector: "Banking", high52: 48.00, low52: 32.00 },
+  { symbol: "EABL", name: "East African Breweries", price: 120.00, change: -1.00, percent: -0.83, volume: "1.2M", pe: 21.4, divYield: 4.0, cap: "96B", sector: "Manufacturing", high52: 148.00, low52: 110.00 },
+  { symbol: "COOP", name: "Co-operative Bank", price: 18.50, change: 0.25, percent: 1.37, volume: "6.7M", pe: 6.8, divYield: 8.1, cap: "109B", sector: "Banking", high52: 20.50, low52: 12.00 },
+  { symbol: "ABSA", name: "Absa Bank Kenya", price: 16.50, change: 0.15, percent: 0.92, volume: "3.4M", pe: 7.1, divYield: 11.2, cap: "90B", sector: "Banking", high52: 18.50, low52: 12.50 },
+  { symbol: "NCBA", name: "NCBA Group", price: 91.25, change: 1.25, percent: 1.39, volume: "4.1M", pe: 7.8, divYield: 5.0, cap: "150B", sector: "Banking", high52: 98.00, low52: 28.00 },
   { symbol: "BATK", name: "BAT Kenya", price: 430.00, change: 5.00, percent: 1.18, volume: "180K", pe: 11.5, divYield: 12.4, cap: "43B", sector: "Manufacturing", high52: 485.00, low52: 390.00 },
-  { symbol: "SCBK", name: "Standard Chartered Kenya", price: 176.00, change: -1.00, percent: -0.56, volume: "420K", pe: 9.8, divYield: 6.1, cap: "46B", sector: "Banking", high52: 199.00, low52: 148.00 },
+  { symbol: "SCBK", name: "Standard Chartered Kenya", price: 250.00, change: 2.00, percent: 0.81, volume: "420K", pe: 9.1, divYield: 9.2, cap: "65B", sector: "Banking", high52: 265.00, low52: 165.00 },
   { symbol: "KEGN", name: "KenGen PLC", price: 4.98, change: 0.08, percent: 1.63, volume: "14.3M", pe: 18.2, divYield: 4.5, cap: "32B", sector: "Energy", high52: 6.80, low52: 3.90 },
   { symbol: "STBK", name: "Stanbic Holdings", price: 112.50, change: -3.50, percent: -3.02, volume: "880K", pe: 7.3, divYield: 5.9, cap: "44B", sector: "Banking", high52: 128.00, low52: 89.00 },
   { symbol: "BAMB", name: "Bamburi Cement", price: 41.25, change: 1.25, percent: 3.12, volume: "2.1M", pe: 13.7, divYield: 4.2, cap: "15B", sector: "Manufacturing", high52: 52.00, low52: 35.00 },

@@ -16,10 +16,10 @@ import Link from "next/link";
 // ─── TIER 1 SACCO DATA (Extended for Analytics) ──────────────────────────────
 const SACCO_METRICS = [
   { name: "Stima SACCO", yield: 15.0, aum: 53.8, interest: 11.0, rating: "AAA" },
-  { name: "Police SACCO", yield: 17.0, aum: 47.9, interest: 11.0, rating: "AAA" },
-  { name: "Mwalimu National", yield: 11.2, aum: 64.5, interest: 10.5, rating: "AAA" },
-  { name: "Wanandege SACCO", yield: 15.0, aum: 12.5, interest: 10.5, rating: "AA+" },
-  { name: "Tower SACCO", yield: 20.0, aum: 31.0, interest: 13.0, rating: "AA+" },
+  { name: "Police SACCO", yield: 14.0, aum: 47.9, interest: 11.0, rating: "AAA" },
+  { name: "Mwalimu National", yield: 14.5, aum: 64.5, interest: 10.5, rating: "AAA" },
+  { name: "Wanandege SACCO", yield: 13.5, aum: 12.5, interest: 10.5, rating: "AA+" },
+  { name: "Tower SACCO", yield: 13.0, aum: 31.0, interest: 8.5, rating: "AA+" },
   { name: "Safaricom SACCO", yield: 13.0, aum: 9.3, interest: 8.0, rating: "AA+" },
   { name: "Harambee SACCO", yield: 12.0, aum: 36.2, interest: 8.5, rating: "AA" },
 ];

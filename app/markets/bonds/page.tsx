@@ -55,8 +55,8 @@ const BONDS = [
     name: "IFB2/2023",
     fullName: "Infrastructure Finance Bond 2/2023",
     type: "IFB",
-    coupon: 17.2,
-    netYield: 17.2,
+    coupon: 17.93,
+    netYield: 17.93,
     taxRate: 0,
     maturity: "2033-06-15",
     tenor: "10yr",
@@ -125,11 +125,11 @@ const BONDS = [
     name: "FXD1/2024",
     fullName: "Fixed Rate Treasury Bond 1/2024",
     type: "FXD",
-    coupon: 16.0,
-    netYield: 13.6,
+    coupon: 16.80,
+    netYield: 14.28,
     taxRate: 15,
-    maturity: "2029-03-15",
-    tenor: "5yr",
+    maturity: "2026-03-15",
+    tenor: "2yr",
     faceValue: 50000,
     minInvestment: 50000,
     issuer: "Government of Kenya",
@@ -381,7 +381,7 @@ export default function BondsPage() {
                 <XAxis dataKey="tenor" tick={{ fill: "#94a3b8", fontSize: 11 }} />
                 <YAxis domain={[12, 20]} tickFormatter={(v) => `${v}%`} tick={{ fill: "#94a3b8", fontSize: 11 }} />
                 <Tooltip content={<CustomTooltip />} />
-                <ReferenceLine y={16} stroke="#f59e0b" strokeDasharray="4 4" label={{ value: "CBR ~16%", fill: "#f59e0b", fontSize: 10 }} />
+                <ReferenceLine y={10.75} stroke="#f59e0b" strokeDasharray="4 4" label={{ value: "CBR 10.75%", fill: "#f59e0b", fontSize: 10 }} />
                 <Line
                   type="monotone"
                   dataKey="yield"
@@ -923,7 +923,7 @@ export default function BondsPage() {
                 color: "amber",
                 title: "Rate Trajectory",
                 insight:
-                  "With CBR at 13%, bond yields face downward pressure. Locking in today's 18%+ IFB rates may prove advantageous as the cycle turns.",
+                  "With CBR at 10.75%, bond yields remain elevated. Locking in today's 18.46% IFB rates while the cycle holds may prove advantageous before the next MPC cut.",
               },
               {
                 icon: Shield,

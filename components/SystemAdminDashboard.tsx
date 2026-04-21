@@ -91,7 +91,7 @@ export default function SystemAdminDashboard({
     return () => clearInterval(interval);
   }, []);
 
-  const etca = liveRates.mmfs.find((m: any) => m.code === "etca")?.yield || "17.55";
+  const etca = liveRates.mmfs.find((m: any) => m.code === "etca")?.yield || "18.20";
   const scom = liveRates.nse.find((s: any) => s.symbol === "SCOM")?.price || "30.60";
 
   const dynamicRiskMatrix = [
