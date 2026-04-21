@@ -142,11 +142,12 @@ async function handleNSEStocks(waId: string, userId?: string) {
 
   msg += `\n━━━━━━━━━━━━━━━━━━\n`;
   msg += `🟢 BUY signal  🟡 WATCH  (no signal = HOLD)\n\n`;
-  msg += `💡 *Type any ticker for deep AI analysis:*\n`;
+  msg += `💡 *Type any ticker for full Sentill breakdown:*\n`;
   msg += `_SCOM · EQTY · KCB · COOP · NCBA · EABL_\n\n`;
-  msg += `📱 *How to buy NSE stocks:*\n`;
-  msg += `Use your mobile broker app or M-Pesa investing platforms\n\n`;
-  msg += `_Send *NSE GUIDE* for the beginner's investing guide_\n`;
+  msg += `📱 *Easiest way to buy NSE stocks:*\n`;
+  msg += `*Ziidi app* (by Safaricom) — M-Pesa, from KES 100\n`;
+  msg += `➡️ Open Safaricom app → *Ziidi* → Stocks → Buy\n\n`;
+  msg += `_Send *NSE GUIDE* for the full beginner's guide + rules_\n`;
   msg += `_Send *DIVIDEND* for upcoming book closure calendar_`;
 
   return sendWhatsAppMessage(waId, msg);
@@ -177,7 +178,7 @@ async function handleDividendCalendar(waId: string) {
   msg += `The cut-off date the company uses to determine who gets paid.\n`;
   msg += `You must hold shares on or before this date to receive the dividend.\n\n`;
   msg += `🟢 _Reply *STOCKS* for live NSE prices_\n`;
-  msg += `📈 _Reply ticker symbol (e.g. SCBK) for AI analysis_`;
+  msg += `📈 _Reply ticker symbol (e.g. SCBK) for Sentill analysis_`;
 
   return sendWhatsAppMessage(waId, msg);
 }
@@ -220,45 +221,66 @@ async function handleNSEStockLookup(waId: string, symbol: string, userId?: strin
   msg += `━━━━━━━━━━━━━━━━━━\n`;
   msg += `🧠 *Sentill Africa Analysis:*\n\n${aiText}\n\n`;
   msg += `━━━━━━━━━━━━━━━━━━\n`;
-  msg += `📱 *To buy ${symbol}:*\n`;
-  msg += `Open your NSE broker app → Search *${symbol}* → Enter amount → Confirm\n`;
-  msg += `_(Many brokers accept M-Pesa from KES 100)_\n\n`;
-  msg += `_⚠️ This is not financial advice. Invest responsibly._`;
+  msg += `📱 *How to buy ${symbol} today:*\n\n`;
+  msg += `1️⃣ *Easiest — Ziidi by Safaricom* (M-Pesa, from KES 100)\n`;
+  msg += `   Open Safaricom app → *Ziidi* → Stocks → Search *${symbol}* → Buy\n\n`;
+  msg += `2️⃣ *Broker apps* — NCBA Go-Live, Faida F-Trade, Dyer & Blair\n`;
+  msg += `   _(Commission ~1.5–2.5% per trade, M-Pesa supported)_\n\n`;
+  msg += `📊 _Reply *DIVIDEND* for book closure dates_\n`;
+  msg += `📖 _Reply *NSE GUIDE* for full beginner rules_\n\n`;
+  msg += `_⚠️ Market intelligence only — not licensed investment advice._`;
 
   return sendWhatsAppMessage(waId, msg);
 }
 
 async function handleNSEBeginnersGuide(waId: string) {
   const msg =
-    `📊 *NSE STOCKS — BEGINNER'S GUIDE*\n` +
-    `_Buy Kenyan company shares from your phone_\n\n` +
+    `📊 *NSE STOCKS — BEGINNER'S COMPLETE GUIDE*\n` +
+    `_Own Kenyan companies from your phone, from KES 100_\n\n` +
     `━━━━━━━━━━━━━━━━━━\n\n` +
-    `*How to buy NSE stocks:*\n` +
-    `Use any licensed NSE broker or mobile investing app.\n` +
-    `Many now accept M-Pesa with a minimum of *KES 100*.\n\n` +
-    `✅ No physical paperwork needed (digital KYC)\n` +
-    `✅ Start from as little as KES 100\n` +
-    `✅ Dividends paid to M-Pesa or bank account\n` +
-    `✅ Commission: ~1.5–2% per trade (varies by broker)\n\n` +
+    `🟢 *EASIEST WAY TO START — ZIIDI BY SAFARICOM*\n\n` +
+    `Ziidi is Safaricom's investing app — M-Pesa native,\n` +
+    `built for first-time investors.\n\n` +
+    `*Steps:*\n` +
+    `1. Open your Safaricom app\n` +
+    `2. Tap *Ziidi* under Financial Services\n` +
+    `3. Create account (takes 2 min, digital KYC)\n` +
+    `4. Search a stock (e.g. SCOM, KCB, EQTY)\n` +
+    `5. Tap *Buy* — pay via M-Pesa from *KES 100*\n\n` +
+    `✅ No paperwork needed — just your ID\n` +
+    `✅ Dividends go straight to M-Pesa\n` +
+    `✅ Track your shares in the Ziidi app\n` +
+    `✅ Sell anytime during market hours\n\n` +
     `━━━━━━━━━━━━━━━━━━\n` +
-    `🏆 *Sentill Beginner Portfolio:*\n` +
-    `_(for KES 5,000–10,000 first-time investors)_\n\n` +
+    `📋 *NSE TRADING RULES YOU MUST KNOW:*\n\n` +
+    `⏰ *Trading hours:* Mon–Fri, 9:00am – 3:00pm EAT\n` +
+    `📅 *Settlement:* T+3 (money/shares clear in 3 days)\n` +
+    `💸 *Commission:* ~1.5–2.5% per trade (Ziidi ~1.5%)\n` +
+    `🏛️ *Regulator:* CMA (Capital Markets Authority)\n` +
+    `🏦 *Your shares are held* in a CDS account (safe, separate from broker)\n` +
+    `📊 *Dividends tax:* 5% WHT deducted automatically\n` +
+    `📈 *Capital gains:* Currently *0% tax* in Kenya 🎉\n\n` +
+    `━━━━━━━━━━━━━━━━━━\n` +
+    `🏆 *SENTILL BEGINNER PORTFOLIO (KES 5K–10K):*\n\n` +
     `1️⃣ *KCB Group (KCB)* — 40% of budget\n` +
-    `   _Cheapest big bank, highest dividend on NSE (~6.8%)_\n\n` +
+    `   _Highest dividend on NSE (~6.8%), trading cheap_\n\n` +
     `2️⃣ *Equity Group (EQTY)* — 40% of budget\n` +
-    `   _Kenya's most profitable bank, pan-Africa growth_\n\n` +
+    `   _Kenya's most profitable bank, growing in 7 countries_\n\n` +
     `3️⃣ *Safaricom (SCOM)* — 20% of budget\n` +
-    `   _Dominant telco & M-Pesa, you use it every day_\n\n` +
+    `   _You use M-Pesa every day — own a piece of it_\n\n` +
+    `💡 _Example: KES 10,000 in KCB at KES 45.50_\n` +
+    `   _= 219 shares · earns ~KES 680/yr in dividends_\n\n` +
     `━━━━━━━━━━━━━━━━━━\n` +
-    `⚠️ *Key rules for beginners:*\n` +
+    `⚠️ *GOLDEN RULES:*\n` +
     `• Only invest money you won't need for 3–5 years\n` +
-    `• NSE stocks can go up AND down — diversify\n` +
-    `• Dividends have 5% WHT deducted automatically\n` +
-    `• Settlement takes T+3 (3 business days)\n\n` +
+    `• NSE stocks go up AND down — never put all in one\n` +
+    `• Never borrow money to buy stocks\n` +
+    `• Start small, learn the market first\n\n` +
     `━━━━━━━━━━━━━━━━━━\n` +
-    `🧠 *Get AI analysis on any NSE stock:*\n` +
+    `📊 *Get Sentill analysis on any stock:*\n` +
     `Type any ticker: _SCOM · EQTY · KCB · COOP · EABL_\n\n` +
-    `_Sentill Africa — research smarter, invest better. 🚀_`;
+    `📅 _Reply *DIVIDEND* for upcoming dividend dates_\n\n` +
+    `_Sentill Africa — research smarter, invest better. 🇰🇪_`;
 
   return sendWhatsAppMessage(waId, msg);
 }
@@ -786,7 +808,7 @@ export async function processIncomingMessage(
     `• *MENU* — main menu\n` +
     `• *MARKETS* — live rates\n` +
     `• *INVEST* — browse options\n` +
-    `• *ASK* — ask AI anything\n\n` +
+    `• *ASK* — ask Sentill anything\n\n` +
     `Example: _What's the best MMF for KES 50,000?_`
   );
 }
@@ -878,7 +900,7 @@ async function handleGeminiQuestion(waId: string, question: string, userId: stri
           `⚡ *You're on a roll, ${user?.name?.split(" ")[0] ?? "Investor"}!*\n` +
           `You've asked 5 smart questions today.\n\n` +
           `🔓 *Sentill Pro* gives you:\n` +
-          `• UNLIMITED AI questions (no daily cap)\n` +
+          `• UNLIMITED questions (no daily cap)\n` +
           `• Priority responses with deeper analysis\n` +
           `• Portfolio tracker + daily market alerts\n\n` +
           `*KES 490/month \u2248 KES 16/day* \u2014 less than a chai!\n` +
@@ -1000,16 +1022,16 @@ async function handleGeminiQuestionGuest(waId: string, question: string) {
 async function sendPremiumConversionMessage(waId: string, name: string, queriesUsed: number) {
   await sendWhatsAppMessage(
     waId,
-    `🔒 *Daily AI Limit Reached, ${name}!*\n\n` +
-    `You've used all *${FREE_AI_LIMIT} free AI questions* for today.\n\n` +
+    `🔒 *Daily Limit Reached, ${name}!*\n\n` +
+    `You've used all *${FREE_AI_LIMIT} free questions* for today.\n\n` +
     `━━━━━━━━━━━━━━━━━━\n` +
     `⚡ *UPGRADE TO SENTILL PRO*\n` +
-    `Unlock *unlimited AI-powered* wealth intelligence:\n` +
+    `Unlock *unlimited smart wealth intelligence:*\n` +
     `━━━━━━━━━━━━━━━━━━\n\n` +
-    `✅ *UNLIMITED Sentill Africa* — Ask anything, anytime\n` +
+    `✅ *UNLIMITED questions* — Ask anything, anytime\n` +
     `✅ *Portfolio Tracker* — Log & monitor all investments\n` +
     `✅ *Real-time Price & Yield Alerts*\n` +
-    `✅ *KRA Tax-Loss Harvesting AI*\n` +
+    `✅ *KRA Tax-Loss Harvesting analysis*\n` +
     `✅ *Sentill Alpha Engine* — Deep market analysis\n` +
     `✅ *NSE Candlestick Charts + RSI/MACD*\n` +
     `✅ *Chama/Club Dashboard*\n` +
@@ -3525,7 +3547,7 @@ async function handleFreqAfterRegister(waId: string, input: string, ctx: Session
     `• *INVEST* — browse options\n` +
     `• *ASSETS* — portfolio tracker\n` +
     `• *ALERTS* — change notifications anytime\n` +
-    `• *ASK* — ask AI anything\n\n` +
+    `• *ASK* — ask Sentill anything\n\n` +
     `⚡ Upgrade to Pro: *SUBSCRIBE*`
   );
 }

@@ -1150,7 +1150,7 @@ function getSmartFallback(question: string): string {
       `• Wealth building (6+ yrs) → IFB Bond (tax-free!)\n` +
       `• Steady dividends → Stima/Safaricom SACCO\n` +
       `• Capital safety → 91-Day T-Bill (CBK backed)\n\n` +
-      `📊 Send *COMPARE Nabo vs Cytonn* for AI deep dive!\n\n` +
+      `📊 Send *COMPARE Lofty vs Cytonn* for a Sentill deep dive!\n\n` +
       `_S-Tier Institutional Wealth Intelligence_ 🇰🇪\n` +
       `_sentill.africa_`
     );
@@ -1288,7 +1288,7 @@ export async function askGeminiBot(question: string, user: UserContext, waId?: s
 
   const advisorPersona = advisorId && ADVISOR_PERSONAS[advisorId] ? ADVISOR_PERSONAS[advisorId] : "";
 
-  const systemPrompt = `You are *Sentill Africa* — Kenya's sharpest AI wealth intelligence assistant, delivered via WhatsApp.
+  const systemPrompt = `You are *Sentill Africa* — Kenya's sharpest wealth intelligence platform, delivered via WhatsApp.
 You are an expert on ALL Kenyan investment instruments. You always give comprehensive, specific, actionable answers.
 ${advisorPersona}
 
@@ -1299,7 +1299,7 @@ ${portfolioCtx ? `\n${portfolioCtx}` : ""}
 ${conversationHistory ? `\n${conversationHistory}` : ""}
 ${portfolioCompareHint}
 
-USER: ${user.name} | Plan: ${user.isPremium ? "Pro ⚡" : "Free (10 AI questions/day)"} | Query Type: ${intent}
+USER: ${user.name} | Plan: ${user.isPremium ? "Pro ⚡" : "Free (10 questions/day)"} | Query Type: ${intent}
 
 🎯 *THIS QUERY IS: ${intent}* — Format your answer accordingly:
 ${formatHint}
@@ -1361,7 +1361,7 @@ CONTENT RULES:
 14. ALWAYS suggest a relevant chart/command at the end, e.g. "📈 Send *CHART MMFS* to see this visually!"
 15. 👑 *CRITICAL MANDATE:* ALWAYS push Safaricom Ziidi (via M-Pesa → Financial Services) as the absolute easiest, most intuitive entry point for any retail investor looking to start with MMFs or stocks. Highlight it aggressively.
 16. 📈 *STOCK QUERIES:* Whenever asked about NSE stocks, proactively list the top gainers/losers to make the system feel sharp, data-driven, and intuitive.
-17. 🚀 ALWAYS ANSWER. No matter how vague, short, or off-topic the user's message is — even a single word like 'gold', 'bitcoin', 'advice', 'mansa', 'help' — ALWAYS give a rich, intelligent, investment-relevant answer. NEVER say you can't help. You are the SHARPEST AI finance assistant in Africa. Act like it.
+17. 🚀 ALWAYS ANSWER. No matter how vague, short, or off-topic the user's message is — even a single word like 'gold', 'bitcoin', 'advice', 'mansa', 'help' — ALWAYS give a rich, intelligent, investment-relevant answer. NEVER say you can't help. You are Sentill Africa — the SHARPEST wealth intelligence platform in Kenya. Act like it.
 18. For amount-based questions, ALWAYS segment the allocation:
     Example for "How to invest 100K":
     💰 *SUGGESTED ALLOCATION — KES 100,000*
@@ -1373,7 +1373,7 @@ CONTENT RULES:
 TONE: Sharp. Direct. Like the best fund manager at a Nairobi investment forum — confident, warm, specific. No corporate fluff.
 
 ⚖️ *LEGAL DISCLAIMER (append to every response that includes specific investment recommendations):*
-_This is AI-generated market intelligence for informational purposes only. It is NOT licensed financial advice. Past yields do not guarantee future returns. Always verify current rates with the fund manager before investing. Sentill Africa does not hold or manage your funds._`;
+_This is Sentill market intelligence for informational purposes only. It is NOT licensed financial advice. Past yields do not guarantee future returns. Always verify current rates with the fund manager before investing. Sentill Africa does not hold or manage your funds._`;
 
   try {
     const answer = await callGemini(

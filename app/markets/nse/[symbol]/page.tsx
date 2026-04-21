@@ -306,7 +306,7 @@ export default function NSEStockPage() {
                 </span>
                 <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-blue-500/20 border border-blue-500/30 self-center mb-1">
                   <CheckCircle className="w-3.5 h-3.5 text-blue-400" />
-                  <span className="text-[9px] font-black text-blue-400 uppercase tracking-widest">AI Verified</span>
+                  <span className="text-[9px] font-black text-blue-400 uppercase tracking-widest">Data Verified</span>
                 </div>
                 <div className={`flex items-center gap-1 px-3 py-1.5 rounded-xl ${isUp ? "bg-emerald-500/20 border border-emerald-500/30" : "bg-rose-500/20 border border-rose-500/30"}`}>
                   {isUp ? <ArrowUpRight className="w-4 h-4 text-emerald-400" /> : <ArrowDownRight className="w-4 h-4 text-rose-400" />}
@@ -674,8 +674,8 @@ export default function NSEStockPage() {
               <Zap className="w-5 h-5 text-indigo-400" />
             </div>
             <div>
-              <h2 className="text-sm font-black uppercase tracking-widest">Sentill Africa · {stock.symbol} Catalyst</h2>
-              <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Real-time Asset Analysis</p>
+              <h2 className="text-sm font-black uppercase tracking-widest">Sentill Africa · {stock.symbol} Analysis</h2>
+              <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Market Intelligence · April 2026</p>
             </div>
           </div>
 
@@ -684,7 +684,7 @@ export default function NSEStockPage() {
                 <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 blur-3xl rounded-full -mr-16 -mt-16 group-hover:bg-indigo-500/20 transition-all" />
                 <h3 className="text-sm font-black text-white uppercase tracking-widest">Premium Intelligence Locked</h3>
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-2 max-w-sm mb-6">
-                   Upgrade to Pro to unlock institutional-grade AI analysis for {stock.symbol} and other NSE Equities.
+                   Upgrade to Pro to unlock institutional-grade market analysis for {stock.symbol} and other NSE Equities.
                 </p>
                 <Link href="/packages" className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-indigo-900/50 transition-all">
                    Upgrade to Pro
@@ -695,7 +695,7 @@ export default function NSEStockPage() {
                {isAiLoading ? (
                  <div className="flex items-center gap-3 py-4">
                    <div className="w-5 h-5 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />
-                   <span className="text-slate-400 text-sm font-medium italic">Sentill Africa is analyzing {stock.symbol}...</span>
+                   <span className="text-slate-400 text-sm font-medium italic">Sentill is reading the market for {stock.symbol}...</span>
                  </div>
                ) : (
                  <div className="bg-slate-950/50 p-6 rounded-2xl border border-white/5 text-sm text-slate-200 leading-relaxed font-medium whitespace-pre-wrap">
@@ -711,7 +711,7 @@ export default function NSEStockPage() {
           <div>
             <h2 className="text-lg font-black text-white uppercase tracking-tight">Track {stock.symbol} in Your Portfolio</h2>
             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">
-              Log your position · Monitor yield · AI-powered portfolio analytics
+              Log your position · Monitor yield · Smart portfolio analytics
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -729,27 +729,136 @@ export default function NSEStockPage() {
           </div>
         </div>
 
+        {/* ── DIVIDEND INCOME CALCULATOR ── */}
+        <div className="bg-white rounded-[2.5rem] border border-slate-100 p-8 shadow-sm">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center">
+              <DollarSign className="w-5 h-5 text-emerald-600" />
+            </div>
+            <div>
+              <h2 className="text-sm font-black text-slate-900 uppercase tracking-widest">Dividend Income Calculator</h2>
+              <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">How much would you earn per year?</p>
+            </div>
+          </div>
+          {[10000, 50000, 100000].map(amt => {
+            const shares = Math.floor(amt / stock.price);
+            const grossDiv = shares * stock.divPerShare;
+            const netDiv = Math.round(grossDiv * 0.95);
+            return (
+              <div key={amt} className="flex items-center justify-between py-3 border-b border-slate-50 last:border-0">
+                <div>
+                  <span className="text-[10px] font-black text-slate-700">KES {amt.toLocaleString()} invested</span>
+                  <span className="text-[9px] text-slate-400 font-medium ml-2">= {shares} shares</span>
+                </div>
+                <div className="text-right">
+                  <span className="text-sm font-black text-emerald-600">KES {netDiv.toLocaleString()}/yr</span>
+                  <span className="text-[9px] text-slate-400 font-medium block">net dividend (after 5% WHT)</span>
+                </div>
+              </div>
+            );
+          })}
+          <p className="text-[8px] text-slate-400 font-medium mt-4">Based on KES {stock.divPerShare}/share last declared dividend · {stock.divYield}% yield · Capital gains currently 0% tax in Kenya.</p>
+        </div>
+
+        {/* ── INVEST VIA ZIIDI ── */}
+        <div className="bg-gradient-to-br from-emerald-600 to-emerald-700 rounded-[2.5rem] p-8 text-white">
+          <div className="flex items-start justify-between gap-6 mb-6">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center text-sm font-black">Z</div>
+                <span className="text-[9px] font-black uppercase tracking-widest text-emerald-100">Ziidi by Safaricom</span>
+              </div>
+              <h2 className="text-xl font-black uppercase tracking-tight">Invest in {stock.symbol} via M-Pesa</h2>
+              <p className="text-[10px] text-emerald-100 font-medium mt-1">Kenya's easiest way to own NSE stocks · Start from KES 100</p>
+            </div>
+            <div className="bg-white/15 border border-white/20 rounded-2xl px-4 py-3 text-center flex-shrink-0">
+              <div className="text-2xl font-black">KES 100</div>
+              <div className="text-[8px] font-black uppercase tracking-widest text-emerald-100">minimum</div>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+            {[
+              { label: "M-Pesa native", icon: "📱" },
+              { label: "Digital KYC (2 min)", icon: "✅" },
+              { label: "Dividends to M-Pesa", icon: "💰" },
+              { label: "0% capital gains tax", icon: "🎉" },
+            ].map(f => (
+              <div key={f.label} className="bg-white/10 border border-white/15 rounded-xl p-3 text-center">
+                <div className="text-lg mb-1">{f.icon}</div>
+                <div className="text-[8px] font-black uppercase tracking-widest text-emerald-100">{f.label}</div>
+              </div>
+            ))}
+          </div>
+          <div className="bg-white/10 border border-white/20 rounded-2xl p-4 mb-5">
+            <p className="text-[10px] font-black uppercase tracking-widest text-emerald-100 mb-2">How to buy {stock.symbol} on Ziidi:</p>
+            <div className="space-y-1">
+              {[
+                "Open Safaricom app → tap Ziidi",
+                "Create account with your ID (2 min)",
+                `Search "${stock.symbol}" → tap Buy`,
+                "Enter amount → pay via M-Pesa → Done",
+              ].map((step, i) => (
+                <div key={i} className="flex items-center gap-3 text-[9px] font-medium text-white">
+                  <span className="w-4 h-4 rounded-full bg-white/20 flex items-center justify-center text-[8px] font-black flex-shrink-0">{i + 1}</span>
+                  {step}
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="flex items-center gap-3 text-[9px] text-emerald-200 font-medium">
+            <Shield className="w-4 h-4 flex-shrink-0" />
+            <span>Regulated by CMA · Shares held in your CDS account · Not financial advice</span>
+          </div>
+        </div>
+
+        {/* ── NSE TRADING RULES ── */}
+        <div className="bg-white rounded-[2.5rem] border border-slate-100 p-8 shadow-sm">
+          <h2 className="text-sm font-black text-slate-900 uppercase tracking-widest mb-1">NSE Trading Rules</h2>
+          <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mb-6">What every Kenyan investor needs to know</p>
+          <div className="grid md:grid-cols-2 gap-4">
+            {[
+              { icon: Clock, label: "Trading Hours", value: "Mon–Fri · 9:00am – 3:00pm EAT", color: "text-blue-600", bg: "bg-blue-50" },
+              { icon: Calendar, label: "Settlement (T+3)", value: "Shares & cash clear in 3 business days", color: "text-indigo-600", bg: "bg-indigo-50" },
+              { icon: DollarSign, label: "Broker Commission", value: "~1.5–2.5% per trade · CDA levy 0.12%", color: "text-emerald-600", bg: "bg-emerald-50" },
+              { icon: Shield, label: "Dividend WHT", value: "5% withheld automatically by company", color: "text-amber-600", bg: "bg-amber-50" },
+              { icon: TrendingUp, label: "Capital Gains Tax", value: "Currently 0% in Kenya — keep full profit", color: "text-emerald-600", bg: "bg-emerald-50" },
+              { icon: Award, label: "Your Shares", value: "Held in CDS account — safe even if broker closes", color: "text-purple-600", bg: "bg-purple-50" },
+            ].map(r => (
+              <div key={r.label} className={`flex items-start gap-3 p-4 ${r.bg} rounded-2xl`}>
+                <r.icon className={`w-4 h-4 ${r.color} mt-0.5 flex-shrink-0`} />
+                <div>
+                  <p className="text-[9px] font-black text-slate-700 uppercase tracking-widest">{r.label}</p>
+                  <p className="text-[10px] font-medium text-slate-600 mt-0.5">{r.value}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* ── BROKER DIRECTORY ── */}
         <div className="bg-white rounded-[2.5rem] border border-slate-100 p-8 shadow-sm">
            <div className="flex items-center justify-between mb-8">
               <div>
-                 <h2 className="text-sm font-black text-slate-900 uppercase tracking-widest">Execute Trade</h2>
-                 <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Authorized NSE Stockbrokers & Trading Apps</p>
+                 <h2 className="text-sm font-black text-slate-900 uppercase tracking-widest">Advanced: Direct Broker Access</h2>
+                 <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">CMA-Licensed NSE Stockbrokers</p>
               </div>
               <Shield className="w-5 h-5 text-slate-300" />
            </div>
-           
            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
               {[
-                 { name: "NCBA Investment Bank", url: "https://ncbagroup.com/investment-bank/", desc: "NCBA Go-Live trading platform." },
-                 { name: "Dyer & Blair", url: "https://dyerandblair.com/", desc: "Kenya's oldest investment bank." },
-                 { name: "Faida Investment", url: "https://www.fib.co.ke/", desc: "F-Trade mobile app execution." },
-                 { name: "SIB Mansa-X", url: "https://sib.co.ke/", desc: "Standard Investment Bank trading." }
+                 { name: "NCBA Go-Live", url: "https://ncbagroup.com/investment-bank/", desc: "M-Pesa deposits. From KES 500.", commission: "1.5%", mpesa: true },
+                 { name: "Dyer & Blair", url: "https://dyerandblair.com/", desc: "Kenya's oldest investment bank.", commission: "2.1%", mpesa: false },
+                 { name: "Faida F-Trade", url: "https://www.fib.co.ke/", desc: "Mobile-first app, easy KYC.", commission: "1.8%", mpesa: true },
+                 { name: "SIB Mansa-X", url: "https://sib.co.ke/", desc: "Multi-asset + global markets.", commission: "2.0%", mpesa: false }
               ].map(broker => (
                  <a key={broker.name} href={broker.url} target="_blank" rel="noreferrer" className="group p-5 rounded-2xl bg-slate-50 border border-slate-100 hover:border-indigo-200 hover:bg-white transition-all">
-                    <h4 className="text-[10px] font-black text-slate-800 uppercase tracking-widest group-hover:text-indigo-600">{broker.name}</h4>
-                    <p className="text-[9px] text-slate-400 font-medium mt-1 mb-4">{broker.desc}</p>
-                    <div className="flex items-center gap-2 text-[8px] font-black text-indigo-500 uppercase tracking-widest">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="text-[10px] font-black text-slate-800 uppercase tracking-widest group-hover:text-indigo-600">{broker.name}</h4>
+                      {broker.mpesa && <span className="text-[7px] font-black text-emerald-600 bg-emerald-50 border border-emerald-100 rounded-full px-2 py-0.5 uppercase tracking-widest">M-Pesa</span>}
+                    </div>
+                    <p className="text-[9px] text-slate-400 font-medium mb-1">{broker.desc}</p>
+                    <p className="text-[9px] font-black text-slate-600">Commission: {broker.commission}</p>
+                    <div className="flex items-center gap-2 text-[8px] font-black text-indigo-500 uppercase tracking-widest mt-3">
                        Launch App <ChevronRight className="w-3 h-3" />
                     </div>
                  </a>
