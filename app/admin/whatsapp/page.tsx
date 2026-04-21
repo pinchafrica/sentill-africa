@@ -1247,19 +1247,15 @@ export default function AdminWhatsAppPage() {
               <p className="text-[11px] text-slate-400 mt-1">Free users get 3 AI questions per day before premium gate</p>
             </div>
             <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Pricing Tiers</p>
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Pricing</p>
               <div className="space-y-2 mt-2">
                 <div className="flex justify-between">
-                  <span className="text-xs text-slate-300">📱 1 Week</span>
-                  <span className="text-xs font-bold text-emerald-400">KES 99</span>
+                  <span className="text-xs text-slate-300">📅 Sentill Pro</span>
+                  <span className="text-xs font-bold text-emerald-400">KES 490/month</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-xs text-slate-300">📅 1 Month</span>
-                  <span className="text-xs font-bold text-emerald-400">KES 349</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-xs text-slate-300">🏆 3 Months</span>
-                  <span className="text-xs font-bold text-emerald-400">KES 999</span>
+                  <span className="text-xs text-slate-300">💡 Per day</span>
+                  <span className="text-xs font-bold text-emerald-400">≈ KES 16/day</span>
                 </div>
               </div>
             </div>
@@ -1344,7 +1340,7 @@ export default function AdminWhatsAppPage() {
                   <div className="flex flex-wrap gap-2">
                     {[
                       "Hi! 👋 Just checking in — how's your investment journey going?",
-                      "🎉 Special offer! Upgrade to Pro for just KES 99/week. Send SUBSCRIBE anytime.",
+                      "🎉 Upgrade to Sentill Pro for just KES 490/month — less than KES 16/day. Send SUBSCRIBE anytime.",
                       "📊 Have you checked today's market rates? Send RATES to see live NSE prices!",
                       "⏳ Your Pro subscription expires soon. Renew at sentill.africa/packages",
                     ].map((tpl, i) => (

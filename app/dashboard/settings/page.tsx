@@ -302,9 +302,9 @@ export default function SettingsCenter() {
                   </div>
                   {!user?.isPremium && (
                     <div className="mt-6 p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-center">
-                      <p className="text-[10px] font-black text-emerald-700 uppercase tracking-widest mb-3">Try all Pro features for just KES 100 / 7 days</p>
+                      <p className="text-[10px] font-black text-emerald-700 uppercase tracking-widest mb-3">Full access — KES 490/month · less than KES 16/day</p>
                       <Link href="/packages" className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-500 transition-all">
-                        <Zap className="w-4 h-4" /> Start 7-Day Trial
+                        <Zap className="w-4 h-4" /> Go Pro — KES 490/month
                       </Link>
                     </div>
                   )}

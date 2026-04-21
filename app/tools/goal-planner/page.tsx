@@ -271,7 +271,7 @@ export default function GoalPlannerPage() {
                 </div>
                 <Link href="/packages"
                   className="flex items-center gap-2 px-8 py-3.5 bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-orange-500/30">
-                  <Crown className="w-4 h-4" /> Unlock Pro — from KES 99/week
+                  <Crown className="w-4 h-4" /> Unlock Pro — KES 490/month
                 </Link>
                 <p className="text-slate-500 text-[9px] font-bold uppercase tracking-widest">
                   Also includes: AI Oracle · Tax Optimizer · Portfolio Tracker

@@ -102,7 +102,7 @@ function DashboardInner() {
       const res = await fetch("/api/payment/mpesa", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: d.user.id, amount: 99, mpesaCode: "254703469525", plan: "WEEKLY_7_DAYS", email: d.user.email || "user@sentill.africa" })
+        body: JSON.stringify({ userId: d.user.id, amount: 490, mpesaCode: "254703469525", plan: "MONTHLY_30_DAYS", email: d.user.email || "user@sentill.africa" })
       });
       const data = await res.json();
       if (data.authorization_url) {

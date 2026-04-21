@@ -1225,54 +1225,46 @@ export default function HomePage() {
       <section className="py-24 bg-white relative">
         <div className="max-w-[1400px] mx-auto px-6 lg:px-12">
           <div className="text-center max-w-2xl mx-auto mb-16 space-y-4">
-             <h2 className="text-[11px] font-black text-emerald-600 uppercase tracking-[0.2em]"><Zap className="w-4 h-4 inline-block mr-2" /> Tiered Intelligence</h2>
-             <h3 className="text-4xl font-black text-slate-900 tracking-tight">Choose Your Wealth Tier</h3>
-             <p className="text-slate-500 font-medium">From casual tracking to institutional mastery. Select the plan that fits your wealth trajectory.</p>
+            <h2 className="text-[11px] font-black text-emerald-600 uppercase tracking-[0.2em]"><Zap className="w-4 h-4 inline-block mr-2" /> Simple Pricing</h2>
+            <h3 className="text-4xl font-black text-slate-900 tracking-tight">One Plan. Full Access.</h3>
+            <p className="text-slate-500 font-medium">Everything you need to invest smarter in Kenya — less than KES 16/day.</p>
           </div>
-          
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-             {[
-               { name: "Starter", price: "Free", period: "", badge: "Core", features: ["Provider Directory (300+)", "NSE Live Price Feeds", "Daily Top 5 MMF Yields", "10 AI Questions/Day", "Sentil Academy Full Access"], cta: "Start Free", popular: false },
-               { name: "Pro Monthly", price: "490", period: "/month", badge: "🔥 Popular", features: ["Unlimited AI Oracle (Advisor)", "Full Portfolio Tracker", "KRA Tax-Loss Harvesting AI", "Real-Time Price & Yield Alerts", "NSE Charts (RSI + MACD)", "Goal Planner + Estate Vault"], cta: "Go Pro — KES 490", popular: false },
-               { name: "Pro Quarterly", price: "1,290", period: "/quarter", badge: "Best Value", features: ["Everything in Monthly", "Save KES 180 vs monthly", "Priority AI Responses", "Quarterly Wealth Report", "Automated KRA Tax Export"], cta: "Save 12% — KES 1,290", popular: true },
-               { name: "Pro Annual", price: "4,500", period: "/year", badge: "💎 Max Savings", features: ["Everything in Quarterly", "Save KES 1,380/year", "VIP Concierge Support", "Early Feature Access", "Institutional Market Briefs"], cta: "Lock In — KES 4,500", popular: false },
-             ].map((pkg, i) => (
-               <div key={i} className={`relative p-8 rounded-[2.5rem] border ${pkg.popular ? "border-emerald-600 bg-slate-900 text-white shadow-2xl md:-translate-y-4" : "border-slate-200 bg-white text-slate-900 shadow-sm"} flex flex-col items-center text-center overflow-hidden h-full group`}>
-                  {pkg.popular && <div className="absolute top-0 right-0 px-6 py-2 bg-emerald-600 text-white text-[9px] font-black uppercase tracking-widest rounded-bl-2xl">Recommended</div>}
-                  <h4 className="text-[11px] font-black uppercase tracking-[0.2em] mb-5 opacity-60">{pkg.name}</h4>
-                  <div className="mb-6">
-                    <span className="text-4xl font-black tracking-tighter">KES {pkg.price}</span>
-                    {pkg.price !== "Free" && <span className="text-[10px] font-bold uppercase ml-2 opacity-40">{pkg.period}</span>}
-                  </div>
-                  <ul className="space-y-3 mb-8 flex-1">
-                     {pkg.features.map((f, j) => (
-                       <li key={j} className="flex items-center justify-center gap-2 text-sm font-medium">
-                          <Check className={`w-4 h-4 ${pkg.popular ? "text-emerald-400" : "text-emerald-600"}`} /> {f}
-                       </li>
-                     ))}
-                  </ul>
-                  <button 
-                    onClick={() => {
-                      if (pkg.name === "Starter") {
-                        router.push("/auth/register");
-                      } else if (pkg.price !== "Free") {
-                        if (isLoggedIn) {
-                          setPremiumModalOpen(true);
-                        } else {
-                          router.push("/packages");
-                        }
-                      } else {
-                        router.push("/contact");
-                      }
-                    }}
-                    className={`w-full py-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all text-center block ${
-                      pkg.popular ? "bg-emerald-600 text-white hover:bg-emerald-500 shadow-lg" : "bg-slate-900 text-white hover:bg-slate-800"
-                    }`}
-                  >
-                    {isLoggedIn && user?.isPremium && pkg.price !== "Free" ? "Active Subscription" : pkg.cta}
-                  </button>
-               </div>
-             ))}
+
+          <div className="flex justify-center">
+            <div className="relative w-full max-w-md p-10 rounded-[2.5rem] border-2 border-emerald-600 bg-slate-900 text-white shadow-2xl flex flex-col items-center text-center overflow-hidden">
+              <div className="absolute top-0 right-0 px-6 py-2 bg-emerald-600 text-white text-[9px] font-black uppercase tracking-widest rounded-bl-2xl">Pro Access</div>
+              <h4 className="text-[11px] font-black uppercase tracking-[0.2em] mb-6 opacity-60">Sentill Pro</h4>
+              <div className="mb-2">
+                <span className="text-6xl font-black tracking-tighter">490</span>
+                <span className="text-lg font-black ml-1 opacity-60">KES</span>
+              </div>
+              <p className="text-[10px] font-bold uppercase tracking-widest opacity-40 mb-8">/month &nbsp;·&nbsp; cancel anytime</p>
+              <ul className="space-y-4 mb-10 w-full text-left">
+                {[
+                  "Unlimited AI Oracle + 4 Advisor Personas",
+                  "Full Portfolio Tracker & Asset Logger",
+                  "Real-Time Price & Yield Alerts (WhatsApp)",
+                  "NSE Live Charts — RSI + MACD",
+                  "Daily, Midday & Evening Market Briefs",
+                  "Dividend Countdown Notifications",
+                  "KRA Tax-Loss Harvesting AI",
+                  "Goal Planner + Estate Vault",
+                  "Quarterly Wealth Report",
+                  "Priority AI Response Queue",
+                ].map((f, j) => (
+                  <li key={j} className="flex items-center gap-3 text-sm font-medium">
+                    <Check className="w-4 h-4 text-emerald-400 shrink-0" /> {f}
+                  </li>
+                ))}
+              </ul>
+              <button
+                onClick={() => isLoggedIn ? setPremiumModalOpen(true) : router.push("/packages")}
+                className="w-full py-4 rounded-xl text-[10px] font-black uppercase tracking-widest bg-emerald-600 text-white hover:bg-emerald-500 transition-all shadow-lg"
+              >
+                {isLoggedIn && user?.isPremium ? "Active — You're Pro ✓" : "Go Pro — KES 490/month"}
+              </button>
+              <p className="text-[9px] opacity-30 uppercase tracking-widest mt-4">M-Pesa · Card · Mpesa STK Push</p>
+            </div>
           </div>
         </div>
       </section>

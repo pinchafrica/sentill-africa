@@ -45,18 +45,18 @@ export async function GET(req: NextRequest) {
 
       // Calculate expiry based on plan
       const now = new Date();
+      // All plans grant 30 days — single KES 490/month offering
       const PLAN_DAYS: Record<string, number> = {
-        WEEKLY_7_DAYS: 7,
         MONTHLY_30_DAYS: 30,
-        QUARTERLY_90_DAYS: 90,
-        ANNUAL_365_DAYS: 365,
-        // Legacy
-        TRIAL_7_DAYS: 7,
-        TRIAL_3_DAYS: 3,
+        WEEKLY_7_DAYS: 30,
+        QUARTERLY_90_DAYS: 30,
+        ANNUAL_365_DAYS: 30,
+        TRIAL_7_DAYS: 30,
+        TRIAL_3_DAYS: 30,
         PRO_MONTHLY: 30,
-        PRO_ANNUAL: 365,
+        PRO_ANNUAL: 30,
       };
-      const days = PLAN_DAYS[plan ?? ""] || 7;
+      const days = PLAN_DAYS[plan ?? ""] || 30;
       const premiumExpiresAt = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
 
       // Update payment record (best-effort)
