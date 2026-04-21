@@ -1,51 +1,257 @@
 {
-  "scraped_at": "2026-04-21T05:32:03.373290+00:00",
+  "scraped_at": "2026-04-21T13:47:21.139918+00:00",
   "source": "sentill-scraper-v2",
   "mmfs": [
-    { "name": "Etica Capital MMF (Zidi)", "code": "etca",   "yield": 18.20, "net_yield": 15.47, "aum": "15.2B",  "min": 1000,  "wht": 15, "risk": "Low", "liquidity": "T+1",    "paybill": "511116" },
-    { "name": "Lofty-Corpin MMF",         "code": "lofty",  "yield": 17.50, "net_yield": 14.88, "aum": "3.4B",   "min": 1000,  "wht": 15, "risk": "Low", "liquidity": "Instant", "paybill": "512600" },
-    { "name": "Cytonn Money Market",      "code": "cytonn", "yield": 16.90, "net_yield": 14.37, "aum": "8.2B",   "min": 1000,  "wht": 15, "risk": "Low", "liquidity": "T+2",    "paybill": "525200" },
-    { "name": "NCBA Money Market",        "code": "ncba",   "yield": 16.20, "net_yield": 13.77, "aum": "3.1B",   "min": 1000,  "wht": 15, "risk": "Low", "liquidity": "Instant", "paybill": "880100" },
-    { "name": "KCB Money Market",         "code": "kcb",    "yield": 15.80, "net_yield": 13.43, "aum": "5.2B",   "min": 1000,  "wht": 15, "risk": "Low", "liquidity": "T+1",    "paybill": "522522" },
-    { "name": "Britam Money Market",      "code": "brtm",   "yield": 15.50, "net_yield": 13.18, "aum": "8.4B",   "min": 1000,  "wht": 15, "risk": "Low", "liquidity": "T+1",    "paybill": "602600" },
-    { "name": "Sanlam Investments MMF",   "code": "sanlam", "yield": 15.10, "net_yield": 12.84, "aum": "51.4B",  "min": 5000,  "wht": 15, "risk": "Low", "liquidity": "T+2",    "paybill": "880100" },
-    { "name": "CIC Money Market",         "code": "cic",    "yield": 13.60, "net_yield": 11.56, "aum": "20.8B",  "min": 5000,  "wht": 15, "risk": "Low", "liquidity": "T+1",    "paybill": "174174" },
-    { "name": "Old Mutual MMF",           "code": "omam",   "yield": 13.40, "net_yield": 11.39, "aum": "22.3B",  "min": 1000,  "wht": 15, "risk": "Low", "liquidity": "T+2",    "paybill": "542542" },
-    { "name": "Absa MMF",                 "code": "absa",   "yield": 13.20, "net_yield": 11.22, "aum": "4.1B",   "min": 1000,  "wht": 15, "risk": "Low", "liquidity": "T+1",    "paybill": "303030" },
-    { "name": "ICEA Lion MMF",            "code": "icea",   "yield": 14.50, "net_yield": 12.33, "aum": "18.2B",  "min": 5000,  "wht": 15, "risk": "Low", "liquidity": "T+1",    "paybill": "402402" }
+    {
+      "name": "Etica Capital MMF (Zidi)",
+      "code": "etca",
+      "yield": 18.2,
+      "aum": "15.2B",
+      "min": 1000,
+      "wht": 15,
+      "net_yield": 15.47,
+      "risk": "Low",
+      "liquidity": "T+1",
+      "paybill": "511116"
+    },
+    {
+      "name": "Lofty-Corpin MMF",
+      "code": "lofty",
+      "yield": 17.5,
+      "aum": "3.4B",
+      "min": 1000,
+      "wht": 15,
+      "net_yield": 14.88,
+      "risk": "Low",
+      "liquidity": "Instant",
+      "paybill": "512600"
+    },
+    {
+      "name": "Cytonn Money Market",
+      "code": "cytonn",
+      "yield": 16.9,
+      "aum": "8.2B",
+      "min": 1000,
+      "wht": 15,
+      "net_yield": 14.37,
+      "risk": "Low",
+      "liquidity": "T+2",
+      "paybill": "525200"
+    },
+    {
+      "name": "NCBA Money Market",
+      "code": "ncba",
+      "yield": 16.2,
+      "aum": "3.1B",
+      "min": 1000,
+      "wht": 15,
+      "net_yield": 13.77,
+      "risk": "Low",
+      "liquidity": "Instant",
+      "paybill": "880100"
+    },
+    {
+      "name": "KCB Money Market",
+      "code": "kcb",
+      "yield": 15.8,
+      "aum": "5.2B",
+      "min": 1000,
+      "wht": 15,
+      "net_yield": 13.43,
+      "risk": "Low",
+      "liquidity": "T+1",
+      "paybill": "522522"
+    },
+    {
+      "name": "Britam Money Market",
+      "code": "brtm",
+      "yield": 15.5,
+      "aum": "8.4B",
+      "min": 1000,
+      "wht": 15,
+      "net_yield": 13.18,
+      "risk": "Low",
+      "liquidity": "T+1",
+      "paybill": "602600"
+    },
+    {
+      "name": "Sanlam Investments MMF",
+      "code": "sanlam",
+      "yield": 15.1,
+      "aum": "51.4B",
+      "min": 5000,
+      "wht": 15,
+      "net_yield": 12.84,
+      "risk": "Low",
+      "liquidity": "T+2",
+      "paybill": "880100"
+    },
+    {
+      "name": "ICEA Lion MMF",
+      "code": "icea",
+      "yield": 14.5,
+      "aum": "18.2B",
+      "min": 5000,
+      "wht": 15,
+      "net_yield": 12.33,
+      "risk": "Low",
+      "liquidity": "T+1",
+      "paybill": "402402"
+    },
+    {
+      "name": "CIC Money Market",
+      "code": "cic",
+      "yield": 13.6,
+      "aum": "20.8B",
+      "min": 5000,
+      "wht": 15,
+      "net_yield": 11.56,
+      "risk": "Low",
+      "liquidity": "T+1",
+      "paybill": "174174"
+    },
+    {
+      "name": "Old Mutual MMF",
+      "code": "omam",
+      "yield": 13.4,
+      "aum": "22.3B",
+      "min": 1000,
+      "wht": 15,
+      "net_yield": 11.39,
+      "risk": "Low",
+      "liquidity": "T+2",
+      "paybill": "542542"
+    },
+    {
+      "name": "Absa MMF",
+      "code": "absa",
+      "yield": 13.2,
+      "aum": "4.1B",
+      "min": 1000,
+      "wht": 15,
+      "net_yield": 11.22,
+      "risk": "Low",
+      "liquidity": "T+1",
+      "paybill": "303030"
+    }
   ],
   "tbills": [
-    { "name": "91-Day T-Bill",  "tenor": "91d",  "yield": 15.78, "net_yield": 13.41, "issuer": "CBK", "risk": "Zero", "wht": 15 },
-    { "name": "182-Day T-Bill", "tenor": "182d", "yield": 15.97, "net_yield": 13.57, "issuer": "CBK", "risk": "Zero", "wht": 15 },
-    { "name": "364-Day T-Bill", "tenor": "364d", "yield": 16.42, "net_yield": 13.96, "issuer": "CBK", "risk": "Zero", "wht": 15 }
+    {
+      "name": "91-Day T-Bill",
+      "tenor": "91d",
+      "yield": 15.82,
+      "wht": 15,
+      "net_yield": 13.45,
+      "issuer": "CBK",
+      "risk": "Zero"
+    },
+    {
+      "name": "182-Day T-Bill",
+      "tenor": "182d",
+      "yield": 16.1,
+      "wht": 15,
+      "net_yield": 13.69,
+      "issuer": "CBK",
+      "risk": "Zero"
+    },
+    {
+      "name": "364-Day T-Bill",
+      "tenor": "364d",
+      "yield": 16.45,
+      "wht": 15,
+      "net_yield": 13.98,
+      "issuer": "CBK",
+      "risk": "Zero"
+    }
   ],
   "bonds": [
-    { "name": "IFB1/2024", "type": "IFB", "yield": 18.46, "net_yield": 18.46, "tenor": "10yr", "wht": 0, "maturity": "2034-03-15", "note": "WHT-exempt — best risk-adjusted rate" },
-    { "name": "IFB2/2023", "type": "IFB", "yield": 17.93, "net_yield": 17.93, "tenor": "10yr", "wht": 0, "maturity": "2033-06-15", "note": "WHT-exempt" },
-    { "name": "FXD1/2024", "type": "FXD", "yield": 16.80, "net_yield": 14.28, "tenor": "2yr",  "wht": 15, "maturity": "2026-03-15" },
-    { "name": "FXD2/2023", "type": "FXD", "yield": 15.50, "net_yield": 13.18, "tenor": "7yr",  "wht": 15, "maturity": "2030-09-15" }
+    {
+      "name": "IFB1/2024",
+      "type": "IFB",
+      "yield": 18.46,
+      "wht": 0,
+      "net_yield": 18.46,
+      "tenor": "10yr",
+      "maturity": "2034-03-15"
+    },
+    {
+      "name": "IFB2/2023",
+      "type": "IFB",
+      "yield": 17.93,
+      "wht": 0,
+      "net_yield": 17.93,
+      "tenor": "10yr",
+      "maturity": "2033-06-15"
+    },
+    {
+      "name": "IFB3/2022",
+      "type": "IFB",
+      "yield": 13.94,
+      "wht": 0,
+      "net_yield": 13.94,
+      "tenor": "10yr",
+      "maturity": "2032-09-15"
+    },
+    {
+      "name": "FXD1/2024",
+      "type": "FXD",
+      "yield": 16.8,
+      "wht": 15,
+      "net_yield": 14.28,
+      "tenor": "2yr",
+      "maturity": "2026-03-15"
+    },
+    {
+      "name": "FXD2/2023",
+      "type": "FXD",
+      "yield": 15.5,
+      "wht": 15,
+      "net_yield": 13.18,
+      "tenor": "7yr",
+      "maturity": "2030-09-15"
+    },
+    {
+      "name": "FXD1/2022 15yr",
+      "type": "FXD",
+      "yield": 13.92,
+      "wht": 15,
+      "net_yield": 11.83,
+      "tenor": "15yr",
+      "maturity": "2037-02-15"
+    }
   ],
   "saccos": [
-    { "name": "Stima SACCO",        "yield": 15.00, "members": "180K+", "regulated_by": "SASRA" },
-    { "name": "Mwalimu National",   "yield": 14.50, "members": "220K+", "regulated_by": "SASRA" },
-    { "name": "Kenya Police SACCO", "yield": 14.00, "members": "120K+", "regulated_by": "SASRA" },
-    { "name": "Unaitas SACCO",      "yield": 13.50, "members": "90K+",  "regulated_by": "SASRA" },
-    { "name": "Tower SACCO",        "yield": 13.00, "members": "60K+",  "regulated_by": "SASRA" }
+    {
+      "name": "Stima SACCO",
+      "yield": 15.0,
+      "members": "180K+",
+      "regulated_by": "SASRA"
+    },
+    {
+      "name": "Mwalimu National",
+      "yield": 14.5,
+      "members": "220K+",
+      "regulated_by": "SASRA"
+    },
+    {
+      "name": "Kenya Police SACCO",
+      "yield": 14.0,
+      "members": "120K+",
+      "regulated_by": "SASRA"
+    },
+    {
+      "name": "Unaitas SACCO",
+      "yield": 13.5,
+      "members": "90K+",
+      "regulated_by": "SASRA"
+    },
+    {
+      "name": "Tower SACCO",
+      "yield": 13.0,
+      "members": "60K+",
+      "regulated_by": "SASRA"
+    }
   ],
-  "nse": {
-    "SCOM":    30.60,
-    "EQTY":    77.00,
-    "KCB":     45.50,
-    "NCBA":    91.25,
-    "COOP":    18.50,
-    "ABSA":    16.50,
-    "EABL":   120.00,
-    "SCBK":   250.00,
-    "SASN":    19.75,
-    "NSE_PLC": 17.80,
-    "KQ":       5.40,
-    "BOC":    123.00
-  },
   "macro": {
     "cbk_rate": 10.75,
     "inflation": 6.3,
