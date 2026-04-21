@@ -59,17 +59,17 @@ Return ONLY a valid JSON object (no markdown, no backticks, no explanation) with
     "IFB1":      18.46
   },
   "mmfs": [
-    { "name": "Nabo Africa Money Market Fund", "yield": <latest effective annual yield %> },
-    { "name": "Etica MMF (Zidi)", "yield": <latest> },
+    { "name": "Etica Capital MMF (Zidi)", "yield": <latest effective annual yield %> },
+    { "name": "Lofty-Corpin Money Market Fund", "yield": <latest> },
     { "name": "Cytonn Money Market Fund", "yield": <latest> },
-    { "name": "Gulfcap Money Market Fund", "yield": <latest> },
-    { "name": "Old Mutual Money Market Fund", "yield": <latest> },
+    { "name": "NCBA Money Market Fund", "yield": <latest> },
+    { "name": "KCB Money Market Fund", "yield": <latest> },
     { "name": "Britam Money Market Fund", "yield": <latest> },
     { "name": "Sanlam Money Market Fund", "yield": <latest> },
-    { "name": "NCBA Fixed Income Fund", "yield": <latest> },
+    { "name": "Old Mutual Money Market Fund", "yield": <latest> },
     { "name": "CIC Money Market Fund", "yield": <latest> },
-    { "name": "Co-op Money Market Fund", "yield": <latest> },
-    { "name": "Equity Money Market Fund", "yield": <latest> }
+    { "name": "Absa Money Market Fund", "yield": <latest> },
+    { "name": "ICEA Lion Money Market Fund", "yield": <latest> }
   ]
 }
 

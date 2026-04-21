@@ -1172,7 +1172,7 @@ async function sendInvestmentCategories(waId: string, userId: string) {
     `   _Reply *CORP BONDS* or *12* for current issuances_\n\n` +
 
     `\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\n` +
-    `\u{1F9E0} *ASK AI ANYTHING \u2014 TYPE YOUR QUESTION:*\n` +
+    `\u{1F9E0} *ASK SENTILL ANYTHING \u2014 TYPE YOUR QUESTION:*\n` +
     `\u2022 _How do I invest KES 50,000 safely?_\n` +
     `\u2022 _Compare IFB Bond vs MMF_\n` +
     `\u2022 _Best option for 6 months?_\n` +
@@ -1842,7 +1842,7 @@ async function handleLoginOTP(waId: string, inputOtp: string, ctx: SessionContex
     `• *MARKETS* — live rates\n` +
     `• *ASSETS* — manage portfolio\n` +
     `• *SNAPSHOT* — quick portfolio card\n` +
-    `• *ASK* — ask AI anything\n` +
+    `• *ASK* — ask Sentill anything\n` +
     `• *MENU* — all options`
   );
 }
@@ -2465,7 +2465,7 @@ async function sendMainMenu(waId: string, userId?: string) {
 ` +
       `*1* — 📊 Live Rates & Yields
 ` +
-      `*2* — 🧠 Ask AI Anything
+      `*2* — 🧠 Ask Sentill Anything
 ` +
       (isPro
         ? `*3* — 📁 My Portfolio
@@ -2502,7 +2502,7 @@ async function sendMainMenu(waId: string, userId?: string) {
 ` +
     `*1* — 📊 Live Rates & Yields
 ` +
-    `*2* — 🧠 Ask AI Anything
+    `*2* — 🧠 Ask Sentill Anything
 ` +
     `*3* — 👤 Create Free Account _(portfolio & alerts)_
 

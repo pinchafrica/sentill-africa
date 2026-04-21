@@ -7,7 +7,7 @@ const providers = [
     name: "Etica Capital (Daily Interest)",
     slug: "etica-capital",
     type: "MMF",
-    currentYield: 17.55,
+    currentYield: 18.20,
     aum: "KES 15B+",
     paybill: "511116",
     isHalal: false,

@@ -12,19 +12,19 @@ import {
 import Link from "next/link";
 
 const YIELD_DATA = [
-  { provider: "Etica MMF", gross: 18.2, net: 15.47, category: "MMF" },
-  { provider: "Sanlam MMF", gross: 17.5, net: 14.88, category: "MMF" },
-  { provider: "Zimele MMF", gross: 16.8, net: 14.28, category: "MMF" },
-  { provider: "Cytonn MMF", gross: 19.5, net: 16.58, category: "MMF" },
+  { provider: "Etica Capital (Zidi)", gross: 18.20, net: 15.47, category: "MMF" },
+  { provider: "Lofty-Corpin MMF", gross: 17.50, net: 14.88, category: "MMF" },
+  { provider: "Cytonn MMF", gross: 16.90, net: 14.37, category: "MMF" },
+  { provider: "NCBA MMF", gross: 16.20, net: 13.77, category: "MMF" },
   { provider: "IFB1/2024", gross: 18.46, net: 18.46, category: "Bond" },
-  { provider: "FXD1/2024", gross: 16.0, net: 13.6, category: "Bond" },
-  { provider: "91-Day T-Bill", gross: 15.82, net: 13.45, category: "Treasury" },
+  { provider: "IFB2/2023", gross: 17.93, net: 17.93, category: "Bond" },
+  { provider: "91-Day T-Bill", gross: 15.78, net: 13.41, category: "Treasury" },
 ];
 
 const HISTORICAL_YIELDS = [
-  { month: "Jan", etica: 16.5, sanlam: 15.8, cytonn: 18.2, treasury: 14.5 },
-  { month: "Feb", etica: 17.2, sanlam: 16.0, cytonn: 18.8, treasury: 15.2 },
-  { month: "Mar", etica: 18.2, sanlam: 16.5, cytonn: 19.5, treasury: 15.8 },
+  { month: "Jan", etica: 16.5, sanlam: 16.2, cytonn: 15.8, treasury: 15.2 },
+  { month: "Feb", etica: 17.2, sanlam: 16.8, cytonn: 16.3, treasury: 15.6 },
+  { month: "Mar", etica: 18.2, sanlam: 17.5, cytonn: 16.9, treasury: 15.78 },
 ];
 
 const DarkTooltip = ({ active, payload, label }: any) => {

@@ -402,8 +402,8 @@ export async function GET(req: Request) {
         const hooks = [
           { emoji: "📈", headline: "T-Bill rates are at 16.42% this week — government-backed, zero risk", cta: "Reply *TBILL* to see how to invest in under 5 minutes." },
           { emoji: "🔥", headline: "IFBs — 18.46% p.a. with ZERO withholding tax", cta: "Reply *IFB* for the full step-by-step guide." },
-          { emoji: "💰", headline: "Nabo Africa MMF is yielding 12.90% p.a. right now — Kenya's top fund", cta: "Reply *MMF* to see the top-ranked funds." },
-          { emoji: "📊", headline: "NSE: Equity Group is one of Africa's fastest-growing banks", cta: "Reply *NSE* for live prices and AI stock analysis." },
+          { emoji: "💰", headline: "Etica Capital MMF (Zidi) is yielding 18.20% p.a. right now — Kenya's top fund", cta: "Reply *MMF* to see the top-ranked funds." },
+          { emoji: "📊", headline: "NSE: Equity Group is one of Africa's fastest-growing banks", cta: "Reply *NSE* for live prices and stock analysis." },
           { emoji: "🎯", headline: "Your money is doing nothing. Let's change that.", cta: "Reply *MENU* to see all 12 investment options available to you." },
         ];
         const hook = hooks[new Date().getUTCDay() % hooks.length];
