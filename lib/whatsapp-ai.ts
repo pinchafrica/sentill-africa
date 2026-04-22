@@ -220,7 +220,7 @@ export async function queryLiveRateAgent(assetQuery: string): Promise<string> {
 Use Google Search. Return a concise, 1-2 sentence response. Format neatly for WhatsApp. Do not include markdown headers or asterisks around the rate. Answer like an expert financial assistant.`;
 
   try {
-    const res = await fetch(\`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=\${apiKey}\`, {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

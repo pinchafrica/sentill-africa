@@ -39,6 +39,9 @@ model User {
 
   onboardingGoal     String?          // SAVINGS | EQUITIES | BONDS | CHAMA
 
+  // Referral tracking — stores referrer's User.id; triggers 30-day Pro payout on first paid upgrade
+  referredBy         String?
+
   createdAt          DateTime         @default(now())
   updatedAt          DateTime         @updatedAt
 }

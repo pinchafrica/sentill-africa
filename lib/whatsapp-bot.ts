@@ -301,11 +301,17 @@ function generateSecurePassword(): string {
 // ─────────────────────────────────────────────────────────────────────────────
 
 const PLANS = {
-  PRO_30_DAYS:      { label: "Sentill Pro",    amount: 490,  days: 30,  description: "Full Pro access for 30 days — all features unlocked!" },
-  // Legacy plan codes — map to the single plan for backward compat
-  WEEKLY_7_DAYS:    { label: "Sentill Pro",    amount: 490,  days: 30,  description: "Full Pro access for 30 days!" },
-  MONTHLY_30_DAYS:  { label: "Sentill Pro",    amount: 490,  days: 30,  description: "Full Pro access for 30 days!" },
-  QUARTERLY_90_DAYS:{ label: "Sentill Pro",    amount: 490,  days: 30,  description: "Full Pro access for 30 days!" },
+  // Monthly — entry tier
+  PRO_30_DAYS:      { label: "Sentill Pro — Monthly",   amount: 490,  days: 30,  description: "Full Pro access for 30 days. Cancel anytime." },
+  MONTHLY_30_DAYS:  { label: "Sentill Pro — Monthly",   amount: 490,  days: 30,  description: "Full Pro access for 30 days. Cancel anytime." },
+  // Quarterly — save 12% (3 × 490 = 1,470 → 1,299)
+  QUARTERLY_90_DAYS:{ label: "Sentill Pro — Quarterly", amount: 1299, days: 90,  description: "Full Pro access for 90 days. Save KES 171 (12% off)." },
+  // Annual — save 17% (2 months free vs. monthly)
+  ANNUAL_365_DAYS:  { label: "Sentill Pro — Annual",    amount: 4900, days: 365, description: "Full Pro access for 365 days. Save KES 980 (2 months free)." },
+  // Chama group plan — 10 seats shared
+  CHAMA_MONTHLY:    { label: "Sentill Chama Group",     amount: 2500, days: 30,  description: "Up to 10 members share Pro access for 30 days." },
+  // Legacy alias
+  WEEKLY_7_DAYS:    { label: "Sentill Pro — Monthly",   amount: 490,  days: 30,  description: "Full Pro access for 30 days." },
 } as const;
 
 // ── Free-tier AI prompt limit ────────────────────────────────────────────────
@@ -365,6 +371,9 @@ interface SessionContext {
   advisorId?: string;
   // Referral
   referCode?: string;
+  // Guest journey / payment timing
+  guestQuestionCount?: number;
+  paymentInitiatedAt?: number;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -484,7 +493,13 @@ export async function processIncomingMessage(
     // Plan selections
     if (buttonPayload === "WEEKLY_7_DAYS")     return handleSelectPlan(waId, "WEEKLY_7_DAYS",     ctx, session.userId ?? undefined);
     if (buttonPayload === "MONTHLY_30_DAYS")   return handleSelectPlan(waId, "MONTHLY_30_DAYS",   ctx, session.userId ?? undefined);
+    if (buttonPayload === "PRO_30_DAYS")       return handleSelectPlan(waId, "PRO_30_DAYS",       ctx, session.userId ?? undefined);
     if (buttonPayload === "QUARTERLY_90_DAYS") return handleSelectPlan(waId, "QUARTERLY_90_DAYS", ctx, session.userId ?? undefined);
+    if (buttonPayload === "ANNUAL_365_DAYS")   return handleSelectPlan(waId, "ANNUAL_365_DAYS",   ctx, session.userId ?? undefined);
+    if (buttonPayload === "CHAMA_MONTHLY")     return handleSelectPlan(waId, "CHAMA_MONTHLY",     ctx, session.userId ?? undefined);
+    if (buttonPayload === "SKIP_UPSELL") {
+      return sendWhatsAppMessage(waId, `👍 No problem. Enjoy your Pro access — type *MENU* whenever you're ready to explore.`);
+    }
     if (buttonPayload === "MARKETS")      return handleMarkets(waId);
     if (buttonPayload === "INVEST" || buttonPayload === "BROWSE") {
       if (session.userId) return sendInvestmentCategories(waId, session.userId);
@@ -785,11 +800,17 @@ export async function processIncomingMessage(
   if (["SUBSCRIBE", "RENEW", "UPGRADE", "PRO", "PAY", "TRIAL"].includes(input)) {
     return sendSubscriptionPlans(waId, userId);
   }
-  if (input === "WEEKLY_7_DAYS" || input === "WEEKLY" || input === "99" ||
-      input === "MONTHLY_30_DAYS" || input === "MONTHLY" || input === "349" ||
-      input === "QUARTERLY_90_DAYS" || input === "QUARTERLY" || input === "999" ||
-      input === "PRO_30_DAYS" || input === "490") {
+  if (input === "MONTHLY_30_DAYS" || input === "MONTHLY" || input === "PRO_30_DAYS" || input === "490") {
     return handleSelectPlan(waId, "PRO_30_DAYS", ctx, userId);
+  }
+  if (input === "QUARTERLY_90_DAYS" || input === "QUARTERLY" || input === "3 MONTHS" || input === "1299") {
+    return handleSelectPlan(waId, "QUARTERLY_90_DAYS", ctx, userId);
+  }
+  if (input === "ANNUAL_365_DAYS" || input === "ANNUAL" || input === "YEARLY" || input === "4900") {
+    return handleSelectPlan(waId, "ANNUAL_365_DAYS", ctx, userId);
+  }
+  if (input === "CHAMA PLAN" || input === "CHAMA_MONTHLY" || input === "GROUP PLAN" || input === "CHAMA SUBSCRIBE") {
+    return handleSelectPlan(waId, "CHAMA_MONTHLY", ctx, userId);
   }
 
   // COMPARE — compare two funds via AI
@@ -1714,7 +1735,12 @@ async function handleRegisterOTP(waId: string, inputOtp: string, ctx: SessionCon
         return Buffer.from(u.whatsappId).toString("base64").slice(-6).toUpperCase() === refCode;
       });
       if (referrer) {
-        // Grant 3 days Pro to the referrer
+        // Persist referrer — 30-day payout fires in payment webhook on paid conversion
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { referredBy: referrer.id },
+        });
+        // Signup bonus: 3 days Pro to referrer
         const currentExpiry = referrer.premiumExpiresAt ?? new Date();
         const baseDate = currentExpiry > new Date() ? currentExpiry : new Date();
         const newExpiry = new Date(baseDate.getTime() + 3 * 24 * 60 * 60 * 1000);
@@ -1791,9 +1817,12 @@ async function handleGoalAfterRegister(waId: string, input: string, ctx: Session
       where: { type: "MONEY_MARKET" },
       orderBy: { currentYield: "desc" },
       take: 3,
-      select: { name: true, currentYield: true, minInvestment: true },
+      select: { name: true, currentYield: true, minimumInvest: true },
     });
-    const lines = topFunds.map((f, i) => `${i + 1}. *${f.name}* — ${f.currentYield.toFixed(2)}% p.a. | Min KES ${((f.minInvestment as number | null) ?? 1000).toLocaleString()}`).join("\n");
+    const lines = topFunds.map((f, i) => {
+      const minStr = f.minimumInvest ?? "KES 1,000";
+      return `${i + 1}. *${f.name}* — ${f.currentYield.toFixed(2)}% p.a. | Min ${minStr}`;
+    }).join("\n");
     valueMsg = `💰 *Top 3 Money Market Funds right now:*\n\n${lines}\n\n_Type *LOG* to track your first investment_`;
   } else if (goal === "EQUITIES") {
     valueMsg = `📈 *NSE Stocks — Quick Guide:*\n\nType *NSE* to see today's stock signals\nType *SCOM* for Safaricom price & analysis\nType *EQTY* for Equity Bank\n\n_Type *LOG* to track a stock position_`;
@@ -2349,16 +2378,32 @@ async function sendSubscriptionPlans(waId: string, userId?: string) {
   const isRenewal = user?.isPremium ?? false;
   const action = isRenewal ? "Renew" : "Upgrade to";
 
-  await sendInteractiveButtons(
+  await sendWhatsAppMessage(
     waId,
     `⚡ *${action} Sentill Pro*\n\n` +
     `Unlock full intelligence:\n` +
-    `📊 Portfolio tracking\n🧠 Unlimited Sentill AI Oracle\n🎯 Goal planning\n📉 KRA Tax AI\n\n` +
-    `💎 *Sentill Pro — KES 490/month*\n` +
-    `≈ KES 16/day · All features · Cancel anytime\n\n` +
-    `Tap below to activate:`,
+    `📊 Portfolio tracking\n` +
+    `🧠 Unlimited AI Oracle\n` +
+    `🎯 Goal planning\n` +
+    `📉 KRA Tax AI\n` +
+    `🔔 Daily 7AM market briefs\n\n` +
+    `━━━━━━━━━━━━━━━━━━\n` +
+    `💎 *Choose your plan*\n\n` +
+    `🔹 *Monthly* — KES 490\n   _≈ KES 16/day_\n\n` +
+    `🔸 *Quarterly* — KES 1,299 _(save 12%)_\n   _3 months · KES 14/day_\n\n` +
+    `🔶 *Annual* — KES 4,900 _(save 17%)_\n   _2 months FREE · KES 13/day_\n` +
+    `━━━━━━━━━━━━━━━━━━\n` +
+    `👥 Running a chama? Reply *CHAMA PLAN* for group pricing (10 seats · KES 2,500/mo).\n\n` +
+    `Tap a plan below to activate:`
+  );
+
+  await sendInteractiveButtons(
+    waId,
+    `Select your plan:`,
     [
-      { id: "PRO_30_DAYS", title: "⚡ Pro — KES 490/mo" },
+      { id: "ANNUAL_365_DAYS",   title: "🔶 Annual — KES 4,900" },
+      { id: "QUARTERLY_90_DAYS", title: "🔸 3 Months — KES 1,299" },
+      { id: "PRO_30_DAYS",       title: "🔹 Monthly — KES 490" },
     ],
     userId
   );

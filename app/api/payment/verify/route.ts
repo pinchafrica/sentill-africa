@@ -43,21 +43,25 @@ export async function GET(req: NextRequest) {
         return NextResponse.redirect(new URL("/payment/callback?payment=failed&reason=no_user_id", req.url));
       }
 
-      // Calculate expiry based on plan
+      // Calculate expiry based on plan — duration matches PLANS config
       const now = new Date();
-      // All plans grant 30 days — single KES 490/month offering
       const PLAN_DAYS: Record<string, number> = {
+        PRO_30_DAYS: 30,
         MONTHLY_30_DAYS: 30,
         WEEKLY_7_DAYS: 30,
-        QUARTERLY_90_DAYS: 30,
-        ANNUAL_365_DAYS: 30,
-        TRIAL_7_DAYS: 30,
-        TRIAL_3_DAYS: 30,
+        QUARTERLY_90_DAYS: 90,
+        ANNUAL_365_DAYS: 365,
+        CHAMA_MONTHLY: 30,
         PRO_MONTHLY: 30,
-        PRO_ANNUAL: 30,
+        PRO_ANNUAL: 365,
       };
       const days = PLAN_DAYS[plan ?? ""] || 30;
-      const premiumExpiresAt = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
+      // Extend from current expiry if still active, so renewal stacks correctly
+      const existing = await prisma.user.findUnique({ where: { id: userId }, select: { premiumExpiresAt: true } });
+      const baseDate = existing?.premiumExpiresAt && existing.premiumExpiresAt > now
+        ? existing.premiumExpiresAt
+        : now;
+      const premiumExpiresAt = new Date(baseDate.getTime() + days * 24 * 60 * 60 * 1000);
 
       // Update payment record (best-effort)
       try {

@@ -3,15 +3,17 @@ import { prisma } from "@/lib/prisma";
 
 const PAYSTACK_SECRET = process.env.PAYSTACK_SECRET_KEY ?? "";
 
+// Amounts are in kobo (KES × 100) as Paystack requires
 const PLANS = {
-  // Active plan — single KES 490/month offering
-  MONTHLY_30_DAYS:   { amount: 49000,  label: "Sentill Pro – KES 490/month",   duration: 30  },
-  // Legacy aliases kept for webhook backward-compat
-  WEEKLY_7_DAYS:     { amount: 49000,  label: "Sentill Pro – KES 490/month",   duration: 30  },
-  QUARTERLY_90_DAYS: { amount: 49000,  label: "Sentill Pro – KES 490/month",   duration: 30  },
-  ANNUAL_365_DAYS:   { amount: 49000,  label: "Sentill Pro – KES 490/month",   duration: 30  },
-  PRO_MONTHLY:       { amount: 49000,  label: "Sentill Pro – KES 490/month",   duration: 30  },
-  PRO_ANNUAL:        { amount: 49000,  label: "Sentill Pro – KES 490/month",   duration: 30  },
+  PRO_30_DAYS:       { amount: 49000,   label: "Sentill Pro — Monthly",            duration: 30  },
+  MONTHLY_30_DAYS:   { amount: 49000,   label: "Sentill Pro — Monthly",            duration: 30  },
+  WEEKLY_7_DAYS:     { amount: 49000,   label: "Sentill Pro — Monthly",            duration: 30  },
+  QUARTERLY_90_DAYS: { amount: 129900,  label: "Sentill Pro — 3 Months (save 12%)", duration: 90  },
+  ANNUAL_365_DAYS:   { amount: 490000,  label: "Sentill Pro — Annual (save 17%)",   duration: 365 },
+  CHAMA_MONTHLY:     { amount: 250000,  label: "Sentill Chama Group — 10 seats",    duration: 30  },
+  // Legacy aliases
+  PRO_MONTHLY:       { amount: 49000,   label: "Sentill Pro — Monthly",            duration: 30  },
+  PRO_ANNUAL:        { amount: 490000,  label: "Sentill Pro — Annual (save 17%)",   duration: 365 },
 };
 
 export async function POST(req: NextRequest) {

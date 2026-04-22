@@ -84,7 +84,7 @@ export default function WhatsAppAgentsPage() {
       id: Date.now().toString(),
       timestamp: new Date().toISOString(),
       message: "Pro AI Agent Swarm activated. Monitoring WhatsApp pipelines.",
-      type: "success"
+      type: "success" as const
     }, ...prev].slice(0, 50));
 
     const simInterval = setInterval(() => {
@@ -103,14 +103,14 @@ export default function WhatsAppAgentsPage() {
               id: logId + "_fix",
               timestamp: new Date().toISOString(),
               message: `Auto-rectified by ${assignedAgent.name}: ${errorMsg}`,
-              type: "success",
+              type: "success" as const,
               agentId: assignedAgent.id
             },
             {
               id: logId,
               timestamp: new Date().toISOString(),
               message: `Exception detected: ${errorMsg}`,
-              type: "error"
+              type: "error" as const
             },
             ...prev
           ].slice(0, 50));
@@ -151,7 +151,7 @@ export default function WhatsAppAgentsPage() {
               id: Date.now().toString(),
               timestamp: new Date().toISOString(),
               message: `System Alert: No idle agents available for ${errorMsg}`,
-              type: "warning"
+              type: "warning" as const
             },
             ...prev
           ].slice(0, 50));

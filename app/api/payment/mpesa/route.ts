@@ -13,22 +13,22 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    // Verify minimum amount
-    const MIN_AMOUNTS: Record<string, number> = {
+    // Plan pricing — single source of truth
+    const PLAN_AMOUNTS: Record<string, number> = {
       PRO_30_DAYS: 490,
-      // Legacy plan codes — all map to 490 now
-      WEEKLY_7_DAYS: 490,
       MONTHLY_30_DAYS: 490,
-      QUARTERLY_90_DAYS: 490,
-      ANNUAL_365_DAYS: 490,
-      // Legacy plans (backwards compat)
+      WEEKLY_7_DAYS: 490,
+      QUARTERLY_90_DAYS: 1299,
+      ANNUAL_365_DAYS: 4900,
+      CHAMA_MONTHLY: 2500,
+      // Legacy aliases
       PRO_MONTHLY: 490,
-      PRO_ANNUAL: 490,
+      PRO_ANNUAL: 4900,
     };
 
-    if (plan && amount < MIN_AMOUNTS[plan]) {
+    if (plan && PLAN_AMOUNTS[plan] && amount < PLAN_AMOUNTS[plan]) {
       return NextResponse.json({
-        error: `Minimum amount for ${plan} is KES ${MIN_AMOUNTS[plan]}`
+        error: `Minimum amount for ${plan} is KES ${PLAN_AMOUNTS[plan]}`
       }, { status: 400 });
     }
 

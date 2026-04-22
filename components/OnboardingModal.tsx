@@ -40,7 +40,7 @@ export default function OnboardingModal({ name, goal, onDismiss }: OnboardingMod
     },
   };
 
-  const config = (goal && goalConfig[goal]) ?? {
+  const config = (goal ? goalConfig[goal] : undefined) ?? {
     emoji: "🚀",
     headline: "Compare every investment option in Kenya",
     cta: "Explore Markets →",
