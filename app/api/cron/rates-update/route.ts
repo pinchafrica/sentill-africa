@@ -74,8 +74,8 @@ const FIXED_RATES: Record<string, number> = {
 // These are sourced from CBK weekly bulletin and CMA fund publications.
 const FALLBACK_RATES: Record<string, number> = {
   // CBK macro
-  CBK_RATE:     10.75,
-  INFLATION:     4.90,
+  CBK_RATE:     10.00,
+  INFLATION:     4.10,
   "USD-KES":   129.50,
   "EUR-KES":   141.00,
   "GBP-KES":   165.00,
@@ -100,19 +100,22 @@ const FALLBACK_RATES: Record<string, number> = {
   "OLDMUT-MMF": 13.40,
   "ABSA-MMF":   13.20,
   "ICEA-MMF":   14.50,
-  // NSE equities (April 21, 2026 closing prices)
-  SCOM:   30.60,
-  EQTY:   77.00,
-  KCB:    45.50,
-  NCBA:   91.25,
-  COOP:   18.50,
-  ABSA:   16.50,
-  EABL:  120.00,
-  SCBK:  250.00,
-  SASN:   19.75,
+  // NSE equities (April 2026 benchmarked prices)
+  SCOM:    19.35,
+  EQTY:    48.05,
+  KCB:     37.20,
+  NCBA:    49.85,
+  COOP:    12.55,
+  ABSA:    14.30,
+  EABL:   125.50,
+  SCBK:   176.00,
+  KEGN:     4.98,
+  STBK:   112.50,
+  BAMB:    64.50,
+  SASN:    19.75,
   NSE_PLC: 17.80,
-  KQ:      5.40,
-  BOC:   123.00,
+  KQ:       5.40,
+  BOC:    123.00,
 };
 
 // ── Symbol → Provider name mapping (for Provider table updates) ───────────────
@@ -170,7 +173,7 @@ Search for these specific data points:
 
 Return ONLY a valid JSON object (no markdown, no backticks, no explanation):
 {
-  "CBK_RATE": <CBK base rate % — currently should be around 10.75>,
+  "CBK_RATE": <CBK base rate % — currently should be around 10.00>,
   "91-TBILL": <91-day T-Bill latest auction yield % — should be around 15-17>,
   "182-TBILL": <182-day T-Bill yield %>,
   "364-TBILL": <364-day T-Bill yield — should be around 16-17>,
@@ -196,7 +199,7 @@ VALIDATION RULES (reject any rate outside these ranges):
 - USD-KES: 120-140
 
 If you cannot verify a rate with confidence, use these April 2026 benchmarks:
-91-TBILL=15.78, 182-TBILL=15.97, 364-TBILL=16.42, CBK_RATE=10.75, ETCA=18.20, USD-KES=129.50`;
+91-TBILL=15.78, 182-TBILL=15.97, 364-TBILL=16.42, CBK_RATE=10.00, ETCA=18.20, USD-KES=129.50`;
 
   try {
     const res = await fetch(
@@ -355,17 +358,18 @@ function buildMarketDataJson(rates: Record<string, number>, syncedAt: Date): voi
       { name: "Tower SACCO",        yield: 13.00, members: "60K+",  regulated_by: "SASRA" },
     ],
     nse: {
-      SCOM: r("SCOM", 30.60),
-      EQTY: r("EQTY", 77.00),
-      KCB:  r("KCB", 45.50),
-      NCBA: r("NCBA", 91.25),
-      COOP: r("COOP", 18.50),
-      ABSA: r("ABSA", 16.50),
-      EABL: r("EABL", 120.00),
+      SCOM: r("SCOM",  19.35),
+      EQTY: r("EQTY",  48.05),
+      KCB:  r("KCB",   37.20),
+      NCBA: r("NCBA",  49.85),
+      COOP: r("COOP",  12.55),
+      ABSA: r("ABSA",  14.30),
+      EABL: r("EABL", 125.50),
+      SCBK: r("SCBK", 176.00),
     },
     macro: {
-      cbk_rate:  r("CBK_RATE", 10.75),
-      inflation: r("INFLATION", 4.90),
+      cbk_rate:  r("CBK_RATE", 10.00),
+      inflation: r("INFLATION", 4.10),
       usd_kes:   r("USD-KES", 129.50),
       eur_kes:   r("EUR-KES", 141.00),
       gbp_kes:   r("GBP-KES", 165.00),

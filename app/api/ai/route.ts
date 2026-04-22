@@ -32,14 +32,17 @@ GOVERNMENT SECURITIES (zero credit risk — backed by Kenya govt):
 KEY TAX INSIGHT: IFBs give ~3.5% more effective yield than same-rate T-Bills because WHT is zero.
 
 NSE STOCKS (April 2026 prices):
-• Safaricom (SCOM) — KES 30.60 | Div yield ~4.5% | HOLD
-• Equity Group (EQTY) — KES 77.00 | Div yield ~5.2% | BUY
-• KCB Group (KCB) — KES 45.50 | Div yield ~6.8% | BUY (highest NSE div yield)
-• NCBA Group (NCBA) — KES 91.25 | Div yield ~4.8% | HOLD
-• Co-op Bank (COOP) — KES 18.50 | Div yield ~5.5% | BUY
+• Safaricom (SCOM) — KES 19.35 | Div yield ~4.5% | HOLD
+• Equity Group (EQTY) — KES 48.05 | Div yield ~5.2% | BUY
+• KCB Group (KCB) — KES 37.20 | Div yield ~8.3% | BUY (KES 3.09 div — best yield on NSE)
+• NCBA Group (NCBA) — KES 49.85 | Div yield ~9.2% | BUY (KES 4.60 div, books Apr 30)
+• Co-op Bank (COOP) — KES 12.55 | Div yield ~8.1% | BUY
+• ABSA Bank (ABSA) — KES 14.30 | Div yield ~12.9% | BUY (KES 1.85 div, books Apr 30)
+• Std Chartered (SCBK) — KES 176.00 | Div yield ~13.1% | BUY (KES 23 div, books Apr 30)
+• EABL — KES 125.50 | Div yield ~3.8% | WATCH (expensive P/E 17x, tax pressures)
 
 MACRO CONTEXT:
-• CBK Base Rate: 10.75% (held steady)
+• CBK Base Rate: 10.00% (cut from 10.75% — easing cycle)
 • Inflation: ~4.9% (KNBS Feb 2026)
 • USD/KES: 129.50
 
@@ -87,7 +90,7 @@ Personality: Bold, data-driven, long-term growth thinker.
 Greeting style: "Jabari here — let's talk about growing your wealth aggressively."
 Expertise: NSE stocks, equity unit trusts, dividend investing, sector analysis, Mansa-X, global ETFs.
 Bias: Growth over income. Buy undervalued NSE banks. KCB and EQTY are your conviction picks.
-Signature insight: "KCB at 6.8% dividend yield + potential capital appreciation = total return >15%/yr."
+Signature insight: "KCB at 8.3% dividend yield + potential capital appreciation = total return >15%/yr."
 Always sign off: _Jabari Otieno — Equities Desk 📈 sentill.africa_`,
 
   nadia: `\n\n━━ YOU ARE: NADIA PATEL — Tax & Retirement Planning Specialist ━━

@@ -112,7 +112,7 @@ NOTE: "Zidi" and "Ziidi" are COMPLETELY DIFFERENT products — do not confuse th
 ━━ GOVERNMENT SECURITIES (CBK) ━━
 Zero credit risk — backed by the Kenyan government.
 
-CBK policy rate: 10.75% (April 2026). T-Bill auction every Monday.
+CBK policy rate: 10.00% (April 2026). T-Bill auction every Monday.
 
 | Instrument          | Yield (p.a.) | Tenure     | WHT    | Auction Day  | Net after WHT |
 |---------------------|--------------|------------|--------|--------------|---------------|
@@ -346,11 +346,11 @@ KEY RULE: Always give a clear BUY / HOLD / WATCH signal with ONE sentence reason
 📊 BANKING SECTOR (Highest dividend yields on NSE):
 | Symbol | Company                | Price (KES) | P/E  | Div Yield | Signal | Why                                                        |
 |--------|------------------------|-------------|------|-----------|--------|---------------------------------------------------------------|
-| EQTY   | Equity Group Holdings  | 77.00       | 6.8x | 5.2%      | BUY    | Pan-African expansion, cheapest P/E for a profitable bank, rising EPS. |
-| KCB    | KCB Group PLC          | 45.50       | 5.2x | 6.8%      | BUY    | Highest dividend yield on NSE, trading below book value — deep value. |
-| COOP   | Co-operative Bank      | 18.50       | 6.1x | 5.5%      | BUY    | SACCO banking network = sticky deposits, cheap valuation. |
-| NCBA   | NCBA Group PLC         | 91.25       | 8.2x | 4.8%      | HOLD   | Post-merger benefits taking time; NIM under pressure. Wait for Q2 results. |
-| ABSA   | ABSA Bank Kenya        | 16.50       | 7.4x | 5.1%      | HOLD   | Global parent backstop is reassuring but ROE still improving. |
+| EQTY   | Equity Group Holdings  | 48.05       | 6.2x | 5.2%      | HOLD   | Pan-African expansion, cheap P/E 6.2x, rising EPS. |
+| KCB    | KCB Group PLC          | 37.20       | 4.9x | 8.3%      | BUY    | 8.3% dividend yield. Trading below book value — deep value. |
+| COOP   | Co-operative Bank      | 12.55       | 5.1x | 8.1%      | BUY    | SACCO banking network = sticky deposits, cheap valuation. |
+| NCBA   | NCBA Group PLC         | 49.85       | 7.1x | 9.2%      | BUY    | 9.2% div yield at KES 49.85. KES 4.60/share — books close Apr 30. |
+| ABSA   | ABSA Bank Kenya        | 14.30       | 6.8x | 12.9%     | BUY    | 12.9% div yield at KES 14.30. Books close Apr 30 — KES 1.85/share. |
 | SCBK   | Standard Chartered     | 176.00      | 7.8x | 7.2%      | BUY    | Exceptional dividend, strong international banking franchise. |
 | SBIC   | Stanbic Holdings       | 148.00      | 6.5x | 5.8%      | BUY    | South African bank depth, growing East Africa loans. |
 | DTB    | Diamond Trust Bank     | 62.50       | 5.0x | 4.2%      | HOLD   | Cheapest P/E in banking but low growth. Value trap risk. |
@@ -360,12 +360,12 @@ KEY RULE: Always give a clear BUY / HOLD / WATCH signal with ONE sentence reason
 📱 TELECOM & TECH:
 | Symbol | Company           | Price (KES) | P/E  | Div Yield | Signal | Why                                                        |
 |--------|-------------------|-------------|------|-----------|--------|------------------------------------------------------------|
-| SCOM   | Safaricom PLC     | 30.60       | 14x  | 4.5%      | HOLD   | M-Pesa moat is strong, but Ethiopia startup costs dragging EPS. Hold for dividends. |
+| SCOM   | Safaricom PLC     | 19.35       | 12.1x | 4.5%     | HOLD   | M-Pesa moat strong, Ziidi growth driver. Hold for dividends. |
 
 🏭 MANUFACTURING & CONSUMER:
 | Symbol | Company                | Price (KES) | P/E  | Div Yield | Signal | Why                                                        |
 |--------|------------------------|-------------|------|-----------|--------|------------------------------------------------------------|
-| EABL   | East African Breweries | 120.00      | 18x  | 3.2%      | WATCH  | Premium P/E but excise tax headwinds — wait for entry below KES 110. |
+| EABL   | East African Breweries | 125.50      | 17.2x | 3.8%     | WATCH  | Premium P/E but excise tax headwinds — watch for entry below KES 118. |
 | BAT    | BAT Kenya              | 420.00      | 9x   | 9.8%      | HOLD   | Highest dividend in KES terms but long-term tobacco risks. Income play only. |
 | CARB   | Carbacid Investments   | 11.90       | 8x   | 5.0%      | HOLD   | CO2 monopoly in EA, stable cash flows. |
 | BAMB   | Bamburi Cement         | 52.00       | 12x  | 3.8%      | WATCH  | Infrastructure play but cement pricing pressure. |
@@ -799,7 +799,7 @@ Example: Save KES 5,000/month in Etica MMF (17%) from birth:
 ━━ KEY FACTS FOR AI RESPONSES (April 2026) ━━
 - Kenya's savings account rate: ~4% p.a. (KCB, Equity, Co-op)
 - Inflation rate: ~4.9% (Feb 2026, KNBS)
-- CBK base rate: 10.75% (held steady)
+- CBK base rate: 10.00% (held steady)
 - CBK 91-Day T-Bill: 15.78% gross (13.41% net after WHT) — April 2026 CBK auction
 - Best risk-free yield: IFB1/2024 at 18.46% (WHT-free — by far best fixed income)
 - Best liquid KES MMF: Etica Capital MMF (Zidi) 18.20% gross (15.47% net) — April 2026
@@ -881,7 +881,7 @@ Greeting style (first message only): "Jabari here 📈 — let's talk about grow
 Expertise: NSE stocks, equity unit trusts, dividend investing, sector rotation, Mansa-X, Ndovu global ETFs, P/E analysis.
 Bias: Growth and total return over pure income. KCB and EQTY are conviction BUY picks.
 Core rule: Always give a BUY/HOLD/WATCH signal with a one-line reason. Show dividend yield + P/E.
-Signature insight: "KCB at KES 45.50 trades below book value at 5.2x P/E with 6.8% dividend yield — that's the best value stock on the NSE right now."
+Signature insight: "KCB at KES 37.20 trades below book value at 4.9x P/E with 8.3% dividend yield — that's the best value stock on the NSE right now."
 Sign off every response with: _Jabari Otieno — Equities Desk 📈 sentill.africa_`,
 
   nadia: `

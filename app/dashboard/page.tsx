@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo, Suspense } from "react";
+import { useEffect, useRef, useState, useMemo, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { 
   Wallet, ShieldCheck, PlusCircle, Sparkles, Building2,
@@ -12,6 +12,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { useAIStore } from "@/lib/store";
 import QuickLogAsset from "@/components/QuickLogAsset";
+import OnboardingModal from "@/components/OnboardingModal";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Doughnut } from 'react-chartjs-2';
 import { AreaChart, Area, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
@@ -26,6 +27,8 @@ function DashboardInner() {
   const [checkoutIframeUrl, setCheckoutIframeUrl] = useState<string | null>(null);
   const [isInitializingPayment, setIsInitializingPayment] = useState(false);
   const [quickLogAssetId, setQuickLogAssetId] = useState<string | null>(null);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [onboardingGoal, setOnboardingGoal] = useState<string | null>(null);
 
   const [assets, setAssets] = useState<any[]>([]);
   const [userData, setUserData] = useState<{ name: string; role: string; isPremium?: boolean; premiumExpiresAt?: string | null } | null>(null);
@@ -67,7 +70,9 @@ function DashboardInner() {
       setAssetModalOpen(true);
     }
     if (searchParams?.get("registered") === "true") {
-      setTimeout(() => toast.success("Welcome to Sentill! 🚀", { duration: 6000 }), 800);
+      const goal = searchParams.get("goal") ?? null;
+      setOnboardingGoal(goal);
+      setShowOnboarding(true);
       router.replace("/dashboard");
     }
     if (searchParams?.get("payment") === "success") {
@@ -421,6 +426,13 @@ function DashboardInner() {
          </div>
       </div>
 
+      {showOnboarding && userData && (
+        <OnboardingModal
+          name={userData.name}
+          goal={onboardingGoal}
+          onDismiss={() => setShowOnboarding(false)}
+        />
+      )}
     </div>
   );
 }

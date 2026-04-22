@@ -88,14 +88,14 @@ const NSE_SYMBOLS: Record<string, string> = {
 
 // Hardcoded NSE data (fallback when Yahoo Finance unavailable)
 const NSE_FALLBACK: Record<string, { price: number; change: number; pe: number; div: number; signal: string; why: string }> = {
-  SCOM: { price: 30.60, change: -0.8,  pe: 14,  div: 4.5,  signal: "HOLD",  why: "Stable dividend payer. Ziidi & M-PESA driving long-term moats." },
-  EQTY: { price: 77.00, change: +1.2,  pe: 6.8, div: 5.2,  signal: "BUY",   why: "Pan-African expansion, cheap valuation, strong EPS growth." },
-  KCB:  { price: 45.50, change: +0.5,  pe: 5.2, div: 6.8,  signal: "BUY",   why: "Highest dividend yield on NSE, trading below book value." },
-  COOP: { price: 18.50, change: -0.3,  pe: 6.1, div: 5.5,  signal: "BUY",   why: "Consistent profits, SACCO banking network advantage." },
-  NCBA: { price: 91.25, change: +0.9,  pe: 8.2, div: 4.8,  signal: "HOLD",  why: "Post-merger benefits showing, watch for NIM expansion. Div books close Apr 30 — KES 4.60/share." },
-  ABSA: { price: 16.50, change: +0.2,  pe: 7.4, div: 11.2, signal: "BUY",   why: "High dividend yield at current price (~11.2%). Books close Apr 30 — KES 1.85/share." },
-  EABL: { price: 120.0, change: -1.5,  pe: 18,  div: 3.2,  signal: "WATCH", why: "Premium brand but expensive. Tax pressures on alcohol." },
-  SCBK: { price: 250.0, change: +0.4,  pe: 9.1, div: 9.2,  signal: "BUY",   why: "Massive KES 23/share final dividend — books close Apr 30. One of the highest per-share payouts on NSE." },
+  SCOM: { price: 19.35, change: +0.15, pe: 12.1, div: 4.5,  signal: "HOLD",  why: "Stable dividend payer. Ziidi & M-PESA driving long-term moats." },
+  EQTY: { price: 48.05, change: -0.45, pe: 6.2,  div: 5.2,  signal: "BUY",   why: "Pan-African expansion, cheap valuation, strong EPS growth." },
+  KCB:  { price: 37.20, change: +0.70, pe: 4.9,  div: 8.3,  signal: "BUY",   why: "KES 3.09 div at current price = 8.3% yield. Trading below book value." },
+  COOP: { price: 12.55, change: -0.20, pe: 5.1,  div: 8.1,  signal: "BUY",   why: "Consistent profits, SACCO banking network advantage." },
+  NCBA: { price: 49.85, change: +0.85, pe: 7.1,  div: 9.2,  signal: "BUY",   why: "KES 4.60/share dividend — books close Apr 30. 9.2% yield at current price." },
+  ABSA: { price: 14.30, change: -0.20, pe: 6.8,  div: 12.9, signal: "BUY",   why: "High dividend yield (~12.9%). Books close Apr 30 — KES 1.85/share." },
+  EABL: { price: 125.50,change: -2.50, pe: 17.2, div: 3.8,  signal: "WATCH", why: "Premium brand but expensive P/E 17x. Tax pressures on alcohol." },
+  SCBK: { price: 176.00,change: -1.00, pe: 8.4,  div: 13.1, signal: "BUY",   why: "KES 23/share final dividend — books close Apr 30. 13.1% yield at current price." },
   SASN: { price: 19.75, change: +1.3,  pe: 11,  div: 3.8,  signal: "BUY",   why: "April momentum leader. Agricultural export demand at peak — Sasini is the top agri play right now." },
   KQ:   { price: 5.40,  change: +2.1,  pe: 0,   div: 0,    signal: "WATCH", why: "High retail interest. Recovery from January lows but still volatile — speculative only." },
   BOC:  { price: 123.0, change: +0.3,  pe: 12,  div: 8.4,  signal: "BUY",   why: "Industrial gases — KES 10.35/share dividend (books close May 31). Niche but consistent earner." },
@@ -262,13 +262,13 @@ async function handleNSEBeginnersGuide(waId: string) {
     `📈 *Capital gains:* Currently *0% tax* in Kenya 🎉\n\n` +
     `━━━━━━━━━━━━━━━━━━\n` +
     `🏆 *SENTILL BEGINNER PORTFOLIO (KES 5K–10K):*\n\n` +
-    `1️⃣ *KCB Group (KCB)* — 40% of budget\n` +
+    `1️⃣ *KCB Group (KCB)* — 40% of budget (KES 37.20)\n` +
     `   _Highest dividend on NSE (~6.8%), trading cheap_\n\n` +
-    `2️⃣ *Equity Group (EQTY)* — 40% of budget\n` +
+    `2️⃣ *Equity Group (EQTY)* — 40% of budget (KES 48.05)\n` +
     `   _Kenya's most profitable bank, growing in 7 countries_\n\n` +
-    `3️⃣ *Safaricom (SCOM)* — 20% of budget\n` +
+    `3️⃣ *Safaricom (SCOM)* — 20% of budget (KES 19.35)\n` +
     `   _You use M-Pesa every day — own a piece of it_\n\n` +
-    `💡 _Example: KES 10,000 in KCB at KES 45.50_\n` +
+    `💡 _Example: KES 10,000 in KCB at KES 37.20 = ~271 shares_\n` +
     `   _= 219 shares · earns ~KES 680/yr in dividends_\n\n` +
     `━━━━━━━━━━━━━━━━━━\n` +
     `⚠️ *GOLDEN RULES:*\n` +
@@ -457,7 +457,8 @@ export async function processIncomingMessage(
   const ACTIVE_STATES = ["REGISTER_NAME", "REGISTER_EMAIL", "REGISTER_OTP", "LOGIN_OTP", "SUB_CONFIRM",
     "LOG_ASSET_PROVIDER", "LOG_ASSET_AMOUNT", "LOG_ASSET_CONFIRM", "REMOVE_ASSET_SELECT",
     "REMOVE_ASSET_CONFIRM", "REALLOCATE_FROM", "REALLOCATE_TO", "REALLOCATE_AMOUNT", "REALLOCATE_CONFIRM",
-    "ALERT_FREQ_SELECT", "ALERT_THRESHOLD_INPUT", "ALERT_WATCHLIST_ADD", "ALERT_WATCHLIST_REMOVE"];
+    "ALERT_FREQ_SELECT", "ALERT_THRESHOLD_INPUT", "ALERT_WATCHLIST_ADD", "ALERT_WATCHLIST_REMOVE",
+    "GOAL_AFTER_REGISTER", "AWAITING_PAYMENT"];
   if (ACTIVE_STATES.includes(session.state) && session.lastSeen) {
     const hoursIdle = (Date.now() - new Date(session.lastSeen).getTime()) / 3600000;
     if (hoursIdle > 24) {
@@ -559,6 +560,10 @@ export async function processIncomingMessage(
       return handleWatchlistRemove(waId, input, ctx, session.userId ?? undefined);
     case "FREQ_AFTER_REGISTER":
       return handleFreqAfterRegister(waId, buttonPayload ?? input, ctx, session.userId ?? undefined);
+    case "GOAL_AFTER_REGISTER":
+      return handleGoalAfterRegister(waId, buttonPayload ?? input, ctx, session.userId ?? undefined);
+    case "AWAITING_PAYMENT":
+      return handlePaymentCheck(waId, input, ctx, session.userId ?? undefined);
   }
 
   // ── Capture referral code if user arrived via invite link ────────────────
@@ -575,7 +580,8 @@ export async function processIncomingMessage(
 
   // ── IDLE — route by keyword ───────────────────────────────────────────────
   if (["HI", "HELLO", "START", "MENU", "HOME"].includes(input)) {
-    return sendMainMenu(waId, session.userId ?? undefined);
+    if (session.userId) return sendMainMenu(waId, session.userId);
+    return sendGuestGreeting(waId);
   }
 
   if (input === "REGISTER") {
@@ -654,8 +660,25 @@ export async function processIncomingMessage(
     if (input === "LIST" || input === "FUNDS" || input === "MMF LIST") return handleMMFListMenu(waId, undefined);
     if (input.startsWith("CALC ") || input.startsWith("CALCULATE ")) return handleQuickCalc(waId, rawInput, undefined);
 
+    // LIVE RATE command for guests
+    if (input.startsWith("LIVE RATE ") || input.startsWith("LIVE ")) {
+      const asset = rawInput.replace(/^live\s*(rate\s*)?/i, "").trim();
+      if (asset.length < 2) return sendWhatsAppMessage(waId, "Please specify the asset. Example:\n*LIVE RATE KCB* or *LIVE USD*");
+      
+      await sendWhatsAppMessage(waId, `🔍 *Sentill Oracle* is finding the live rate for *${asset}*...`);
+      
+      try {
+        const { queryLiveRateAgent } = await import("./whatsapp-ai");
+        const liveAns = await queryLiveRateAgent(asset);
+        return sendWhatsAppMessage(waId, `⚡ *Live Rate Update*\n\n${liveAns}\n\n_Send *REGISTER* to auto-track this asset!_`);
+      } catch (err) {
+        console.error("[Live Rate Agent] Error:", err);
+        return sendWhatsAppMessage(waId, "❌ The live rate agent is currently unavailable.");
+      }
+    }
+
     // If user typed a real question (>5 chars), route to AI even without login
-    if (rawInput.length > 5) return handleGeminiQuestionGuest(waId, rawInput);
+    if (rawInput.length > 5) return handleGeminiQuestionGuest(waId, rawInput, session, ctx);
 
     // Default: show the clean numbered menu
     return sendMainMenu(waId, undefined);
@@ -702,7 +725,7 @@ export async function processIncomingMessage(
   // NSE ticker lookup — e.g. "SCOM", "EQTY", "KCB"
   if (NSE_SYMBOLS[input]) return handleNSEStockLookup(waId, input, userId);
   if (input === "STATUS"    || input === "S") return handleSubscriptionStatus(waId, userId);
-  if (input === "HELP"      || input === "H") return sendHelp(waId);
+  if (input === "HELP"      || input === "H") return sendHelp(waId, session.userId ?? undefined);
   if (input === "LOGOUT")                     return handleLogout(waId);
 
   // ── Notification & Alert Commands ──────────────────────────────────────────
@@ -783,6 +806,23 @@ export async function processIncomingMessage(
   // GOAL via chat — "GOAL Home Fund 2000000 2026-12-31"
   if (input.startsWith("GOAL ")) {
     return handleSetGoal(waId, rawInput, userId);
+  }
+
+  // LIVE RATE command — real-time Google search via Sub-Agent
+  if (input.startsWith("LIVE RATE ") || input.startsWith("LIVE ")) {
+    const asset = rawInput.replace(/^live\s*(rate\s*)?/i, "").trim();
+    if (asset.length < 2) return sendWhatsAppMessage(waId, "Please specify the asset. Example:\n*LIVE RATE KCB* or *LIVE USD*");
+    
+    await sendWhatsAppMessage(waId, `🔍 *Sentill Oracle* is finding the live rate for *${asset}*...`);
+    
+    try {
+      const { queryLiveRateAgent } = await import("./whatsapp-ai");
+      const liveAns = await queryLiveRateAgent(asset);
+      return sendWhatsAppMessage(waId, `⚡ *Live Rate Update*\n\n${liveAns}`);
+    } catch (err) {
+      console.error("[Live Rate Agent] Error:", err);
+      return sendWhatsAppMessage(waId, "❌ The live rate agent is currently unavailable.");
+    }
   }
 
   // ASK command — explicit Gemini question
@@ -943,7 +983,7 @@ async function handleGeminiQuestion(waId: string, question: string, userId: stri
 }
 
 // Guest AI handler — for users who haven't registered/logged in
-async function handleGeminiQuestionGuest(waId: string, question: string) {
+async function handleGeminiQuestionGuest(waId: string, question: string, session?: any, ctx?: SessionContext) {
   try {
     // Check daily AI usage even for guests (by waId)
     const todayStart = new Date();
@@ -970,18 +1010,22 @@ async function handleGeminiQuestionGuest(waId: string, question: string) {
       isPremium: false,
     }, waId);
 
-    // Smart contextual nudge based on how many questions they've already asked
-    const usedSoFar = aiQueriesCount + 1; // +1 for this answer
+    // Increment session-based question counter for conversion nudges
+    const currentCount = (ctx?.guestQuestionCount as number | undefined) ?? 0;
+    const newCount = currentCount + 1;
+    if (session) {
+      await updateSession(waId, session.state ?? "IDLE", { ...(ctx ?? {}), guestQuestionCount: newCount });
+    }
+
+    // Smart contextual nudge — session count takes priority over DB count
     let nudge = "";
-    if (usedSoFar === 1) {
+    if (newCount === 3) {
+      nudge = `\n\n━━━━━━━━━━━━━━━━\n💡 *Create a free account to save this conversation and get daily market updates.*\n\nType *REGISTER* — takes 2 minutes.`;
+    } else if (newCount === 5) {
+      nudge = `\n\n━━━━━━━━━━━━━━━━\n📊 *You've asked 5 questions! Register free to unlock portfolio tracking + alerts.*\n\nType *REGISTER* now.`;
+    } else if (newCount === 1) {
       // First answer — very soft, don't interrupt the value
       nudge = `\n\n_Ask another question or type *MENU* for options_`;
-    } else if (usedSoFar === 3) {
-      // 3rd question — introduce the benefit of registering
-      nudge = `\n\n━━━━━━━━━━━━━━━━\n📲 *Get daily alerts for these rates* — send *REGISTER* (free, 30 sec)`;
-    } else if (usedSoFar >= 5) {
-      // 5th+ question — stronger nudge, they're engaged
-      nudge = `\n\n━━━━━━━━━━━━━━━━\n💡 *Save this to your portfolio & get daily alerts*\nSend *REGISTER* — free account, takes 30 seconds`;
     }
 
     // FOMO micro-conversion: extract yield from answer and show personalised KES calc
@@ -1653,7 +1697,7 @@ async function handleRegisterOTP(waId: string, inputOtp: string, ctx: SessionCon
     update: { whatsappEnabled: true, whatsappNumber: normalizedPhone },
   });
 
-  await updateSession(waId, "FREQ_AFTER_REGISTER", {}, user.id);
+  await updateSession(waId, "GOAL_AFTER_REGISTER", {}, user.id);
 
   // ── REFERRAL REWARD: Check if new user came via a referral link ─────────────
   // Referral code embedded in first message: SENTIL_REF_XXXXXX
@@ -1703,27 +1747,76 @@ async function handleRegisterOTP(waId: string, inputOtp: string, ctx: SessionCon
     html: buildLoginCredentialsEmail(ctx.name, ctx.email, plainPassword),
   }).catch(err => console.warn("[Bot] Credentials email failed:", err));
 
-  // Ask frequency preference right after registration
-  try {
-    await sendWhatsAppMessage(
-      waId,
-      `✅ *Welcome to Sentil Africa, ${ctx.name}!* 🎉\n\n` +
-      `Your account is ready!\n\n` +
-      `📧 *Login credentials sent to ${ctx.email}*\n🌐 Visit *www.sentill.africa* to access the dashboard.\n\n` +
-      `🔔 *How often would you like to receive market alerts & AI briefs?*`
-    );
-    return sendInteractiveButtons(waId, `Choose your notification frequency:`, [
-      { id: "FREQ_DAILY",   title: "🌅 Daily (7AM Mon–Fri)" },
-      { id: "FREQ_WEEKLY",  title: "📅 Weekly (Mon mornings)" },
-      { id: "FREQ_MOVERS", title: "📊 Market Alerts Only" },
-    ]);
-  } catch {
-    return sendWhatsAppMessage(waId,
-      `🔔 *Set alert frequency:*\n\n1️⃣ *DAILY* — 7AM Mon–Fri\n2️⃣ *WEEKLY* — Monday morning\n3️⃣ *MOVERS* — Market alerts only\n4️⃣ *OFF* — No alerts\n\nReply with number or keyword.`
-    );
-  }
+  // Ask investment goal right after registration (goal → then frequency)
+  const firstName = ctx.name?.split(" ")[0] ?? "Investor";
+  return sendWhatsAppMessage(
+    waId,
+    `🎉 *Welcome to Sentil Africa, ${firstName}!*\n\n` +
+    `Your free account is ready.\n` +
+    `📧 Login credentials sent to ${ctx.email}\n\n` +
+    `What's your primary investment goal?\n\n` +
+    `*1* — 💰 Save & grow money (MMFs)\n` +
+    `*2* — 📈 NSE stocks & dividends\n` +
+    `*3* — 🏛️ Government bonds\n` +
+    `*4* — 👥 Chama / group investing\n\n` +
+    `_Reply 1, 2, 3, or 4_`
+  );
 }
 
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Goal capture after registration — delivers first value, then asks frequency
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function handleGoalAfterRegister(waId: string, input: string, ctx: SessionContext, userId?: string) {
+  const goalMap: Record<string, string> = {
+    "1": "SAVINGS", "SAVINGS": "SAVINGS", "MMF": "SAVINGS", "SAVE": "SAVINGS",
+    "2": "EQUITIES", "EQUITIES": "EQUITIES", "STOCKS": "EQUITIES", "NSE": "EQUITIES",
+    "3": "BONDS", "BONDS": "BONDS", "TBILL": "BONDS", "BOND": "BONDS",
+    "4": "CHAMA", "CHAMA": "CHAMA", "GROUP": "CHAMA",
+  };
+
+  const goal = goalMap[input] ?? null;
+
+  if (goal && userId) {
+    try {
+      await (prisma.user.update as any)({ where: { id: userId }, data: { onboardingGoal: goal } });
+    } catch {}
+  }
+
+  // Deliver first value based on goal
+  let valueMsg = "";
+  if (goal === "SAVINGS" || !goal) {
+    const topFunds = await prisma.provider.findMany({
+      where: { type: "MONEY_MARKET" },
+      orderBy: { currentYield: "desc" },
+      take: 3,
+      select: { name: true, currentYield: true, minInvestment: true },
+    });
+    const lines = topFunds.map((f, i) => `${i + 1}. *${f.name}* — ${f.currentYield.toFixed(2)}% p.a. | Min KES ${((f.minInvestment as number | null) ?? 1000).toLocaleString()}`).join("\n");
+    valueMsg = `💰 *Top 3 Money Market Funds right now:*\n\n${lines}\n\n_Type *LOG* to track your first investment_`;
+  } else if (goal === "EQUITIES") {
+    valueMsg = `📈 *NSE Stocks — Quick Guide:*\n\nType *NSE* to see today's stock signals\nType *SCOM* for Safaricom price & analysis\nType *EQTY* for Equity Bank\n\n_Type *LOG* to track a stock position_`;
+  } else if (goal === "BONDS") {
+    valueMsg = `🏛️ *Government Securities:*\n\n• *T-Bills* — 91/182/364 day | ~16% gross\n• *IFB Bonds* — 18.46% *tax-free* 🔥\n• Buy via DhowCSD (CBK platform)\n\n_Type *IFB* for the step-by-step guide_`;
+  } else if (goal === "CHAMA") {
+    valueMsg = `👥 *Chama Investment Tracker:*\n\nSentil helps your group:\n• Track each member's contributions\n• Compare investment options\n• Calculate group returns\n\n_Set up your Chama at sentill.africa/chama_`;
+  }
+
+  await updateSession(waId, "FREQ_AFTER_REGISTER", {}, userId);
+
+  const firstName = ctx.name?.split(" ")[0] ?? "Investor";
+  return sendWhatsAppMessage(
+    waId,
+    `✅ *Account created, ${firstName}!* Welcome to Sentil Africa 🎉\n\n` +
+    valueMsg +
+    `\n\n━━━━━━━━━━━━━━━━\n` +
+    `Last step — how often do you want market updates?\n\n` +
+    `*DAILY* — Morning brief every day\n` +
+    `*WEEKLY* — Monday summary\n` +
+    `*OFF* — No automatic updates`
+  );
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Login flow
@@ -2343,7 +2436,7 @@ async function handleSubConfirm(
     const paystackData = await paystackRes.json();
 
     if (paystackRes.ok && paystackData.success && paystackData.authorization_url) {
-      await updateSession(waId, "IDLE", {}, userId);
+      await updateSession(waId, "AWAITING_PAYMENT", { ...ctx, paymentInitiatedAt: Date.now() }, userId);
 
       return sendWhatsAppMessage(
         waId,
@@ -2352,7 +2445,8 @@ async function handleSubConfirm(
         `🔗 ${paystackData.authorization_url}\n\n` +
         `👆 Tap the link to pay via *M-Pesa or Card* on Paystack.\n\n` +
         `_Your Pro access activates automatically after payment._\n\n` +
-        `⚠️ Link expires in 30 minutes. Send *SUBSCRIBE* for a new one.`
+        `⚠️ Link expires in 30 minutes. Send *SUBSCRIBE* for a new one.\n\n` +
+        `After paying, type *DONE* and I'll check your payment status.`
       );
     } else {
       throw new Error(paystackData.error ?? "Checkout failed");
@@ -2372,7 +2466,100 @@ async function handleSubConfirm(
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Payment check — handles DONE/PAID after Paystack link is sent
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function handlePaymentCheck(waId: string, input: string, ctx: SessionContext, userId?: string) {
+  if (input === "CANCEL" || input === "NO") {
+    await updateSession(waId, "IDLE", {}, userId);
+    return sendWhatsAppMessage(waId, "Cancelled. Send *SUBSCRIBE* anytime to get a new payment link.");
+  }
+
+  if (!["DONE", "PAID", "CHECK", "I PAID", "I'VE PAID", "CONFIRM"].includes(input)) {
+    return sendWhatsAppMessage(waId,
+      `⏳ Waiting for your M-Pesa payment.\n\n` +
+      `After paying on Paystack, type *DONE* to activate Pro.\n` +
+      `Or type *SUBSCRIBE* for a new payment link.`
+    );
+  }
+
+  if (!userId) {
+    await updateSession(waId, "IDLE", {});
+    return sendWhatsAppMessage(waId, "❌ Session error. Send *SUBSCRIBE* to try again.");
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { isPremium: true, premiumExpiresAt: true, name: true },
+  });
+
+  if (user?.isPremium && user.premiumExpiresAt && user.premiumExpiresAt > new Date()) {
+    await updateSession(waId, "IDLE", {}, userId);
+    const firstName = user.name?.split(" ")[0] ?? "Investor";
+    return sendWhatsAppMessage(waId,
+      `⚡ *Pro is ACTIVE, ${firstName}!*\n\n` +
+      `Your premium access expires: *${user.premiumExpiresAt.toLocaleDateString("en-KE")}*\n\n` +
+      `Unlocked:\n` +
+      `✅ Unlimited AI advisor\n` +
+      `✅ Full portfolio tracking\n` +
+      `✅ Real-time yield alerts\n` +
+      `✅ NSE candlestick charts\n\n` +
+      `Type *MENU* to get started 🚀`
+    );
+  }
+
+  // Payment not confirmed yet
+  const initiatedAt = ctx.paymentInitiatedAt as number | undefined;
+  const minutesAgo = initiatedAt ? Math.floor((Date.now() - initiatedAt) / 60000) : 0;
+
+  if (minutesAgo > 30) {
+    await updateSession(waId, "IDLE", {}, userId);
+    return sendWhatsAppMessage(waId,
+      `⚠️ Your payment link has expired (valid 30 mins).\n\n` +
+      `Send *SUBSCRIBE* to get a fresh link.`
+    );
+  }
+
+  return sendWhatsAppMessage(waId,
+    `🔄 Payment not confirmed yet — M-Pesa can take 1–3 minutes.\n\n` +
+    `Type *DONE* again once you've completed the payment,\n` +
+    `or *SUBSCRIBE* for a new link.`
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Main menu
+// ─────────────────────────────────────────────────────────────────────────────
+// Guest greeting — conversational, low-friction entry for new users
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function sendGuestGreeting(waId: string) {
+  let topYield = "17.5";
+  try {
+    const top = await prisma.provider.findFirst({
+      where: { type: "MONEY_MARKET" },
+      orderBy: { currentYield: "desc" },
+      select: { name: true, currentYield: true },
+    });
+    if (top) topYield = top.currentYield.toFixed(1);
+  } catch {}
+
+  return sendWhatsAppMessage(
+    waId,
+    `👋 *Habari! Welcome to Sentil Africa.*\n` +
+    `_Kenya's #1 investment intelligence hub_\n\n` +
+    `💡 Right now, the best MMF in Kenya is paying *${topYield}% p.a.*\n` +
+    `That's 6× more than a savings account.\n\n` +
+    `What are you most interested in?\n\n` +
+    `*1* — 💰 Save & grow my money (MMFs)\n` +
+    `*2* — 📈 Invest in NSE stocks\n` +
+    `*3* — 🏛️ Government bonds & T-Bills\n` +
+    `*4* — 👥 Chama / group investing\n\n` +
+    `_Or just type any question — no account needed_\n` +
+    `_e.g. "Best MMF for KES 50K?" or "How do I buy a bond?"_`
+  );
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Main Menu — clean numbered system for easy navigation
 // ─────────────────────────────────────────────────────────────────────────────
@@ -2514,38 +2701,68 @@ async function sendMainMenu(waId: string, userId?: string) {
 }
 
 
-async function sendHelp(waId: string) {
-  return sendWhatsAppMessage(
-    waId,
-    `📋 *SENTILL AFRICA — HELP*\n` +
+async function sendHelp(waId: string, userId?: string) {
+  if (!userId) {
+    return sendWhatsAppMessage(waId,
+      `📋 *SENTIL AFRICA — WHAT CAN I DO?*\n` +
+      `━━━━━━━━━━━━━━━━━━\n\n` +
+      `No account needed:\n\n` +
+      `📊 *RATES* — Today's top MMF yields\n` +
+      `📈 *NSE* — NSE stock signals & prices\n` +
+      `🏛️ *IFB* — Infrastructure Bond guide\n` +
+      `💬 *ASK [question]* — AI answers anything\n` +
+      `🧮 *CALC 50000* — Quick return projection\n\n` +
+      `━━━━━━━━━━━━━━━━━━\n` +
+      `With a free account:\n\n` +
+      `📁 *LOG* — Track your investments\n` +
+      `🎯 *GOALS* — Set financial targets\n` +
+      `🔔 *ALERTS* — Daily market briefing\n\n` +
+      `👉 Type *REGISTER* to create your free account\n` +
+      `_Takes 2 minutes. No payment required._`
+    );
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { isPremium: true, name: true },
+  });
+  const isPro = user?.isPremium ?? false;
+
+  if (!isPro) {
+    return sendWhatsAppMessage(waId,
+      `📋 *YOUR SENTIL COMMANDS*\n` +
+      `━━━━━━━━━━━━━━━━━━\n\n` +
+      `*Free (yours now):*\n\n` +
+      `📊 *RATES* · *NSE* · *IFB* — Market data\n` +
+      `💬 Ask any question — 10 AI answers/day\n` +
+      `📁 *LOG* — Track up to 3 assets\n` +
+      `🎯 *GOALS* — Set targets\n` +
+      `👥 *REFER* — Invite friends, earn free Pro\n\n` +
+      `━━━━━━━━━━━━━━━━━━\n` +
+      `*🔒 Unlock with Pro (KES 490/mo):*\n\n` +
+      `• Unlimited AI advisor\n` +
+      `• Unlimited portfolio tracking\n` +
+      `• Real-time yield drop alerts\n` +
+      `• NSE charts (RSI, MACD)\n` +
+      `• KRA tax optimizer\n` +
+      `• Chama group dashboard\n\n` +
+      `👉 Type *UPGRADE* to see plans`
+    );
+  }
+
+  return sendWhatsAppMessage(waId,
+    `📋 *SENTIL PRO — YOUR COMMANDS*\n` +
     `━━━━━━━━━━━━━━━━━━\n\n` +
-    `*1️⃣ BROWSE INVESTMENTS*\n` +
-    `• *INVEST* — browse all options (MMF, T-Bills, Bonds, SACCOs)\n` +
-    `• *MARKETS* — live rates right now\n` +
-    `• *MOVERS* — top performing funds today\n` +
-    `• *LEADERBOARD* — best yields ranked\n\n` +
-    `*2️⃣ GET AI ADVICE*\n` +
-    `• Just *type any question* — e.g. _best MMF for KES 50K?_\n` +
-    `• *ADVISOR* — pick your specialist: Amara 🏦 · Jabari 📈 · Nadia 💰 · Omar 🌍\n` +
-    `• *COMPARE CIC vs Sanlam* — side-by-side analysis\n` +
-    `• *TIPS* — get today's investment tip\n` +
-    `• *CALC 50000* — quick return projections\n\n` +
-    `*3️⃣ MY PORTFOLIO (Pro)*\n` +
-    `• *ASSETS* — view tracked investments\n` +
-    `• *LOG* — add a new investment\n` +
-    `• *SNAPSHOT* — quick portfolio card\n` +
-    `• *PERFORMANCE* — AI portfolio review\n\n` +
-    `*4️⃣ GOALS & WATCHLIST (Pro)*\n` +
-    `• *GOALS* — your financial goals\n` +
-    `• *WATCHLIST* — saved funds\n` +
-    `• *WATCH* — add fund to watchlist\n\n` +
-    `*5️⃣ ACCOUNT & ALERTS*\n` +
-    `• *STATUS* — subscription info\n` +
-    `• *ALERTS* — set notification frequency\n` +
-    `• *REFER* — invite friends, earn free Pro\n` +
-    `• *SUBSCRIBE* / *RENEW* — upgrade\n\n` +
+    `*Markets:* RATES · NSE · IFB · MOVERS · LEADERBOARD\n` +
+    `*Portfolio:* ASSETS · LOG · REMOVE · REALLOCATE · SNAPSHOT\n` +
+    `*Analysis:* PERFORMANCE · CHART [type] · EXPORT\n` +
+    `*Goals:* GOALS · GOAL [name] [amount] [date]\n` +
+    `*Watchlist:* WATCHLIST · WATCH · UNWATCH\n` +
+    `*Alerts:* ALERTS · FREQ [DAILY/WEEKLY/OFF]\n` +
+    `*AI:* ASK [question] · ADVISOR · COMPARE [A] vs [B]\n` +
+    `*Account:* STATUS · REFER · RENEW\n\n` +
     `━━━━━━━━━━━━━━━━━━\n` +
-    `_Reply *MENU* anytime to return here._`
+    `_Type any question — AI replies instantly_`
   );
 }
 

@@ -37,6 +37,8 @@ model User {
   whatsappSessions   WhatsAppSession[]
   whatsappLogs       WhatsAppLog[]
 
+  onboardingGoal     String?          // SAVINGS | EQUITIES | BONDS | CHAMA
+
   createdAt          DateTime         @default(now())
   updatedAt          DateTime         @updatedAt
 }

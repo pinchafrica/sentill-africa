@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowLeft, Mail, Lock, CheckCircle, ArrowRight, Zap, Target, AlertCircle, Eye, EyeOff, Crown, Sparkles } from "lucide-react";
+import { ArrowLeft, Mail, Lock, CheckCircle, ArrowRight, Zap, Target, AlertCircle, Eye, EyeOff, Crown, Sparkles, TrendingUp, Users, Landmark, PiggyBank } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 export default function RegisterPage() {
@@ -37,7 +37,7 @@ export default function RegisterPage() {
 
       setIsLoading(true);
       setError("");
-      
+
       try {
         const res = await fetch("/api/auth/register", {
           method: "POST",
@@ -53,18 +53,70 @@ export default function RegisterPage() {
           return;
         }
 
-        // If came from packages page with a plan, redirect there to complete payment
-        if (hasPlan) {
-          router.push(`/packages?registered=true&plan=${planParam}`);
-        } else {
-          router.push("/dashboard?registered=true");
-        }
+        // Registration succeeded — move to goal selection step
+        setIsLoading(false);
+        setStep(3);
       } catch (e) {
         setError("Network error. Please try again.");
         setIsLoading(false);
       }
     }
   };
+
+  const handleGoalSelect = (selectedGoal: string) => {
+    // Fire-and-forget PATCH to save the goal
+    fetch("/api/user/onboarding-goal", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ goal: selectedGoal }),
+    }).catch(() => {}); // fire and forget
+
+    if (hasPlan) {
+      router.push(`/packages?registered=true&plan=${planParam}&goal=${selectedGoal}`);
+    } else {
+      router.push(`/dashboard?registered=true&goal=${selectedGoal}`);
+    }
+  };
+
+  const handleSkipGoal = () => {
+    if (hasPlan) {
+      router.push(`/packages?registered=true&plan=${planParam}`);
+    } else {
+      router.push("/dashboard?registered=true");
+    }
+  };
+
+  const stepLabel =
+    step === 1 ? "Personal Info" :
+    step === 2 ? "Security Details" :
+    "Your Investment Goal";
+
+  const goalCards = [
+    {
+      value: "SAVINGS",
+      Icon: PiggyBank,
+      title: "Grow My Savings",
+      subtitle: "Earn more than my bank with MMFs",
+    },
+    {
+      value: "EQUITIES",
+      Icon: TrendingUp,
+      title: "Invest in Stocks",
+      subtitle: "NSE stocks, dividends, AI signals",
+    },
+    {
+      value: "BONDS",
+      Icon: Landmark,
+      title: "Buy Government Bonds",
+      subtitle: "T-Bills, IFBs, tax-free returns",
+    },
+    {
+      value: "CHAMA",
+      Icon: Users,
+      title: "Manage My Chama",
+      subtitle: "Group investment tracker",
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-slate-50 flex">
@@ -73,7 +125,7 @@ export default function RegisterPage() {
         {/* Background Accents */}
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[120px] -mt-64 -mr-64 pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-indigo-500/10 rounded-full blur-[100px] -mb-48 -ml-48 pointer-events-none" />
-        
+
         <div className="relative z-10 space-y-2">
           <Link href="/" className="inline-block hover:opacity-80 transition-opacity">
             <span className="text-3xl font-black tracking-tighter text-white">Sentil.</span>
@@ -140,7 +192,7 @@ export default function RegisterPage() {
               </div>
             )}
             <h2 className="text-3xl md:text-4xl font-black text-slate-900 uppercase tracking-tight font-heading mb-2">Create Account.</h2>
-            <p className="text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-widest">Step {step} of 2 · {step === 1 ? "Personal Info" : "Security Details"}</p>
+            <p className="text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-widest">Step {step} of 3 · {stepLabel}</p>
           </div>
 
           <form onSubmit={handleNext} className="space-y-6">
@@ -149,8 +201,8 @@ export default function RegisterPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest pl-1 block">First Name</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       required
                       value={formData.firstName}
                       onChange={e => setFormData({ ...formData, firstName: e.target.value })}
@@ -160,8 +212,8 @@ export default function RegisterPage() {
                   </div>
                   <div className="space-y-2">
                     <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest pl-1 block">Last Name</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       required
                       value={formData.lastName}
                       onChange={e => setFormData({ ...formData, lastName: e.target.value })}
@@ -175,8 +227,8 @@ export default function RegisterPage() {
                    <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest pl-1 block">Email Address</label>
                    <div className="relative">
                      <Mail className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                     <input 
-                        type="email" 
+                     <input
+                        type="email"
                         required
                         value={formData.email}
                         onChange={e => setFormData({ ...formData, email: e.target.value })}
@@ -188,8 +240,8 @@ export default function RegisterPage() {
 
                 <div className="space-y-2">
                   <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest pl-1 block">Phone Number / WhatsApp</label>
-                  <input 
-                    type="tel" 
+                  <input
+                    type="tel"
                     required
                     value={formData.phone}
                     onChange={e => setFormData({ ...formData, phone: e.target.value })}
@@ -198,17 +250,17 @@ export default function RegisterPage() {
                   />
                 </div>
 
-                <button 
+                <button
                   type="submit"
                   className="w-full flex items-center justify-center gap-2 py-4 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-600 transition-all focus:ring-4 focus:ring-emerald-500/20 active:scale-[0.98]"
                 >
                   Continue <ArrowRight className="w-4 h-4" />
                 </button>
               </div>
-            ) : (
+            ) : step === 2 ? (
               <div className="space-y-6 animate-in slide-in-from-right-4 duration-500">
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   onClick={() => setStep(1)}
                   className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-slate-900 transition-colors mb-4"
                 >
@@ -227,16 +279,16 @@ export default function RegisterPage() {
                      <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest pl-1 block">Create Password</label>
                      <div className="relative">
                        <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                       <input 
-                          type={showPassword ? "text" : "password"} 
+                       <input
+                          type={showPassword ? "text" : "password"}
                           required
                           value={formData.password}
                           onChange={e => setFormData({ ...formData, password: e.target.value })}
                           className="w-full pl-12 pr-12 py-4 bg-white rounded-2xl border border-slate-200 text-sm font-bold text-slate-900 focus:outline-none focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/10 transition-all shadow-sm"
                           placeholder="••••••••"
                        />
-                       <button 
-                         type="button" 
+                       <button
+                         type="button"
                          onClick={() => setShowPassword(!showPassword)}
                          className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-emerald-500 transition-colors"
                        >
@@ -249,16 +301,16 @@ export default function RegisterPage() {
                      <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest pl-1 block">Confirm Password</label>
                      <div className="relative">
                        <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                       <input 
-                          type={showConfirmPassword ? "text" : "password"} 
+                       <input
+                          type={showConfirmPassword ? "text" : "password"}
                           required
                           value={confirmPassword}
                           onChange={e => setConfirmPassword(e.target.value)}
                           className="w-full pl-12 pr-12 py-4 bg-white rounded-2xl border border-slate-200 text-sm font-bold text-slate-900 focus:outline-none focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/10 transition-all shadow-sm"
                           placeholder="••••••••"
                        />
-                       <button 
-                         type="button" 
+                       <button
+                         type="button"
                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                          className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-emerald-500 transition-colors"
                        >
@@ -269,7 +321,7 @@ export default function RegisterPage() {
                   <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-2 pl-2">Must be at least 8 characters.</p>
                 </div>
 
-                <button 
+                <button
                   type="submit"
                   disabled={isLoading}
                   className="w-full flex items-center justify-center gap-2 py-4 bg-emerald-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-500 transition-all focus:ring-4 focus:ring-emerald-500/20 active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
@@ -279,6 +331,37 @@ export default function RegisterPage() {
                   ) : (
                     "Create Account"
                   )}
+                </button>
+              </div>
+            ) : (
+              /* ── Step 3: Goal Selection ── */
+              <div className="space-y-4 animate-in slide-in-from-right-4 duration-500">
+                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-6">What matters most to you?</p>
+
+                {goalCards.map(({ value, Icon, title, subtitle }) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => handleGoalSelect(value)}
+                    className="w-full flex items-center gap-4 px-5 py-4 bg-white rounded-2xl border border-slate-200 hover:border-emerald-400 hover:bg-emerald-50/50 transition-all active:scale-[0.98] text-left"
+                  >
+                    <div className="w-11 h-11 rounded-xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20 flex-shrink-0">
+                      <Icon className="w-5 h-5 text-emerald-600" />
+                    </div>
+                    <div className="min-w-0">
+                      <span className="block text-[11px] font-black text-slate-900 uppercase tracking-widest leading-tight">{title}</span>
+                      <span className="block text-[10px] font-bold text-slate-500 mt-0.5 normal-case tracking-normal">{subtitle}</span>
+                    </div>
+                    <ArrowRight className="w-4 h-4 text-slate-300 ml-auto flex-shrink-0" />
+                  </button>
+                ))}
+
+                <button
+                  type="button"
+                  onClick={handleSkipGoal}
+                  className="w-full text-center text-[9px] font-black text-slate-400 uppercase tracking-widest hover:text-emerald-600 transition-colors mt-2 py-2"
+                >
+                  Skip for now
                 </button>
               </div>
             )}

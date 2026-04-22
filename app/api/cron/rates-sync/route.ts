@@ -76,7 +76,7 @@ Return ONLY a valid JSON object (no markdown, no backticks, no explanation) with
 Use the most recent CBK weekly T-Bill auction results (published every Monday).
 Use the most recent effective annual yield (EAY) published by each fund manager.
 All yields are gross before 15% WHT.
-If unsure of an exact figure, use April 2026 actuals: CBK rate 10.75%, 91-day T-Bill ~15.78%, 182-day ~15.97%, 364-day ~16.42%. MMF range: 13-18.2%.`;
+If unsure of an exact figure, use April 2026 actuals: CBK rate 10.00%, 91-day T-Bill ~15.78%, 182-day ~15.97%, 364-day ~16.42%. MMF range: 13-18.2%.`;
 
   try {
     const res = await fetch(

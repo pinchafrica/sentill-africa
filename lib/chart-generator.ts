@@ -24,11 +24,11 @@ const COLORS = {
 
 export function mmfYieldChartUrl(): string {
   const labels = [
-    "Etica (Zidi)", "Lofty Corpin", "Kuza MMF",
-    "GenCap Hela",  "Sanlam Pesa", "CIC MMF",
-    "Kuza MMF",     "Britam MMF",  "Old Mutual", "ICEA Lion",
+    "Etica (Zidi)", "Lofty Corpin", "Cytonn MMF",
+    "NCBA MMF",     "KCB MMF",      "Britam MMF",
+    "Sanlam MMF",   "ICEA Lion",    "CIC MMF",   "Old Mutual",
   ];
-  const yields = [18.20, 16.80, 16.50, 16.20, 14.78, 15.90, 16.50, 14.20, 14.00, 13.60];
+  const yields = [18.20, 17.50, 16.90, 16.20, 15.80, 15.50, 15.10, 14.50, 13.60, 13.40];
   const colors = yields.map(y =>
     y >= 18 ? COLORS.emerald :
     y >= 16 ? COLORS.blue :

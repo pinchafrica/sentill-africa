@@ -23,7 +23,8 @@ import {
   Globe,
   Settings2,
   GraduationCap,
-  Smartphone
+  Smartphone,
+  Bot
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -33,6 +34,7 @@ const adminNav = [
     { label: "Financial Treasury", href: "/admin/finance", icon: Wallet },
     { label: "Investor Base", href: "/admin/users", icon: Users },
     { label: "WhatsApp CRM", href: "/admin/whatsapp", icon: Smartphone },
+    { label: "AI Sub-Agents", href: "/admin/whatsapp-agents", icon: Bot },
   ]},
   { group: "Academy", items: [
     { label: "Academy Overview", href: "/admin/academy", icon: GraduationCap },

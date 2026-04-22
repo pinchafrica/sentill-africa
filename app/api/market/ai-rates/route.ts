@@ -36,19 +36,25 @@ const AUTHORITATIVE_RATES: Record<string, number> = {
   "182-TBILL":    15.97,
   "91-TBILL":     15.78,
   "2YR-BOND":     16.80,
-  // NSE Stocks (KES price)
-  "SCOM":         30.60,
-  "EQTY":         77.00,
-  "KCB":          45.50,
-  "NCBA":         91.25,
-  "COOP":         18.50,
-  "ABSA":         16.50,
-  "EABL":        120.00,
-  "SCBK":        250.00,
+  // NSE Stocks (KES price) — benchmarked April 2026
+  "SCOM":         19.35,
+  "EQTY":         48.05,
+  "KCB":          37.20,
+  "NCBA":         49.85,
+  "COOP":         12.55,
+  "ABSA":         14.30,
+  "EABL":        125.50,
+  "SCBK":        176.00,
+  "KEGN":          4.98,
+  "STBK":        112.50,
+  "BAMB":         64.50,
+  "KNRE":          2.38,
+  "KPLC":          2.35,
+  "BRIT":          6.80,
   // Macro
   "USD-KES":     129.50,
-  "CBK_RATE":     10.75,
-  "INFLATION":     4.90,
+  "CBK_RATE":     10.00,
+  "INFLATION":     4.10,
 };
 
 // Legacy aliases kept for backward-compat with homepage chart code

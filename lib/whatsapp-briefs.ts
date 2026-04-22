@@ -452,13 +452,13 @@ export async function buildNSECloseMovers(_userName: string, _userId: string): P
 
   // NSE movers — April 2026 authoritative snapshot (updated daily by market-sync cron)
   const NSE_MOVERS = [
-    { symbol: "SASN",  name: "Sasini PLC",             price: 19.75, change: +1.3,  signal: "BUY",   note: "Agri export demand peak" },
-    { symbol: "NSE",   name: "NSE Plc",                price: 17.80, change: +0.9,  signal: "BUY",   note: "Hedera Innovation Lab launch" },
-    { symbol: "KQ",    name: "Kenya Airways",           price: 5.40,  change: +2.1,  signal: "WATCH", note: "High retail interest, volatile" },
-    { symbol: "SCBK",  name: "Std Chartered Kenya",    price: 250.00,change: +0.4,  signal: "BUY",   note: "Div KES 23 — books close Apr 30" },
-    { symbol: "EQTY",  name: "Equity Group",            price: 77.00, change: +1.2,  signal: "BUY",   note: "Pan-African growth play" },
-    { symbol: "KCB",   name: "KCB Group",               price: 45.50, change: +0.5,  signal: "BUY",   note: "Highest NSE dividend yield" },
-    { symbol: "EABL",  name: "EABL",                    price: 120.0, change: -1.5,  signal: "WATCH", note: "Tax headwinds, premium brand" },
+    { symbol: "SASN",  name: "Sasini PLC",             price: 19.75,  change: +1.3,  signal: "BUY",   note: "Agri export demand peak" },
+    { symbol: "NSE",   name: "NSE Plc",                price: 17.80,  change: +0.9,  signal: "BUY",   note: "Hedera Innovation Lab launch" },
+    { symbol: "KQ",    name: "Kenya Airways",           price: 5.40,   change: +2.1,  signal: "WATCH", note: "High retail interest, volatile" },
+    { symbol: "SCBK",  name: "Std Chartered Kenya",    price: 176.00, change: -1.00, signal: "BUY",   note: "Div KES 23 — 13.1% yield, books Apr 30" },
+    { symbol: "EQTY",  name: "Equity Group",            price: 48.05,  change: -0.45, signal: "BUY",   note: "Pan-African growth play" },
+    { symbol: "KCB",   name: "KCB Group",               price: 37.20,  change: +0.70, signal: "BUY",   note: "8.3% div yield — best value on NSE" },
+    { symbol: "EABL",  name: "EABL",                    price: 125.50, change: -2.50, signal: "WATCH", note: "Tax headwinds, premium brand" },
   ];
 
   const topGainers = [...NSE_MOVERS].sort((a, b) => b.change - a.change).slice(0, 3);

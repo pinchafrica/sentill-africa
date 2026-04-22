@@ -22,10 +22,10 @@ export default function LiveTicker() {
   }, []);
 
   const tickerItems = rates.length > 0 ? rates : [
-    { symbol: "SCOM", price: 30.60, change: 0.15, percent: 0.49, isUp: true },
-    { symbol: "EQTY", price: 77.00, change: 1.20, percent: 1.58, isUp: true },
-    { symbol: "KCB", price: 45.50, change: 0.50, percent: 1.11, isUp: true },
-    { symbol: "EABL", price: 120.00, change: -1.50, percent: -1.24, isUp: false },
+    { symbol: "SCOM", price: 19.35, change: 0.15, percent: 0.78, isUp: true },
+    { symbol: "EQTY", price: 48.05, change: -0.45, percent: -0.93, isUp: false },
+    { symbol: "KCB",  price: 37.20, change: 0.70, percent: 1.92, isUp: true },
+    { symbol: "EABL", price: 125.50, change: -2.50, percent: -1.95, isUp: false },
     { symbol: "TBILL-91", price: "15.78%", change: 0.00, percent: 0.00, isUp: true },
     { symbol: "ZIDI", price: "18.20%", change: 0.00, percent: 0.00, isUp: true },
     { symbol: "IFB1", price: "18.46%", change: 0.00, percent: 0.00, isUp: true },

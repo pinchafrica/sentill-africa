@@ -206,3 +206,41 @@ Focus: MMFs, T-Bills, NSE. Be concise. Use emoji. Max 60 words total.`;
     return "Markets are performing steadily today. T-Bills leading at ~15.78% with MMFs close behind.";
   }
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Real-time WhatsApp Oracle Sub-Agent
+// ─────────────────────────────────────────────────────────────────────────────
+
+export async function queryLiveRateAgent(assetQuery: string): Promise<string> {
+  const apiKey = await getGeminiApiKey();
+  if (!apiKey) return "Live rates unavailable right now.";
+
+  const today = new Date().toISOString().slice(0, 10);
+  const prompt = `Today is ${today}. Find the CURRENT live rate or yield for: ${assetQuery} in Kenya.
+Use Google Search. Return a concise, 1-2 sentence response. Format neatly for WhatsApp. Do not include markdown headers or asterisks around the rate. Answer like an expert financial assistant.`;
+
+  try {
+    const res = await fetch(\`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=\${apiKey}\`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.1, maxOutputTokens: 200 },
+        tools: [{ googleSearch: {} }],
+      }),
+      signal: AbortSignal.timeout(15_000),
+    });
+
+    if (!res.ok) throw new Error("Gemini Agent Error");
+    const data = await res.json();
+    let text = "";
+    const parts = data?.candidates?.[0]?.content?.parts ?? [];
+    for (const p of parts) {
+      if (typeof p.text === "string") text += p.text;
+    }
+    return text.trim() || "Could not find a live rate at the moment.";
+  } catch (err) {
+    console.error("[LiveRateAgent] Error:", err);
+    return "The live rate agent is currently experiencing delays verifying this data.";
+  }
+}

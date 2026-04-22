@@ -381,7 +381,7 @@ export default function BondsPage() {
                 <XAxis dataKey="tenor" tick={{ fill: "#94a3b8", fontSize: 11 }} />
                 <YAxis domain={[12, 20]} tickFormatter={(v) => `${v}%`} tick={{ fill: "#94a3b8", fontSize: 11 }} />
                 <Tooltip content={<CustomTooltip />} />
-                <ReferenceLine y={10.75} stroke="#f59e0b" strokeDasharray="4 4" label={{ value: "CBR 10.75%", fill: "#f59e0b", fontSize: 10 }} />
+                <ReferenceLine y={10.00} stroke="#f59e0b" strokeDasharray="4 4" label={{ value: "CBR 10.00%", fill: "#f59e0b", fontSize: 10 }} />
                 <Line
                   type="monotone"
                   dataKey="yield"
@@ -923,7 +923,7 @@ export default function BondsPage() {
                 color: "amber",
                 title: "Rate Trajectory",
                 insight:
-                  "With CBR at 10.75%, bond yields remain elevated. Locking in today's 18.46% IFB rates while the cycle holds may prove advantageous before the next MPC cut.",
+                  "With CBR at 10.00%, bond yields remain elevated. Locking in today's 18.46% IFB rates while the cycle holds may prove advantageous before the next MPC cut.",
               },
               {
                 icon: Shield,

@@ -41,8 +41,8 @@ const FALLBACK_DATA = {
     { name: "Tower SACCO",        yield: 13.00, members: "60K+",  regulated_by: "SASRA" },
   ],
   macro: {
-    cbk_rate:  10.75,
-    inflation:  4.90,
+    cbk_rate:  10.00,
+    inflation:  4.10,
     usd_kes:  129.50,
     nse20:    3610,
     nse20_ytd: 5.2,

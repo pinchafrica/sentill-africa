@@ -401,7 +401,7 @@ export default function TreasuriesPage() {
                   <XAxis dataKey="tenor" tick={{ fill: "#94a3b8", fontSize: 10, fontWeight: 700 }} />
                   <YAxis domain={[12, 20]} tickFormatter={v => `${v}%`} tick={{ fill: "#94a3b8", fontSize: 10 }} />
                   <Tooltip content={<CustomTooltip />} />
-                  <ReferenceLine y={10.75} stroke="#f59e0b" strokeDasharray="4 4" label={{ value: "CBR 10.75%", fill: "#f59e0b", fontSize: 9, fontWeight: 700 }} />
+                  <ReferenceLine y={10.00} stroke="#f59e0b" strokeDasharray="4 4" label={{ value: "CBR 10.00%", fill: "#f59e0b", fontSize: 9, fontWeight: 700 }} />
                   <Legend />
                   <Line type="monotone" dataKey="yield" name="Gross Yield" stroke="#10b981" strokeWidth={2.5} dot={{ r: 5, fill: "#10b981" }} />
                   <Line type="monotone" dataKey="net" name="Net Yield" stroke="#6366f1" strokeWidth={2} dot={{ r: 4, fill: "#6366f1" }} strokeDasharray="5 3" />
@@ -639,7 +639,7 @@ export default function TreasuriesPage() {
               <h3 className="font-black text-slate-900 uppercase tracking-widest text-sm mb-6 pb-4 border-b border-slate-100">All 3 T-Bills vs CBR — Gross Yield Comparison</h3>
               <ResponsiveContainer width="100%" height={320}>
                 <BarChart data={[
-                  { name: "CBR Rate", rate: 10.75 },
+                  { name: "CBR Rate", rate: 10.00 },
                   { name: "91-Day T-Bill", rate: 15.82, net: 13.44 },
                   { name: "182-Day T-Bill", rate: 16.10, net: 13.69 },
                   { name: "364-Day T-Bill", rate: 16.45, net: 13.98 },

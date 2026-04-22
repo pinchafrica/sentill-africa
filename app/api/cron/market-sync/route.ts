@@ -34,7 +34,7 @@ export async function GET(req: Request) {
             Do not include backticks, markdown, or explanations. Just pure JSON map.
             ${USER_MARKET_CONTEXT}
             
-            Format: { "SCOM": 30.60, "EQTY": 77.00, "ETCA": 17.55 }
+            Format: { "SCOM": 19.35, "EQTY": 48.05, "ETCA": 18.20 }
           `}]
         }]
       })
