@@ -675,8 +675,27 @@ export async function processIncomingMessage(
     if (input === "LIST" || input === "FUNDS" || input === "MMF LIST") return handleMMFListMenu(waId, undefined);
     if (input.startsWith("CALC ") || input.startsWith("CALCULATE ")) return handleQuickCalc(waId, rawInput, undefined);
 
+    // Fuzzy matching for guests — before LIVE handler to catch "live markets" typos
+    if (input.includes("MARKET") || input.includes("MSRKET") || input === "LIVE MKT") return handleMarkets(waId);
+    if (["GO PRO", "GET PRO", "BUY PRO", "PRO PLAN", "SENTILL PRO", "GO PREMIUM"].includes(input)) {
+      return sendWhatsAppMessage(waId,
+        `⚡ *Sentill Pro — KES 490/month*\n\n` +
+        `Unlock everything:\n` +
+        `✅ Portfolio tracker & investment logging\n` +
+        `✅ Unlimited Sentill questions (no daily cap)\n` +
+        `✅ Daily market alerts + price notifications\n` +
+        `✅ Financial goal planning\n` +
+        `✅ NSE charts, technical analysis\n\n` +
+        `_Create a free account first, then subscribe:_\n` +
+        `👉 Reply *REGISTER* — takes 30 seconds`
+      );
+    }
+    if (input.includes("MANSA") || input.startsWith("MANSA")) {
+      return handleGeminiQuestionGuest(waId, "Give me complete details on the Mansa-X Multi-Asset Fund by Standard Investment Bank (SIB) Kenya. Include strategy, minimum KES 250,000, markets traded, fees, pros/cons, who it suits.", session, ctx);
+    }
+
     // LIVE RATE command for guests
-    if (input.startsWith("LIVE RATE ") || input.startsWith("LIVE ")) {
+    if (input.startsWith("LIVE RATE ") || (input.startsWith("LIVE ") && !input.includes("RATE") && rawInput.replace(/^live\s*/i, "").trim().length > 2)) {
       const asset = rawInput.replace(/^live\s*(rate\s*)?/i, "").trim();
       if (asset.length < 2) return sendWhatsAppMessage(waId, "Please specify the asset. Example:\n*LIVE RATE KCB* or *LIVE USD*");
       
@@ -855,9 +874,22 @@ export async function processIncomingMessage(
     return handleGeminiQuestion(waId, question, userId);
   }
 
-  // ── 24/7 AI Fallback — ALL unrecognized messages go to Gemini ─────────────
-  // Instead of showing "I didn't get that", we route everything to AI.
-  // This ensures the bot is always helpful, any time of day or night.
+  // ── Fuzzy command matching — catches typos & conversational phrasing ────────
+  // Runs BEFORE AI so common intents never hit a fallback
+  if (input.includes("MARKET") || input.includes("MSRKET") || input === "LIVE MKT" || input === "LIVE PRICES") {
+    return handleMarkets(waId);
+  }
+  if (["GO PRO", "GET PRO", "BUY PRO", "PRO PLAN", "GET PRO PLAN", "SENTILL PRO", "GO PREMIUM", "GET PREMIUM"].includes(input)) {
+    return sendSubscriptionPlans(waId, userId);
+  }
+  if (input.includes("MANSA") || input === "MANSA X" || input.startsWith("MANSA")) {
+    return handleGeminiQuestion(waId, "Give me complete details on the Mansa-X Multi-Asset Fund by Standard Investment Bank (SIB) Kenya. Include: strategy, minimum investment (KES 250,000), markets traded (NYSE/LSE/commodities), fees, Sharia option, pros, cons, who it is best for, and whether it is worth it vs an IFB Bond or top MMF.", userId);
+  }
+  if (input.includes("STOCK") || input.includes("SHARE") || input.includes("NSE ")) {
+    return handleNSEStocks(waId, userId);
+  }
+
+  // ── 24/7 Gemini Fallback — ALL other messages go to Sentill Intelligence ───
   if (rawInput.length > 2) {
     return handleGeminiQuestion(waId, rawInput, userId);
   }

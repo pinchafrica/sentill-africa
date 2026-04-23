@@ -138,15 +138,15 @@ Rules:
 - Sound like a sharp Nairobi fund manager talking to a friend`;
     aiInsight = await callGemini(prompt, 200);
   } catch {
-    aiInsight = `💡 With the IFB bond at 18.46% (tax-free) and top MMFs at ${market.topMMF?.yield ?? 12.9}%, your idle savings account cash is losing ground daily. Move it now.`;
+    aiInsight = `💡 With the IFB bond at 18.46% (tax-free) and top MMFs at ${market.topMMF?.yield ?? 18.20}%, your idle savings account cash is losing ground daily. Move it now.`;
   }
 
   // Build market pulse section (top 4 rates)
   const defaultRates = [
     { symbol: "IFB1/2024 Bond", price: 18.46 },
-    { symbol: "Nabo MMF", price: 12.90 },
-    { symbol: "91-Day T-Bill", price: 7.40 },
-    { symbol: "CIC MMF", price: 6.95 },
+    { symbol: "Etica Capital (Zidi)", price: 18.20 },
+    { symbol: "91-Day T-Bill", price: 15.78 },
+    { symbol: "Lofty-Corpin MMF", price: 17.50 },
   ];
   const displayRates = market.allRates.length >= 3 ? market.allRates.slice(0, 4) : defaultRates;
 
@@ -213,7 +213,7 @@ WhatsApp plain text only.`;
     `💡 *Market Alpha:* vs savings baseline of 4.0%\n\n` +
     portfolioSection +
     `▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰\n` +
-    `🧠 *AI ORACLE INSIGHT*\n\n` +
+    `📊 *SENTILL ORACLE INSIGHT*\n\n` +
     `${aiInsight}\n\n` +
     premiumTip +
     `▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰\n` +

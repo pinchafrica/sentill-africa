@@ -14,7 +14,7 @@
 import { getGeminiApiKey } from "./api-keys";
 import { prisma } from "./prisma";
 
-const GEMINI_MODEL = "gemini-2.5-flash";
+const GEMINI_MODEL = "gemini-2.0-flash";
 const GEMINI_API_BASE = "https://generativelanguage.googleapis.com/v1beta/models";
 
 // ─── Intent classifier ─────────────────────────────────────────────────────────
@@ -1174,23 +1174,72 @@ function getSmartFallback(question: string): string {
     );
   }
 
-  // Generic fallback
+  // Mansa-X questions
+  if (q.includes("mansa") || q.includes("mansa x") || q.includes("mansa-x") || q.includes("sib fund")) {
+    return (
+      `📊 *Mansa-X Multi-Asset Fund — SIB Kenya*\n` +
+      `▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰\n\n` +
+      `*What it is:* Multi-asset fund by Standard Investment Bank (SIB) investing across NYSE, LSE, commodities, and Kenyan bonds.\n\n` +
+      `*Key details:*\n` +
+      `• Min: *KES 250,000*\n` +
+      `• Markets: US equities, UK equities, commodities, Kenya bonds\n` +
+      `• Strategy: Diversified — not purely fixed income\n` +
+      `• Sharia option: Available\n` +
+      `• Regulated by CMA Kenya\n\n` +
+      `*Vs top alternatives (April 2026):*\n` +
+      `• IFB Bond: *18.46%* WHT-free → safer, higher net return\n` +
+      `• Etica MMF (Zidi): *18.20%* gross → liquid, lower minimum\n` +
+      `• Mansa-X: global diversification, but variable returns\n\n` +
+      `💡 *Best for:* Investors with KES 250K+ who want global market exposure alongside Kenyan instruments.\n` +
+      `⚠️ *Not best for:* Capital preservation — equity exposure means value can drop.\n\n` +
+      `📞 Contact SIB: sib.co.ke | +254 (0)20 271 3900\n\n` +
+      `_S-Tier Institutional Wealth Intelligence_ 🇰🇪\n` +
+      `_sentill.africa_`
+    );
+  }
+
+  // NSE / stocks questions
+  if (q.includes("nse") || q.includes("stock") || q.includes("share") || q.includes("equity") || q.includes("nairobi stock")) {
+    return (
+      `📊 *NSE Kenya — Live Market Overview*\n` +
+      `▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰\n\n` +
+      `*Top picks (April 2026 signals):*\n` +
+      `🟢 *KCB* (KES 45.50) — BUY · ~6.8% dividend yield\n` +
+      `🟢 *EQTY* (KES 77.00) — BUY · Pan-Africa growth\n` +
+      `🟢 *ABSA* (KES 16.50) — BUY · ~11.2% dividend yield\n` +
+      `🟢 *SCBK* (KES 250.00) — BUY · KES 23/share dividend\n` +
+      `⚪ *SCOM* (KES 30.60) — HOLD · Stable dividend payer\n\n` +
+      `📅 *Book closures this month:*\n` +
+      `• NCBA, ABSA, SCBK, NSE_PLC → Apr 30\n` +
+      `• Own shares before Apr 30 to earn dividends!\n\n` +
+      `📱 *Buy via Ziidi (Safaricom app) from KES 100*\n` +
+      `• Open Safaricom app → Ziidi → Stocks → Buy\n\n` +
+      `💡 Reply *NSE GUIDE* for full beginner rules\n` +
+      `📊 Reply *STOCKS* for live prices\n` +
+      `📊 Reply ticker: _SCOM · EQTY · KCB · SCBK · ABSA_\n\n` +
+      `_S-Tier Institutional Wealth Intelligence_ 🇰🇪\n` +
+      `_sentill.africa_`
+    );
+  }
+
+  // Generic fallback — contextual, not just a rates dump
   return (
     `🧠 *Sentill Africa — Kenya Investment Intelligence*\n` +
     `▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰\n\n` +
-    `🏆 *Top returns right now (April 2026):*\n` +
+    `🏆 *Best returns right now (April 2026):*\n` +
     `• IFB Bond — *18.46%* WHT-free (best long-term)\n` +
     `• Etica Capital MMF (Zidi) — *18.20%* gross (*15.47%* net)\n` +
-    `• Lofty-Corpin MMF — *17.50%* gross · Instant withdrawal\n\n` +
-    `📊 *Quick commands:*\n` +
-    `• *MMF RATES* — full MMF breakdown with net yields\n` +
-    `• *CHART MMFS* — bar chart of all MMF yields\n` +
-    `• *CHART TBILLS* — Kenya yield curve\n` +
-    `• *TABLE* — ranked investment table\n` +
-    `• *CALC 100000* — your projection + chart\n` +
-    `• *RATES* — live market rates\n` +
-    `• *INVEST* — browse all funds\n\n` +
-    `_S-Tier Institutional Wealth Intelligence_ 🇰🇪\n` +
+    `• Lofty-Corpin MMF — *17.50%* · Instant withdrawal\n` +
+    `• 91-Day T-Bill — *15.78%* · Gov't-backed, zero risk\n\n` +
+    `📊 *What would you like to know?* Try:\n` +
+    `• _"Best MMF for KES 50,000?"_\n` +
+    `• _"How do I buy an IFB bond?"_\n` +
+    `• _"Compare KCB vs EQTY stock"_\n` +
+    `• _"How much will KES 100K earn in 1 year?"_\n\n` +
+    `📟 *Quick commands:*\n` +
+    `*RATES* · *MMF RATES* · *STOCKS* · *CALC 100000*\n` +
+    `*NSE GUIDE* · *DIVIDEND* · *INVEST*\n\n` +
+    `_Just type your question — I'm here 24/7_ 🇰🇪\n` +
     `_sentill.africa_`
   );
 }
