@@ -216,6 +216,49 @@ export async function GET() {
   const msgTodayMap: Record<string, number> = {};
   messagesToday.forEach((m) => { msgTodayMap[m.waId] = m._count.id; });
 
+  // ── Campaign Attribution Analytics ────────────────────────────────────────
+  const campaignLogs = await prisma.whatsAppLog.findMany({
+    where: { msgType: "campaign_track" },
+    select: { message: true, createdAt: true },
+    orderBy: { createdAt: "desc" },
+  });
+
+  const campaignStats: Record<string, { total: number; last7d: number; last30d: number }> = {
+    meta: { total: 0, last7d: 0, last30d: 0 },
+    google: { total: 0, last7d: 0, last30d: 0 },
+    linkedin: { total: 0, last7d: 0, last30d: 0 },
+    tiktok: { total: 0, last7d: 0, last30d: 0 },
+    referral: { total: 0, last7d: 0, last30d: 0 },
+    organic: { total: 0, last7d: 0, last30d: 0 },
+  };
+
+  const now = Date.now();
+  const d7 = now - 7 * 86400000;
+  const d30 = now - 30 * 86400000;
+
+  campaignLogs.forEach((log) => {
+    const sourceMatch = log.message.match(/source=(\w+)/);
+    const source = sourceMatch?.[1] ?? "organic";
+    if (campaignStats[source]) {
+      campaignStats[source].total++;
+      const t = new Date(log.createdAt).getTime();
+      if (t >= d7) campaignStats[source].last7d++;
+      if (t >= d30) campaignStats[source].last30d++;
+    }
+  });
+
+  // Calculate estimated cost-per-acquisition per channel
+  const adBudget: Record<string, number> = {
+    meta: 10000, google: 6000, linkedin: 4000, tiktok: 0,
+  };
+  const campaignROI = Object.entries(campaignStats).map(([source, stats]) => ({
+    source,
+    ...stats,
+    cpa: stats.last30d > 0 && adBudget[source]
+      ? Math.round((adBudget[source] ?? 0) / stats.last30d)
+      : null,
+  }));
+
   const conversionRate = totalWaUsers > 0 ? ((premiumCount / totalWaUsers) * 100).toFixed(1) : "0";
 
   return NextResponse.json({
@@ -236,6 +279,11 @@ export async function GET() {
       revenueToday,
       monthlyRevenue,
       totalPayments: allPayments.length,
+    },
+    campaigns: {
+      bySource: campaignStats,
+      roi: campaignROI,
+      totalAdAttributed: campaignLogs.length,
     },
     heatmap: { data: heatmap, days: dayNames },
     recentLogs,

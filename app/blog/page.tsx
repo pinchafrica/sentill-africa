@@ -16,6 +16,40 @@ export const metadata: Metadata = {
 
 const ARTICLES = [
   {
+    slug: "kenya-mmf-yields-april-2026",
+    title: "Kenya MMF Yields April 2026 — Full Update",
+    subtitle: "All 11 CMA-regulated funds ranked by net yield, with M-Pesa paybills",
+    tag: "Hot Now",
+    tagColor: "bg-rose-100 text-rose-700 border-rose-200",
+    icon: TrendingUp,
+    readTime: "5 min read",
+    date: "April 23, 2026",
+    excerpt: "Etica Capital 18.20%, Lofty-Corpin 17.50%, Cytonn 16.90% — complete April 2026 yield table for every Kenya MMF with paybills, minimums and withdrawal times.",
+    featured: true,
+  },
+  {
+    slug: "is-it-too-late-to-buy-bonds-kenya-2026",
+    title: "Is It Too Late to Buy Bonds in Kenya?",
+    subtitle: "IFB1/2024 still yields 18.46% tax-free — but the window may be closing",
+    tag: "Trending",
+    tagColor: "bg-indigo-100 text-indigo-700 border-indigo-200",
+    icon: Landmark,
+    readTime: "8 min read",
+    date: "April 23, 2026",
+    excerpt: "Kenya's IFB bonds offer 18.46% WHT-free — among the best risk-adjusted rates in Africa. As CBK eases rates in H2 2026, this window won't last forever. Here's the analysis.",
+  },
+  {
+    slug: "higher-for-longer-kenya-investing-2026",
+    title: "Higher for Longer: Kenya's Rate Environment & Your Portfolio",
+    subtitle: "What the global rate cycle means for MMFs, bonds, T-Bills and NSE stocks",
+    tag: "Market Analysis",
+    tagColor: "bg-amber-100 text-amber-700 border-amber-200",
+    icon: BarChart2,
+    readTime: "7 min read",
+    date: "April 23, 2026",
+    excerpt: "T-Bills at 16.42%, IFBs at 18.46%, MMFs near 18% — Kenya's elevated rate environment is a once-in-a-decade opportunity. Here's who wins, who loses, and how to position.",
+  },
+  {
     slug: "best-money-market-funds-kenya-2026",
     title: "Best Money Market Funds in Kenya 2026",
     subtitle: "Ranked by yield, liquidity & fund manager stability — with live data",
@@ -25,7 +59,6 @@ const ARTICLES = [
     readTime: "8 min read",
     date: "April 2026",
     excerpt: "With over 30 regulated MMFs offering yields between 11–18%, choosing the right fund can mean KES 50,000+ difference per year on a KES 1M portfolio. We rank them all.",
-    featured: true,
   },
   {
     slug: "treasury-bills-kenya-guide",

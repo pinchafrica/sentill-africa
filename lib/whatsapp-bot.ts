@@ -374,6 +374,13 @@ interface SessionContext {
   // Guest journey / payment timing
   guestQuestionCount?: number;
   paymentInitiatedAt?: number;
+  // Campaign / UTM attribution tracking
+  campaignSource?: "meta" | "google" | "linkedin" | "tiktok" | "organic" | "referral";
+  campaignId?: string;
+  firstSeenAt?: number;
+  // Conversation quality tracking
+  totalQuestions?: number;
+  lastTopics?: string[];
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -529,6 +536,58 @@ export async function processIncomingMessage(
       if (session.userId) {
         return handleAlertFreqSelect(waId, buttonPayload, ctx, session.userId ?? undefined);
       }
+    }
+  }
+
+  // ── Capture referral code if user arrived via invite link ────────────────
+  if (input.startsWith("SENTIL_REF_") && !session.userId) {
+    const refCode = input.replace("SENTIL_REF_", "").trim();
+    await updateSession(waId, "IDLE", { ...ctx, referCode: input, campaignSource: "referral" });
+    await sendWhatsAppMessage(waId,
+      `🎁 *You were invited to Sentill Africa!*\n\n` +
+      `You'll get *7 days of Pro FREE* when you create your account.\n\n` +
+      `Reply *REGISTER* to claim your free Pro access ⚡`
+    );
+    return sendMainMenu(waId, undefined);
+  }
+
+  // ── Campaign/Ad Attribution Tracking ──────────────────────────────────────
+  // Users arriving from Meta/Google/LinkedIn/TikTok ads with tracking prefixes
+  const campaignPrefixes: Record<string, SessionContext["campaignSource"]> = {
+    "META_AD_": "meta", "FB_AD_": "meta", "IG_AD_": "meta",
+    "GOOGLE_AD_": "google", "GADS_": "google",
+    "LINKEDIN_AD_": "linkedin", "LI_AD_": "linkedin",
+    "TIKTOK_AD_": "tiktok", "TT_AD_": "tiktok",
+  };
+  for (const [prefix, source] of Object.entries(campaignPrefixes)) {
+    if (input.startsWith(prefix)) {
+      const campaignId = input.replace(prefix, "").trim();
+      await updateSession(waId, "IDLE", {
+        ...ctx,
+        campaignSource: source,
+        campaignId: campaignId || undefined,
+        firstSeenAt: Date.now(),
+      });
+      // Log campaign attribution
+      await prisma.whatsAppLog.create({
+        data: {
+          waId,
+          direction: "INBOUND",
+          message: `CAMPAIGN_ATTRIBUTION: source=${source}, id=${campaignId}`,
+          msgType: "campaign_track",
+          status: "DELIVERED",
+        },
+      });
+      await sendWhatsAppMessage(waId,
+        `🎯 *Welcome to Sentill Africa!*\n\n` +
+        `Kenya's #1 AI-powered investment intelligence hub.\n\n` +
+        `🏆 *What you get (FREE):*\n` +
+        `✅ Live market rates & comparisons\n` +
+        `✅ AI investment advisor (10 questions/day)\n` +
+        `✅ MMF, T-Bill, NSE & Bond data\n\n` +
+        `Ask any question or reply *MENU* to explore! 🚀`
+      );
+      return sendMainMenu(waId, undefined);
     }
   }
 
@@ -1004,31 +1063,114 @@ async function handleGeminiQuestion(waId: string, question: string, userId: stri
       await sendWhatsAppMessage(waId, "🧠 *Sentill Africa* is thinking...");
     }
 
-    const answer = await askGeminiBot(question, {
-      name: user?.name ?? "Investor",
-      userId,
-      isPremium: user?.isPremium ?? false,
-    }, waId, advisorId);
+    // Auto-retry with exponential backoff (max 2 retries)
+    let answer: string | null = null;
+    let lastErr: any = null;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        answer = await askGeminiBot(question, {
+          name: user?.name ?? "Investor",
+          userId,
+          isPremium: user?.isPremium ?? false,
+        }, waId, advisorId);
+        break; // Success
+      } catch (err) {
+        lastErr = err;
+        if (attempt < 2) {
+          await new Promise(r => setTimeout(r, (attempt + 1) * 1000)); // 1s, 2s backoff
+        }
+      }
+    }
+
+    if (!answer) {
+      console.error("[Bot] Gemini AI error after 3 attempts:", lastErr);
+      return sendWhatsAppMessage(
+        waId,
+        `🧠 *Sentill Africa Says:*\n\n` +
+        `I'm processing a LOT of intelligence right now! ⚡\n\n` +
+        `While I reload, try these commands for instant data:\n` +
+        `▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰\n\n` +
+        `📊 *MARKETS* — live yield table\n` +
+        `📋 *MMF RATES* — top MMF comparison\n` +
+        `📈 *NSE* — stock prices\n` +
+        `🧮 *CALC 100000* — project returns\n\n` +
+        `💬 Try your question again! I'm ready.\n\n` +
+        `_S-Tier Institutional Wealth Intelligence_ 🇰🇪\n_sentill.africa_`
+      );
+    }
+
+    // Track conversation topics for deeper memory
+    const topicKeywords = question.toLowerCase().match(/\b(mmf|t-bill|bond|sacco|nse|stock|pension|crypto|forex|gold|land|reit|ifb|ziidi|etica|lofty|cytonn|calc|compare)\b/g);
+    if (topicKeywords) {
+      const existingTopics = ctx.lastTopics ?? [];
+      const newTopics = [...new Set([...topicKeywords, ...existingTopics])].slice(0, 10);
+      await updateSession(waId, session.state, {
+        ...ctx,
+        totalQuestions: (ctx.totalQuestions ?? 0) + 1,
+        lastTopics: newTopics,
+      }, userId);
+    }
 
     const advisor = advisorId ? ADVISOR_ROSTER.find(a => a.id === advisorId) : null;
     const header = advisor
       ? `${advisor.emoji} *${advisor.name} Says:*`
       : `🧠 *Sentill Africa Says:*`;
-    return sendWhatsAppMessage(waId, `${header}\n\n${answer}`);
+
+    // Send the AI answer
+    await sendWhatsAppMessage(waId, `${header}\n\n${answer}`);
+
+    // Smart quick-reply suggestions based on the question context
+    const suggestionsMap: Array<{ pattern: RegExp; suggestions: Array<{ id: string; title: string }> }> = [
+      { pattern: /mmf|money market|fund|yield/i, suggestions: [
+        { id: "MMF RATES", title: "📋 MMF Comparison" },
+        { id: "CALC 100000", title: "🧮 Calc Returns" },
+        { id: "INVEST", title: "💰 Browse Funds" },
+      ]},
+      { pattern: /stock|nse|share|equity|safaricom|kcb/i, suggestions: [
+        { id: "STOCKS", title: "📊 NSE Live" },
+        { id: "DIVIDEND", title: "📅 Dividends" },
+        { id: "INVEST", title: "💰 Browse All" },
+      ]},
+      { pattern: /bond|ifb|t-?bill|treasury/i, suggestions: [
+        { id: "IFB", title: "🏛️ IFB Guide" },
+        { id: "MARKETS", title: "📊 All Rates" },
+        { id: "CALC 50000", title: "🧮 Calc 50K" },
+      ]},
+      { pattern: /calc|invest|grow|return|project/i, suggestions: [
+        { id: "MARKETS", title: "📊 Live Rates" },
+        { id: "INVEST", title: "💰 Browse Funds" },
+        { id: "TABLE", title: "📋 Ranked Table" },
+      ]},
+      { pattern: /compare|vs|versus|better/i, suggestions: [
+        { id: "TABLE", title: "📋 Ranked Table" },
+        { id: "INVEST", title: "💰 Browse All" },
+        { id: "CHART MMFS", title: "📊 MMF Chart" },
+      ]},
+    ];
+
+    try {
+      const matched = suggestionsMap.find(s => s.pattern.test(question));
+      const suggestions = matched?.suggestions ?? [
+        { id: "MARKETS", title: "📊 Live Rates" },
+        { id: "INVEST", title: "💰 Browse Funds" },
+        { id: "MENU", title: "📋 Main Menu" },
+      ];
+      await sendInteractiveButtons(waId, "💡 *Quick actions:*", suggestions);
+    } catch { /* buttons optional — WhatsApp may throttle */ }
+
+    return;
   } catch (err) {
     console.error("[Bot] Gemini AI error:", err);
     return sendWhatsAppMessage(
       waId,
       `🧠 *Sentill Africa Says:*\n\n` +
       `I'm processing a LOT of intelligence right now! ⚡\n\n` +
-      `While I reload, here's your quick cheat sheet:\n` +
+      `While I reload, try these commands for instant data:\n` +
       `▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰\n\n` +
-      `🏆 *Top Yields Right Now:*\n` +
-      `• *IFB Bond* — *18.46%* WHT-free\n` +
-      `• *Etica Capital MMF (Zidi)* — *18.20%* (15.47% net)\n` +
-      `• *Lofty-Corpin MMF* — *17.50%* · Instant withdrawal\n\n` +
-      `📲 *Easiest way to start:*\n` +
-      `M-Pesa → Financial Services → *Ziidi* → Invest from KES 100\n\n` +
+      `📊 *MARKETS* — live yield table\n` +
+      `📋 *MMF RATES* — top MMF comparison\n` +
+      `📈 *NSE* — stock prices\n` +
+      `🧮 *CALC 100000* — project returns\n\n` +
       `💬 Try your question again! I'm ready.\n\n` +
       `_S-Tier Institutional Wealth Intelligence_ 🇰🇪\n_sentill.africa_`
     );
@@ -1057,28 +1199,63 @@ async function handleGeminiQuestionGuest(waId: string, question: string, session
     const remaining = FREE_AI_LIMIT - aiQueriesCount;
     await sendWhatsAppMessage(waId, `🧠 *Sentill Africa* is thinking... _(${remaining} free question${remaining !== 1 ? "s" : ""} left today)_`);
 
-    const answer = await askGeminiBot(question, {
-      name: "Investor",
-      userId: "guest",
-      isPremium: false,
-    }, waId);
+    // Auto-retry with exponential backoff (max 2 retries)
+    let answer: string | null = null;
+    let lastErr: any = null;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        answer = await askGeminiBot(question, {
+          name: "Investor",
+          userId: "guest",
+          isPremium: false,
+        }, waId);
+        break;
+      } catch (err) {
+        lastErr = err;
+        if (attempt < 2) {
+          await new Promise(r => setTimeout(r, (attempt + 1) * 1000));
+        }
+      }
+    }
+
+    if (!answer) {
+      console.error("[Bot] Guest Gemini error after 3 attempts:", lastErr);
+      return sendWhatsAppMessage(
+        waId,
+        `🧠 *Sentill Africa Says:*\n\n` +
+        `I'm crunching the latest market data! ⚡\n\n` +
+        `Try these commands for instant results:\n` +
+        `▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰\n\n` +
+        `📊 *MARKETS* — live yield table\n` +
+        `📋 *MMF RATES* — top fund comparison\n` +
+        `🧮 *CALC 100000* — project returns\n\n` +
+        `💬 Try your question again! I'll be right back.\n\n` +
+        `_S-Tier Institutional Wealth Intelligence_ 🇰🇪\n_sentill.africa_`
+      );
+    }
 
     // Increment session-based question counter for conversion nudges
     const currentCount = (ctx?.guestQuestionCount as number | undefined) ?? 0;
     const newCount = currentCount + 1;
     if (session) {
-      await updateSession(waId, session.state ?? "IDLE", { ...(ctx ?? {}), guestQuestionCount: newCount });
+      await updateSession(waId, session.state ?? "IDLE", {
+        ...(ctx ?? {}),
+        guestQuestionCount: newCount,
+        totalQuestions: ((ctx?.totalQuestions ?? 0) + 1),
+      });
     }
 
-    // Smart contextual nudge — session count takes priority over DB count
+    // Smart contextual nudge — escalating urgency based on engagement depth
     let nudge = "";
-    if (newCount === 3) {
-      nudge = `\n\n━━━━━━━━━━━━━━━━\n💡 *Create a free account to save this conversation and get daily market updates.*\n\nType *REGISTER* — takes 2 minutes.`;
-    } else if (newCount === 5) {
-      nudge = `\n\n━━━━━━━━━━━━━━━━\n📊 *You've asked 5 questions! Register free to unlock portfolio tracking + alerts.*\n\nType *REGISTER* now.`;
-    } else if (newCount === 1) {
+    if (newCount === 1) {
       // First answer — very soft, don't interrupt the value
       nudge = `\n\n_Ask another question or type *MENU* for options_`;
+    } else if (newCount === 3) {
+      nudge = `\n\n━━━━━━━━━━━━━━━━\n💡 *You're getting great insights!* Create a free account to:\n✅ Save this conversation\n✅ Get daily market alerts to this WhatsApp\n✅ Track your portfolio\n\nType *REGISTER* — takes 30 seconds.`;
+    } else if (newCount === 5) {
+      nudge = `\n\n━━━━━━━━━━━━━━━━\n🔥 *You've asked 5 smart questions — you're clearly serious about investing!*\n\n🚀 *Register FREE now and unlock:*\n• Portfolio tracker + daily alerts\n• Save all your conversations\n• Financial goal planning\n\n⚡ Type *REGISTER* now — or you'll lose this conversation at midnight.`;
+    } else if (newCount >= 8) {
+      nudge = `\n\n━━━━━━━━━━━━━━━━\n⏰ *${FREE_AI_LIMIT - aiQueriesCount} questions left today* — Register FREE to unlock unlimited access!\n\nType *REGISTER* or reply *SUBSCRIBE* for Pro (KES 16/day).`;
     }
 
     // FOMO micro-conversion: extract yield from answer and show personalised KES calc
@@ -1094,21 +1271,31 @@ async function handleGeminiQuestionGuest(waId: string, question: string, session
       }
     }
 
-    return sendWhatsAppMessage(
+    await sendWhatsAppMessage(
       waId,
       `🧠 *Sentill Africa Says:*\n\n${answer}${nudge}${fomoNudge}`
     );
+
+    // Smart quick-reply suggestions for guest users (always include REGISTER option)
+    try {
+      await sendInteractiveButtons(waId, "💡 *Next steps:*", [
+        { id: "MARKETS",  title: "📊 Live Rates" },
+        { id: "REGISTER", title: "🚀 Free Account" },
+      ]);
+    } catch { /* buttons optional */ }
+
+    return;
   } catch (err) {
     console.error("[Bot] Guest Gemini error:", err);
     return sendWhatsAppMessage(
       waId,
       `🧠 *Sentill Africa Says:*\n\n` +
       `I'm crunching the latest market data! ⚡\n\n` +
-      `Here's your quick guide while I reload:\n` +
+      `Try these commands for instant results:\n` +
       `▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰\n\n` +
-      `🏆 *Start here:*\n` +
-      `• Open M-Pesa → Financial Services → *Ziidi*\n` +
-      `• Invest from KES 100 — earn *16-17%* p.a.\n\n` +
+      `📊 *MARKETS* — live yield table\n` +
+      `📋 *MMF RATES* — top fund comparison\n` +
+      `🧮 *CALC 100000* — project returns\n\n` +
       `💬 Try your question again! I'll be right back.\n\n` +
       `_S-Tier Institutional Wealth Intelligence_ 🇰🇪\n_sentill.africa_`
     );
@@ -2054,20 +2241,40 @@ async function handleMarkets(waId: string) {
   const now = new Date().toLocaleDateString("en-KE", { day: "numeric", month: "long", year: "numeric" });
   const freshness = await getRatesFreshness();
 
-  // April 2026 rates — effective annual yields (gross of WHT, net of mgmt fees)
-  const MMF_TABLE = [
-    { name: "Etica Capital MMF (Zidi)", yield: 18.20, min: "KES 1,000", note: "Paybill 511116 · T+1" },
-    { name: "Lofty-Corpin MMF",         yield: 17.50, min: "KES 1,000", note: "Paybill 512600 · Instant" },
-    { name: "Cytonn Money Market",      yield: 16.90, min: "KES 1,000", note: "Paybill 525200 · T+2" },
-    { name: "NCBA Money Market",        yield: 16.20, min: "KES 1,000", note: "Paybill 880100 · Instant" },
-    { name: "KCB Money Market",         yield: 15.80, min: "KES 1,000", note: "Paybill 522522 · T+1" },
-    { name: "Britam Money Market",      yield: 15.50, min: "KES 1,000", note: "Paybill 602600 · T+1" },
-    { name: "Sanlam Investments MMF",   yield: 15.10, min: "KES 5,000", note: "T+2" },
-    { name: "ICEA Lion MMF",            yield: 14.50, min: "KES 5,000", note: "Paybill 402402 · T+1" },
-    { name: "CIC Money Market",         yield: 13.60, min: "KES 5,000", note: "Paybill 174174 · T+1" },
-    { name: "Old Mutual MMF",           yield: 13.40, min: "KES 1,000", note: "Paybill 542542 · T+2" },
-    { name: "Absa MMF",                 yield: 13.20, min: "KES 1,000", note: "Paybill 303030 · T+1" },
-  ];
+  // ── Dynamic data from DB (live rates override hardcoded fallbacks) ──
+  const [dbMMFs, dbGovt] = await Promise.all([
+    prisma.provider.findMany({
+      where: { type: "MONEY_MARKET" },
+      orderBy: { currentYield: "desc" },
+      take: 11,
+      select: { name: true, currentYield: true, minimumInvest: true },
+    }),
+    prisma.marketRateCache.findMany({
+      where: { symbol: { in: ["TBILL_91", "TBILL_182", "TBILL_364", "IFB1"] } },
+      orderBy: { lastSyncedAt: "desc" },
+    }),
+  ]);
+
+  // Build MMF table — prefer DB, fallback to static if DB empty
+  const MMF_TABLE = dbMMFs.length >= 3
+    ? dbMMFs.map(p => ({
+        name: p.name,
+        yield: p.currentYield,
+        min: p.minimumInvest ?? "KES 1,000",
+      }))
+    : [
+        { name: "Etica Capital MMF (Zidi)", yield: 18.20, min: "KES 1,000" },
+        { name: "Lofty-Corpin MMF",         yield: 17.50, min: "KES 1,000" },
+        { name: "Cytonn Money Market",      yield: 16.90, min: "KES 1,000" },
+        { name: "NCBA Money Market",        yield: 16.20, min: "KES 1,000" },
+        { name: "KCB Money Market",         yield: 15.80, min: "KES 1,000" },
+        { name: "Britam Money Market",      yield: 15.50, min: "KES 1,000" },
+        { name: "Sanlam Investments MMF",   yield: 15.10, min: "KES 5,000" },
+        { name: "ICEA Lion MMF",            yield: 14.50, min: "KES 5,000" },
+        { name: "CIC Money Market",         yield: 13.60, min: "KES 5,000" },
+        { name: "Old Mutual MMF",           yield: 13.40, min: "KES 1,000" },
+        { name: "Absa MMF",                 yield: 13.20, min: "KES 1,000" },
+      ];
 
   const USD_MMF_TABLE = [
     { name: "Nabo Africa USD MMF",  yield: 5.91 },
@@ -2076,16 +2283,34 @@ async function handleMarkets(waId: string) {
     { name: "Old Mutual USD MMF",   yield: 5.20 },
   ];
 
-  const GOVT_TABLE = [
-    { name: "IFB1/2024 Bond",  yield: 18.46, net: 18.46, note: "WHT exempt 🏆" },
-    { name: "364-Day T-Bill",  yield: 16.42, net: 13.96, note: "net after 15% WHT" },
-    { name: "182-Day T-Bill",  yield: 15.97, net: 13.57, note: "net after 15% WHT" },
-    { name: "91-Day T-Bill",   yield: 15.78, net: 13.41, note: "net after 15% WHT" },
-  ];
+  // Build govt securities — prefer DB, fallback to static
+  const govtLabelMap: Record<string, string> = {
+    IFB1: "IFB1/2024 Bond", TBILL_364: "364-Day T-Bill",
+    TBILL_182: "182-Day T-Bill", TBILL_91: "91-Day T-Bill",
+  };
+  const GOVT_TABLE = dbGovt.length >= 2
+    ? dbGovt.map(r => {
+        const isIFB = r.symbol === "IFB1";
+        return {
+          name: govtLabelMap[r.symbol] ?? r.symbol,
+          yield: r.price,
+          net: isIFB ? r.price : +(r.price * 0.85).toFixed(2),
+          note: isIFB ? "WHT exempt 🏆" : "net after 15% WHT",
+        };
+      })
+    : [
+        { name: "IFB1/2024 Bond",  yield: 18.46, net: 18.46, note: "WHT exempt 🏆" },
+        { name: "364-Day T-Bill",  yield: 16.42, net: 13.96, note: "net after 15% WHT" },
+        { name: "182-Day T-Bill",  yield: 15.97, net: 13.57, note: "net after 15% WHT" },
+        { name: "91-Day T-Bill",   yield: 15.78, net: 13.41, note: "net after 15% WHT" },
+      ];
+
+  const isLive = dbMMFs.length >= 3;
+  const sourceTag = isLive ? "📡 LIVE from Sentill DB" : "📋 Reference rates";
 
   const MEDALS = ["🥇", "🥈", "🥉", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"];
 
-  let msg = `📊 *SENTILL LIVE YIELD TABLE*\n_${now}_\n\n`;
+  let msg = `📊 *SENTILL LIVE YIELD TABLE*\n_${now} · ${sourceTag}_\n\n`;
 
   msg += `━━━━━━━━━━━━━━━━━━\n`;
   msg += `💰 *MONEY MARKET FUNDS (KES)*\n`;
@@ -2093,9 +2318,8 @@ async function handleMarkets(waId: string) {
   msg += `_T+2–5 days withdrawal • CMA regulated_\n\n`;
   MMF_TABLE.forEach((f, i) => {
     const medal = MEDALS[i] ?? `${i+1}.`;
-    const note = f.note ? ` _(${f.note})_` : "";
     const netYield = (f.yield * 0.85).toFixed(2);
-    msg += `${medal} *${f.name}* — *${f.yield.toFixed(2)}%* gross (*${netYield}%* net after WHT)${note}\n   Min: ${f.min}\n`;
+    msg += `${medal} *${f.name}* — *${f.yield.toFixed(2)}%* gross (*${netYield}%* net after WHT)\n   Min: ${f.min}\n`;
   });
 
   msg += `\n━━━━━━━━━━━━━━━━━━\n`;
@@ -2115,16 +2339,20 @@ async function handleMarkets(waId: string) {
     if (!isIFB) msg += `   Net after WHT: *${g.net.toFixed(2)}%*\n`;
   });
 
+  // Dynamic alpha insight from top fund
+  const topMMF = MMF_TABLE[0];
+  const topNet = (topMMF.yield * 0.85).toFixed(2);
+  const ifbEntry = GOVT_TABLE.find(g => g.name.includes("IFB"));
+  const ifbYield = ifbEntry?.yield.toFixed(2) ?? "18.46";
+
   msg += `\n━━━━━━━━━━━━━━━━━━\n`;
   msg += `📌 *KEY MARKET CONTEXT*\n`;
-  msg += `• CBK 91-day T-Bill: *15.78%* — driving MMF yields to 13–18% range (April 2026)\n`;
   msg += `• WHT: 15% on all MMF interest (rates above are *gross*)\n`;
-  msg += `• Effective net on an 18% fund ≈ *15.3%* after WHT\n`;
+  msg += `• Effective net on the top fund ≈ *${topNet}%* after WHT\n`;
   msg += `• Withdrawals: Lofty-Corpin Instant, Etica/KCB T+1, most others T+2\n\n`;
   msg += `💡 *ALPHA INSIGHT*\n`;
-  msg += `IFB Bond at 18.46% (WHT-exempt) beats every MMF on a net basis (min KES 50K, 10yr tenor)\n`;
-  msg += `Best liquid KES option: *Etica Capital MMF (Zidi)* at *18.20%* gross (*15.47%* net)\n`;
-  msg += `Instant access: *Lofty-Corpin MMF* — 17.50% gross, withdraw same day\n\n`;
+  msg += `IFB Bond at *${ifbYield}%* (WHT-exempt) beats every MMF on a net basis (min KES 50K)\n`;
+  msg += `Best liquid KES option: *${topMMF.name}* at *${topMMF.yield.toFixed(2)}%* gross (*${topNet}%* net)\n\n`;
   msg += `📱 *QUICK COMMANDS*\n`;
   msg += `• *MMF RATES* — full detailed MMF breakdown\n`;
   msg += `• *INVEST* — browse by category\n`;
@@ -2152,31 +2380,53 @@ async function handleMMFRates(waId: string) {
   const now = new Date().toLocaleDateString("en-KE", { day: "numeric", month: "long", year: "numeric" });
   const freshness = await getRatesFreshness();
 
+  // ── Pull live MMF data from DB ──
+  const dbMMFs = await prisma.provider.findMany({
+    where: { type: "MONEY_MARKET" },
+    orderBy: { currentYield: "desc" },
+    take: 15,
+    select: { name: true, currentYield: true, minimumInvest: true },
+  });
+
+  const isLive = dbMMFs.length >= 3;
+  const sourceTag = isLive ? "📡 LIVE from DB" : "📋 Reference rates";
+  const topFunds = isLive
+    ? dbMMFs.slice(0, 6)
+    : [
+        { name: "Etica Capital MMF (Zidi)", currentYield: 18.20, minimumInvest: "KES 1,000" },
+        { name: "Lofty-Corpin MMF",         currentYield: 17.50, minimumInvest: "KES 1,000" },
+        { name: "Cytonn Money Market",      currentYield: 16.90, minimumInvest: "KES 1,000" },
+        { name: "NCBA Money Market",        currentYield: 16.20, minimumInvest: "KES 1,000" },
+        { name: "KCB Money Market",         currentYield: 15.80, minimumInvest: "KES 1,000" },
+        { name: "Britam Money Market",      currentYield: 15.50, minimumInvest: "KES 1,000" },
+      ];
+  const moreFunds = isLive ? dbMMFs.slice(6) : [];
+
   let msg = `💰 *KENYA MMF RATES — ${now}*\n`;
-  msg += `_Effective annual yields • Gross before 15% WHT_\n\n`;
+  msg += `_Effective annual yields • Gross before 15% WHT · ${sourceTag}_\n\n`;
 
   msg += `━━━━━━━━━━━━━━━━━━\n`;
   msg += `🏆 *TOP PERFORMERS (KES)*\n\n`;
-  msg += `🥇 *Etica Capital MMF (Zidi)* — *18.20%* gross (*15.47%* net)\n`;
-  msg += `   Min: KES 1,000 | Paybill 511116 | T+1\n\n`;
-  msg += `🥈 *Lofty-Corpin MMF* — *17.50%* gross (*14.88%* net)\n`;
-  msg += `   Min: KES 1,000 | Paybill 512600 | Instant\n\n`;
-  msg += `🥉 *Cytonn Money Market* — *16.90%* gross (*14.37%* net)\n`;
-  msg += `   Min: KES 1,000 | Paybill 525200 | T+2\n\n`;
-  msg += `4️⃣ *NCBA Money Market* — *16.20%* gross (*13.77%* net)\n`;
-  msg += `   Min: KES 1,000 | Paybill 880100 | Instant\n\n`;
-  msg += `5️⃣ *KCB Money Market* — *15.80%* gross (*13.43%* net)\n`;
-  msg += `   Min: KES 1,000 | Paybill 522522 | T+1\n\n`;
-  msg += `6️⃣ *Britam Money Market* — *15.50%* gross (*13.18%* net)\n`;
-  msg += `   Min: KES 1,000 | Paybill 602600 | T+1\n\n`;
 
-  msg += `━━━━━━━━━━━━━━━━━━\n`;
-  msg += `📊 *MORE FUNDS (KES)*\n\n`;
-  msg += `• *Sanlam Investments MMF* — 15.10% gross (12.84% net) | Min KES 5,000\n`;
-  msg += `• *ICEA Lion MMF* — 14.50% gross (12.33% net) | Paybill 402402\n`;
-  msg += `• *CIC Money Market* — 13.60% gross (11.56% net) | Largest AUM\n`;
-  msg += `• *Old Mutual MMF* — 13.40% gross (11.39% net)\n`;
-  msg += `• *Absa MMF* — 13.20% gross (11.22% net)\n\n`;
+  const medals = ["🥇", "🥈", "🥉", "4️⃣", "5️⃣", "6️⃣"];
+  topFunds.forEach((f, i) => {
+    const y = f.currentYield;
+    const net = (y * 0.85).toFixed(2);
+    const min = f.minimumInvest ?? "KES 1,000";
+    msg += `${medals[i] ?? `${i+1}.`} *${f.name}* — *${y.toFixed(2)}%* gross (*${net}%* net)\n`;
+    msg += `   Min: ${min}\n\n`;
+  });
+
+  if (moreFunds.length) {
+    msg += `━━━━━━━━━━━━━━━━━━\n`;
+    msg += `📊 *MORE FUNDS (KES)*\n\n`;
+    moreFunds.forEach(f => {
+      const net = (f.currentYield * 0.85).toFixed(2);
+      const min = f.minimumInvest ?? "Check provider";
+      msg += `• *${f.name}* — ${f.currentYield.toFixed(2)}% gross (${net}% net) | Min ${min}\n`;
+    });
+    msg += `\n`;
+  }
 
   msg += `━━━━━━━━━━━━━━━━━━\n`;
   msg += `💵 *USD MONEY MARKET FUNDS*\n`;
@@ -2187,27 +2437,22 @@ async function handleMMFRates(waId: string) {
 
   msg += `━━━━━━━━━━━━━━━━━━\n`;
   msg += `📌 *KEY FACTS YOU NEED TO KNOW*\n\n`;
-  msg += `*1. Why are MMF yields so high?*\n`;
-  msg += `CBK T-Bill rates at *15.78–16.42%* (April 2026). MMF yields track T-Bills closely.\n\n`;
-  msg += `*2. Taxation (15% Withholding Tax)*\n`;
+  msg += `*1. Taxation (15% Withholding Tax)*\n`;
   msg += `All KES MMF interest is subject to 15% WHT.\n`;
   msg += `Formula: Net yield = Gross × 0.85\n`;
-  msg += `Example: 18.20% gross → *15.47% net*\n\n`;
-  msg += `*3. Management Fees*\n`;
+  const topY = topFunds[0]?.currentYield ?? 18.20;
+  const topN = (topY * 0.85).toFixed(2);
+  msg += `Example: ${topY.toFixed(2)}% gross → *${topN}% net*\n\n`;
+  msg += `*2. Management Fees*\n`;
   msg += `Rates shown are already net of management fees (~1–2% p.a. already deducted).\n\n`;
-  msg += `*4. Liquidity / Withdrawals*\n`;
+  msg += `*3. Liquidity / Withdrawals*\n`;
   msg += `Fastest: *Lofty-Corpin* (Instant), *Etica Zidi* (T+1)\n`;
   msg += `Most others: *T+1 to T+2* to your bank/M-Pesa\n\n`;
-  msg += `*5. Safety*\n`;
+  msg += `*4. Safety*\n`;
   msg += `All CMA-licensed funds invest in CBK T-Bills & bank deposits.\n`;
   msg += `Zero history of capital loss in Kenya MMF sector.\n\n`;
 
   msg += `━━━━━━━━━━━━━━━━━━\n`;
-  msg += `📱 *HOW TO START*\n`;
-  msg += `• Etica/Zidi: Download *Zidi App* → KES 100 min\n`;
-  msg += `• Cytonn: Download *Cytonn App* → KES 1,000 min\n`;
-  msg += `• Lofty-Corpin: Paybill *512600* → KES 1,000 min\n`;
-  msg += `• Old Mutual: *oldmutual.co.ke* → KES 1,000 min\n\n`;
   msg += `💡 *BETTER ALTERNATIVE FOR LONG TERM*\n`;
   msg += `IFB Bond at *18.46%* (WHT-exempt!) beats every MMF.\n`;
   msg += `Min KES 50,000 | 6.5yr tenor | Via DhowCSD\n`;
@@ -2612,29 +2857,60 @@ async function handlePaymentCheck(waId: string, input: string, ctx: SessionConte
 
 async function sendGuestGreeting(waId: string) {
   let topYield = "17.5";
+  let topName = "Top MMF";
+  let userCount = 50;
   try {
-    const top = await prisma.provider.findFirst({
-      where: { type: "MONEY_MARKET" },
-      orderBy: { currentYield: "desc" },
-      select: { name: true, currentYield: true },
-    });
-    if (top) topYield = top.currentYield.toFixed(1);
+    const [top, count] = await Promise.all([
+      prisma.provider.findFirst({
+        where: { type: "MONEY_MARKET" },
+        orderBy: { currentYield: "desc" },
+        select: { name: true, currentYield: true },
+      }),
+      prisma.user.count(),
+    ]);
+    if (top) {
+      topYield = top.currentYield.toFixed(1);
+      topName = top.name;
+    }
+    userCount = Math.max(count, 50);
   } catch {}
 
-  return sendWhatsAppMessage(
+  // Dynamic urgency based on time of day (EAT)
+  const hour = new Date().toLocaleString("en-US", { timeZone: "Africa/Nairobi", hour: "numeric", hour12: false });
+  const h = parseInt(hour);
+  const timeGreeting = h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
+
+  // Social proof
+  const roundedCount = Math.floor(userCount / 10) * 10;
+
+  await sendWhatsAppMessage(
     waId,
-    `👋 *Habari! Welcome to Sentil Africa.*\n` +
-    `_Kenya's #1 investment intelligence hub_\n\n` +
-    `💡 Right now, the best MMF in Kenya is paying *${topYield}% p.a.*\n` +
-    `That's 6× more than a savings account.\n\n` +
-    `What are you most interested in?\n\n` +
-    `*1* — 💰 Save & grow my money (MMFs)\n` +
-    `*2* — 📈 Invest in NSE stocks\n` +
-    `*3* — 🏛️ Government bonds & T-Bills\n` +
-    `*4* — 👥 Chama / group investing\n\n` +
-    `_Or just type any question — no account needed_\n` +
-    `_e.g. "Best MMF for KES 50K?" or "How do I buy a bond?"_`
+    `👋 *${timeGreeting}! Welcome to Sentill Africa.*\n` +
+    `_Kenya's #1 AI-powered investment intelligence hub_ 🇰🇪\n\n` +
+    `━━━━━━━━━━━━━━━━━━\n` +
+    `📊 *RIGHT NOW:*\n` +
+    `🏆 Best MMF: *${topName}* — *${topYield}% p.a.*\n` +
+    `💡 That's *${Math.round(parseFloat(topYield) / 3)}× more* than a savings account\n` +
+    `👥 *${roundedCount.toLocaleString()}+ investors* already using Sentill\n\n` +
+    `━━━━━━━━━━━━━━━━━━\n` +
+    `🎯 *What would you like to do?*\n\n` +
+    `*1* — 📊 Live market rates & yields\n` +
+    `*2* — 💰 Browse investments (MMF/T-Bill/NSE/Bond)\n` +
+    `*3* — 🧠 Ask Sentill AI anything\n` +
+    `*4* — 🚀 Create FREE account\n\n` +
+    `━━━━━━━━━━━━━━━━━━\n` +
+    `_No account needed — just type any question:_\n` +
+    `_"Best MMF for KES 50K?" · "How do bonds work?" · "CALC 100000"_\n\n` +
+    `_Or type *MARKETS* for instant live rates_ ⚡`
   );
+
+  // Interactive buttons for higher engagement
+  try {
+    await sendInteractiveButtons(waId, "👇 *Quick start:*", [
+      { id: "MARKETS",  title: "📊 Live Rates" },
+      { id: "REGISTER", title: "🚀 Free Account" },
+    ]);
+  } catch { /* buttons optional */ }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -3640,21 +3916,47 @@ async function handleChartCommand(waId: string, input: string, userId?: string) 
 // ── Rich text table handler ────────────────────────────────────────────────────
 
 async function handleTableCommand(waId: string, userId?: string) {
-  let msg = `📊 *RANKED INVESTMENT TABLE — KENYA APR 2026*\n`;
+  // ── Pull live data from DB ──
+  const [dbMMFs, dbGovt, dbSACCOs] = await Promise.all([
+    prisma.provider.findMany({
+      where: { type: "MONEY_MARKET" },
+      orderBy: { currentYield: "desc" },
+      take: 7,
+      select: { name: true, currentYield: true },
+    }),
+    prisma.marketRateCache.findMany({
+      where: { symbol: { in: ["TBILL_91", "TBILL_182", "TBILL_364", "IFB1"] } },
+      orderBy: { price: "desc" },
+    }),
+    prisma.provider.findMany({
+      where: { type: "SACCO" },
+      orderBy: { currentYield: "desc" },
+      take: 5,
+      select: { name: true, currentYield: true },
+    }),
+  ]);
+
+  let msg = `📊 *RANKED INVESTMENT TABLE — KENYA*\n`;
   msg += `━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
 
   msg += `🏆 *MONEY MARKET FUNDS (MMF)*\n`;
   msg += `┌─────────────────────────────┐\n`;
   msg += `│ # │ Fund          │  Yield  │\n`;
   msg += `├─────────────────────────────┤\n`;
-  msg += `│ 1 │ Etica (Zidi)  │ *18.20%*│\n`;
 
-  msg += `│ 2 │ Lofty Corpin  │ *16.80%*│\n`;
-  msg += `│ 3 │ Kuza MMF      │ *16.50%*│\n`;
-  msg += `│ 4 │ GenCap Hela   │ *16.20%*│\n`;
-  msg += `│ 5 │ CIC MMF       │ *15.90%*│\n`;
-  msg += `│ 6 │ Sanlam Pesa   │ *14.78%*│\n`;
-  msg += `│ 7 │ Britam MMF    │ *14.20%*│\n`;
+  const mmfRows = dbMMFs.length >= 3 ? dbMMFs : [
+    { name: "Etica (Zidi)", currentYield: 18.20 },
+    { name: "Lofty Corpin", currentYield: 17.50 },
+    { name: "Cytonn MMF",   currentYield: 16.90 },
+    { name: "NCBA MMF",     currentYield: 16.20 },
+    { name: "KCB MMF",      currentYield: 15.80 },
+    { name: "Sanlam MMF",   currentYield: 15.10 },
+    { name: "Britam MMF",   currentYield: 14.20 },
+  ];
+  mmfRows.forEach((f, i) => {
+    const shortName = f.name.length > 14 ? f.name.slice(0, 13) + "…" : f.name.padEnd(14);
+    msg += `│ ${i+1} │ ${shortName}│ *${f.currentYield.toFixed(2)}%*│\n`;
+  });
   msg += `└─────────────────────────────┘\n`;
   msg += `Min: KES 1,000 · WHT: 15% · T+1 liquidity\n\n`;
 
@@ -3662,24 +3964,38 @@ async function handleTableCommand(waId: string, userId?: string) {
   msg += `┌──────────────────────────────────┐\n`;
   msg += `│ Instrument │ Gross │  Net (WHT)  │\n`;
   msg += `├──────────────────────────────────┤\n`;
-  msg += `│ 91-Day     │15.85% │  *13.47%*   │\n`;
-  msg += `│ 182-Day    │16.10% │  *13.69%*   │\n`;
-  msg += `│ 364-Day    │16.45% │  *13.98%*   │\n`;
-  msg += `│ IFB Bond   │18.46% │  *18.46%* ✅│\n`;
+
+  const govtLabelMap: Record<string, string> = {
+    TBILL_91: "91-Day", TBILL_182: "182-Day",
+    TBILL_364: "364-Day", IFB1: "IFB Bond",
+  };
+  const govtRows = dbGovt.length >= 2 ? dbGovt : [
+    { symbol: "TBILL_91", price: 15.85 },
+    { symbol: "TBILL_182", price: 16.10 },
+    { symbol: "TBILL_364", price: 16.45 },
+    { symbol: "IFB1", price: 18.46 },
+  ];
+  govtRows.forEach(r => {
+    const label = (govtLabelMap[r.symbol] ?? r.symbol).padEnd(11);
+    const isIFB = r.symbol === "IFB1";
+    const net = isIFB ? `*${r.price.toFixed(2)}%* ✅` : `*${(r.price * 0.85).toFixed(2)}%*   `;
+    msg += `│ ${label}│${r.price.toFixed(2)}% │  ${net}│\n`;
+  });
   msg += `└──────────────────────────────────┘\n`;
   msg += `IFB = WHT-free · Min KES 100K via DhowCSD\n\n`;
 
-  msg += `🤝 *TOP SACCOS (Dividend Yields)*\n`;
-  msg += `┌───────────────────────────┐\n`;
-  msg += `│ SACCO         │ Dividend  │\n`;
-  msg += `├───────────────────────────┤\n`;
-  msg += `│ Tower SACCO   │  *20.0%*  │\n`;
-  msg += `│ Police SACCO  │  *17.0%*  │\n`;
-  msg += `│ Stima SACCO   │  *15.0%*  │\n`;
-  msg += `│ Wanandege     │  *15.0%*  │\n`;
-  msg += `│ Safaricom SACCO│  *13.0%*  │\n`;
-  msg += `└───────────────────────────┘\n`;
-  msg += `Min: Varies · Illiquid (notice required)\n\n`;
+  if (dbSACCOs.length) {
+    msg += `🤝 *TOP SACCOS (Dividend Yields)*\n`;
+    msg += `┌───────────────────────────┐\n`;
+    msg += `│ SACCO         │ Dividend  │\n`;
+    msg += `├───────────────────────────┤\n`;
+    dbSACCOs.forEach(s => {
+      const name = s.name.length > 14 ? s.name.slice(0, 13) + "…" : s.name.padEnd(14);
+      msg += `│ ${name}│  *${s.currentYield.toFixed(1)}%*  │\n`;
+    });
+    msg += `└───────────────────────────┘\n`;
+    msg += `Min: Varies · Illiquid (notice required)\n\n`;
+  }
 
   msg += `━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
   msg += `💡 Commands:\n`;

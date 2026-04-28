@@ -14,7 +14,13 @@ const PAYSTACK_SECRET = process.env.PAYSTACK_SECRET_KEY ?? "";
 function verifyPaystackSignature(rawBody: string, signature: string | null): boolean {
   if (!signature || !PAYSTACK_SECRET) return false;
   const hash = crypto.createHmac("sha512", PAYSTACK_SECRET).update(rawBody).digest("hex");
-  return hash === signature;
+  // Timing-safe compare — both buffers must be equal length or timingSafeEqual throws.
+  if (hash.length !== signature.length) return false;
+  try {
+    return crypto.timingSafeEqual(Buffer.from(hash, "utf8"), Buffer.from(signature, "utf8"));
+  } catch {
+    return false;
+  }
 }
 
 export async function POST(req: NextRequest) {

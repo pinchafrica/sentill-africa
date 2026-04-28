@@ -131,22 +131,23 @@ const FAQS = [
   { q: "Is my data secure?", a: "Absolutely. All connections are encrypted end-to-end. We use institutional-grade security protocols and never share your data with third parties." },
 ];
 
+// `apiKey` maps to /api/market/ai-rates response. Stock cards also look up /api/market/nse for price.
 const MARKET_ASSETS = [
-  { id: "ifb1_2024", provider: "IFB1/2024/6.5", yield: "18.46%", liquidity: "Secondary", aum: "Bond", trend: "up", type: "Bond", desc: "Tax-free sovereign infrastructure." },
-  { id: "etica", provider: "Etica MMF (Zidi)", yield: "18.20%", liquidity: "24-48 Hrs", aum: "KES 4.2B", trend: "up", type: "MMF", desc: "Kenya's highest-yield MMF. Min KES 100." },
-  { id: "lofty", provider: "Lofty Corpin MMF", yield: "17.50%", liquidity: "Instant", aum: "KES 1.8B", trend: "up", type: "MMF", desc: "Strong boutique fund, aggressive returns." },
-  { id: "cytonn", provider: "Cytonn MMF", yield: "16.90%", liquidity: "24 Hrs", aum: "KES 8.1B", trend: "up", type: "MMF", desc: "Large AUM, stable long track record." },
-  { id: "ncba", provider: "NCBA MMF", yield: "16.20%", liquidity: "Instant", aum: "KES 6.4B", trend: "up", type: "MMF", desc: "Bank-backed, very low credit risk." },
-  { id: "SCOM", provider: "Safaricom PLC", yield: "4.5% div", liquidity: "T+1", aum: "Equity", trend: "up", type: "Stock", desc: "Ziidi & M-PESA moat. Stable dividend." },
-  { id: "EQTY", provider: "Equity Group", yield: "5.2% div", liquidity: "T+1", aum: "Equity", trend: "up", type: "Stock", desc: "Pan-Africa expansion, cheap P/E 6.2x." },
-  { id: "KCB", provider: "KCB Group", yield: "8.3% div", liquidity: "T+1", aum: "Equity", trend: "up", type: "Stock", desc: "8.3% dividend yield — top value on NSE." },
-  { id: "fxd1_2024", provider: "FXD1/2024/10", yield: "16.80%", liquidity: "Secondary", aum: "Bond", trend: "up", type: "Bond", desc: "2-Year fixed-coupon anchor. 14.28% net." },
-  { id: "britam", provider: "Britam MMF", yield: "15.50%", liquidity: "24 Hrs", aum: "KES 5.2B", trend: "up", type: "MMF", desc: "Insurance-backed, very stable." },
-  { id: "sanlam", provider: "Sanlam MMF", yield: "15.10%", liquidity: "24 Hrs", aum: "KES 4.7B", trend: "up", type: "MMF", desc: "Strong institutional management." },
-  { id: "cic", provider: "CIC Money Market Fund", yield: "13.60%", liquidity: "24 Hrs", aum: "KES 58B", trend: "up", type: "MMF", desc: "Largest AUM in Kenya — most stable." },
-  { id: "oldmutual", provider: "Old Mutual MMF", yield: "13.40%", liquidity: "Sub-48 Hrs", aum: "KES 9.2B", trend: "up", type: "MMF", desc: "Longest track record, conservative." },
-  { id: "absa", provider: "Absa Shilling MMF", yield: "13.20%", liquidity: "24 Hrs", aum: "KES 4.1B", trend: "up", type: "MMF", desc: "Global standards, bank-backed." },
-  { id: "EABL", provider: "EABL", yield: "3.8% div", liquidity: "T+1", aum: "Equity", trend: "down", type: "Stock", desc: "WATCH. Tax pressures on alcohol sector." },
+  { id: "ifb1_2024", apiKey: "IFB1-2024",  provider: "IFB1/2024/6.5",      yield: "18.46%",  liquidity: "Secondary",   aum: "Bond",     trend: "up",   type: "Bond",  desc: "Tax-free sovereign infrastructure." },
+  { id: "etica",     apiKey: "ETCA",       provider: "Etica MMF (Zidi)",   yield: "18.20%",  liquidity: "24-48 Hrs",   aum: "KES 4.2B", trend: "up",   type: "MMF",   desc: "Kenya's highest-yield MMF. Min KES 100." },
+  { id: "lofty",     apiKey: "LOFTY-MMF",  provider: "Lofty Corpin MMF",   yield: "17.50%",  liquidity: "Instant",     aum: "KES 1.8B", trend: "up",   type: "MMF",   desc: "Strong boutique fund, aggressive returns." },
+  { id: "cytonn",    apiKey: "CYTONN-MMF", provider: "Cytonn MMF",         yield: "16.90%",  liquidity: "24 Hrs",      aum: "KES 8.1B", trend: "up",   type: "MMF",   desc: "Large AUM, stable long track record." },
+  { id: "ncba",      apiKey: "NCBA-MMF",   provider: "NCBA MMF",           yield: "16.20%",  liquidity: "Instant",     aum: "KES 6.4B", trend: "up",   type: "MMF",   desc: "Bank-backed, very low credit risk." },
+  { id: "SCOM",      apiKey: "SCOM",       provider: "Safaricom PLC",      yield: "4.5% div", liquidity: "T+1",        aum: "Equity",   trend: "up",   type: "Stock", desc: "Ziidi & M-PESA moat. Stable dividend." },
+  { id: "EQTY",      apiKey: "EQTY",       provider: "Equity Group",       yield: "5.2% div", liquidity: "T+1",        aum: "Equity",   trend: "up",   type: "Stock", desc: "Pan-Africa expansion, cheap P/E 6.2x." },
+  { id: "KCB",       apiKey: "KCB",        provider: "KCB Group",          yield: "8.3% div", liquidity: "T+1",        aum: "Equity",   trend: "up",   type: "Stock", desc: "8.3% dividend yield — top value on NSE." },
+  { id: "fxd1_2024", apiKey: "2YR-BOND",   provider: "FXD1/2024/10",       yield: "16.80%",  liquidity: "Secondary",   aum: "Bond",     trend: "up",   type: "Bond",  desc: "2-Year fixed-coupon anchor. 14.28% net." },
+  { id: "britam",    apiKey: "BRITAM-MMF", provider: "Britam MMF",         yield: "15.50%",  liquidity: "24 Hrs",      aum: "KES 5.2B", trend: "up",   type: "MMF",   desc: "Insurance-backed, very stable." },
+  { id: "sanlam",    apiKey: "SANLAM-MMF", provider: "Sanlam MMF",         yield: "15.10%",  liquidity: "24 Hrs",      aum: "KES 4.7B", trend: "up",   type: "MMF",   desc: "Strong institutional management." },
+  { id: "cic",       apiKey: "CIC-MMF",    provider: "CIC Money Market Fund", yield: "13.60%", liquidity: "24 Hrs",    aum: "KES 58B",  trend: "up",   type: "MMF",   desc: "Largest AUM in Kenya — most stable." },
+  { id: "oldmutual", apiKey: "OLDMUT-MMF", provider: "Old Mutual MMF",     yield: "13.40%",  liquidity: "Sub-48 Hrs",  aum: "KES 9.2B", trend: "up",   type: "MMF",   desc: "Longest track record, conservative." },
+  { id: "absa",      apiKey: "ABSA-MMF",   provider: "Absa Shilling MMF",  yield: "13.20%",  liquidity: "24 Hrs",      aum: "KES 4.1B", trend: "up",   type: "MMF",   desc: "Global standards, bank-backed." },
+  { id: "EABL",      apiKey: "EABL",       provider: "EABL",               yield: "3.8% div", liquidity: "T+1",        aum: "Equity",   trend: "down", type: "Stock", desc: "WATCH. Tax pressures on alcohol sector." },
 ];
 
 const AI_RECOMMENDATIONS = [
@@ -181,16 +182,32 @@ export default function HomePage() {
         const rate = aiRatesData?.rates?.["ETCA"] || 18.20;
         return { display: `${rate}%`, verified: true };
      }
-     
+
      const stockSym = symbol === "ABS" ? "ABSA" : symbol;
      const stock = nseData?.stocks?.find((s: any) => s.symbol === stockSym);
      if (stock) {
-        return { 
-           display: `KES ${stock.price.toFixed(2)}`, 
+        return {
+           display: `KES ${stock.price.toFixed(2)}`,
            verified: stock.source === "gemini-forced"
         };
      }
      return { display: "Gathering...", verified: false };
+  };
+
+  // Returns live yield/price for a MARKET_ASSETS entry using its apiKey.
+  const getAssetLiveData = (asset: typeof MARKET_ASSETS[number]): { primary: string; isLive: boolean } => {
+     if (asset.type === "Stock") {
+        const stock = nseData?.stocks?.find((s: any) => s.symbol === asset.apiKey);
+        if (stock && typeof stock.price === "number") {
+           return { primary: `KES ${stock.price.toFixed(2)}`, isLive: true };
+        }
+        return { primary: asset.yield, isLive: false };
+     }
+     const rate = aiRatesData?.rates?.[asset.apiKey];
+     if (typeof rate === "number" && rate > 0) {
+        return { primary: `${rate.toFixed(2)}%`, isLive: true };
+     }
+     return { primary: asset.yield, isLive: false };
   };
 
   useEffect(() => {
@@ -909,7 +926,10 @@ export default function HomePage() {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-6">
-            {MARKET_ASSETS.filter(a => filterCategory === "All" || a.type === filterCategory).slice(0, 10).map((asset, idx) => (
+            {MARKET_ASSETS.filter(a => filterCategory === "All" || a.type === filterCategory).slice(0, 10).map((asset, idx) => {
+              const live = getAssetLiveData(asset);
+              const yieldLabel = asset.type === "Stock" ? "Price" : "Yield";
+              return (
               <div key={idx} className="bg-white border border-slate-200 p-6 rounded-[2rem] hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col h-full group">
                 <div className="flex justify-between items-start mb-5">
                   <div className="flex-1">
@@ -920,13 +940,21 @@ export default function HomePage() {
                     <TrendingUp className={`w-3.5 h-3.5 ${asset.trend === "down" && "rotate-180"}`} />
                   </div>
                 </div>
-                
+
                 <p className="text-[10px] text-slate-500 font-medium leading-relaxed mb-6 line-clamp-2">{asset.desc}</p>
-                
+
                 <div className="space-y-3 mb-6">
                    <div className="flex justify-between items-center text-[10px] font-bold">
-                      <span className="text-slate-400 uppercase tracking-widest">Yield</span>
-                      <span className="text-slate-900 font-black">{asset.yield}</span>
+                      <span className="text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                        {yieldLabel}
+                        {live.isLive && (
+                          <span className="relative flex h-1.5 w-1.5" title="Live rate">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+                          </span>
+                        )}
+                      </span>
+                      <span className="text-slate-900 font-black">{live.primary}</span>
                    </div>
                    <div className="flex justify-between items-center text-[10px] font-bold">
                       <span className="text-slate-400 uppercase tracking-widest">Liquidity</span>
@@ -944,7 +972,8 @@ export default function HomePage() {
                   </Link>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>

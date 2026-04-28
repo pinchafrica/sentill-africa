@@ -3,7 +3,18 @@
     "allow": [
       "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\({k:v for k,v in d.get\\(''''dependencies'''',{}\\).items\\(\\)}, indent=2\\)\\)\")",
       "Bash(node -e \"const d=require\\(''''fs''''\\).readFileSync\\(''''/dev/stdin'''',''''utf8''''\\); const p=JSON.parse\\(d\\); console.log\\(JSON.stringify\\(p.dependencies,null,2\\)\\)\")",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(npm run *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(git pull *)",
+      "Bash(vercel --version)",
+      "Bash(vercel env *)",
+      "Bash(openssl rand *)",
+      "Bash(vercel --prod)",
+      "Bash(curl -s \"https://sentill.africa/api/cron/rates-sync?secret=0a6b219990d7c425ce3901d10050d505b859178dfb0380e495e96f3a33c6e923\")",
+      "Bash(curl -sL \"https://sentill.africa/api/cron/rates-sync?secret=0a6b219990d7c425ce3901d10050d505b859178dfb0380e495e96f3a33c6e923\")"
     ]
   }
 }

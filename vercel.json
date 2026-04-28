@@ -35,6 +35,14 @@
     {
       "path": "/api/cron/whatsapp-daily?slot=NSE_CLOSE",
       "schedule": "0 12 * * 1-5"
+    },
+    {
+      "path": "/api/cron/rates-health",
+      "schedule": "0 5 * * *"
+    },
+    {
+      "path": "/api/cron/admin-brief",
+      "schedule": "0 4 * * *"
     }
   ]
 }

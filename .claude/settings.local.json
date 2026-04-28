@@ -36,7 +36,19 @@
       "WebFetch(domain:stanbic.co.ke)",
       "WebFetch(domain:www.absa.co.ke)",
       "WebFetch(domain:afx.kwayisi.org)",
-      "WebFetch(domain:icicibank.co.ke)"
+      "WebFetch(domain:icicibank.co.ke)",
+      "Bash(curl -sL \"https://sentill.africa/api/cron/market-sync\")",
+      "Bash(git stash *)",
+      "Bash(grep -v \"//.*17\\\\.5\\\\|//.*18\\\\.5\")",
+      "Bash(curl -s 'https://graph.facebook.com/v18.0/981253711747258/message_templates?fields=name,status,components&limit=20' -H 'Authorization: Bearer EAAdBvRlQt5kBRGZCSmc1ifffrVq8QgX2q2hfirAZAPzIlA0pO9de5ZCO0qdrEuC3N8F6N7m3jqGGaahqLRSzvMLTwtMgzByO09LOBxaEcaa2WBf2xuZBuEFNoQuZAzB1NAFyZBRwdKBXxMYMTbDZCZAwWGZCNZCbm4AT6Nv5WmLWUJqIyZC1IByGOyPJ9hJVS7UF4pP7QZDZD')",
+      "Bash(python -m json.tool)",
+      "Bash(curl -s \"https://graph.facebook.com/v18.0/981253711747258/message_templates?fields=name,status&limit=20\" -H \"Authorization: Bearer EAAdBvRlQt5kBRGZCSmc1ifffrVq8QgX2q2hfirAZAPzIlA0pO9de5ZCO0qdrEuC3N8F6N7m3jqGGaahqLRSzvMLTwtMgzByO09LOBxaEcaa2WBf2xuZBuEFNoQuZAzB1NAFyZBRwdKBXxMYMTbDZCZAwWGZCNZCbm4AT6Nv5WmLWUJqIyZC1IByGOyPJ9hJVS7UF4pP7QZDZD\")",
+      "Bash(curl -s 'https://graph.facebook.com/v18.0/981253711747258?fields=id,name,account_mode' -H 'Authorization: Bearer EAAdBvRlQt5kBRGZCSmc1ifffrVq8QgX2q2hfirAZAPzIlA0pO9de5ZCO0qdrEuC3N8F6N7m3jqGGaahqLRSzvMLTwtMgzByO09LOBxaEcaa2WBf2xuZBuEFNoQuZAzB1NAFyZBRwdKBXxMYMTbDZCZAwWGZCNZCbm4AT6Nv5WmLWUJqIyZC1IByGOyPJ9hJVS7UF4pP7QZDZD')",
+      "Bash(curl -s 'https://graph.facebook.com/v18.0/981253711747258?fields=whatsapp_business_account' -H 'Authorization: Bearer EAAdBvRlQt5kBRGZCSmc1ifffrVq8QgX2q2hfirAZAPzIlA0pO9de5ZCO0qdrEuC3N8F6N7m3jqGGaahqLRSzvMLTwtMgzByO09LOBxaEcaa2WBf2xuZBuEFNoQuZAzB1NAFyZBRwdKBXxMYMTbDZCZAwWGZCNZCbm4AT6Nv5WmLWUJqIyZC1IByGOyPJ9hJVS7UF4pP7QZDZD')",
+      "Bash(curl -s https://graph.facebook.com/v18.0/me/businesses -H 'Authorization: Bearer EAAdBvRlQt5kBRGZCSmc1ifffrVq8QgX2q2hfirAZAPzIlA0pO9de5ZCO0qdrEuC3N8F6N7m3jqGGaahqLRSzvMLTwtMgzByO09LOBxaEcaa2WBf2xuZBuEFNoQuZAzB1NAFyZBRwdKBXxMYMTbDZCZAwWGZCNZCbm4AT6Nv5WmLWUJqIyZC1IByGOyPJ9hJVS7UF4pP7QZDZD')",
+      "Bash(curl -s -X POST https://graph.facebook.com/v18.0/981253711747258/messages -H 'Authorization: Bearer EAAdBvRlQt5kBRGZCSmc1ifffrVq8QgX2q2hfirAZAPzIlA0pO9de5ZCO0qdrEuC3N8F6N7m3jqGGaahqLRSzvMLTwtMgzByO09LOBxaEcaa2WBf2xuZBuEFNoQuZAzB1NAFyZBRwdKBXxMYMTbDZCZAwWGZCNZCbm4AT6Nv5WmLWUJqIyZC1IByGOyPJ9hJVS7UF4pP7QZDZD' -H 'Content-Type: application/json' -d '{\"messaging_product\":\"whatsapp\",\"to\":\"254726260884\",\"type\":\"template\",\"template\":{\"name\":\"hello_world\",\"language\":{\"code\":\"en_US\"}}}')",
+      "Bash(curl -s -X POST https://graph.facebook.com/v18.0/981253711747286/messages -H 'Authorization: Bearer EAAdBvRlQt5kBRGZCSmc1ifffrVq8QgX2q2hfirAZAPzIlA0pO9de5ZCO0qdrEuC3N8F6N7m3jqGGaahqLRSzvMLTwtMgzByO09LOBxaEcaa2WBf2xuZBuEFNoQuZAzB1NAFyZBRwdKBXxMYMTbDZCZAwWGZCNZCbm4AT6Nv5WmLWUJqIyZC1IByGOyPJ9hJVS7UF4pP7QZDZD' -H 'Content-Type: application/json' -d '{\"messaging_product\":\"whatsapp\",\"to\":\"254726260884\",\"type\":\"template\",\"template\":{\"name\":\"hello_world\",\"language\":{\"code\":\"en_US\"}}}')",
+      "Bash(curl -s -X POST https://graph.facebook.com/v18.0/981253711747258/messages -H 'Authorization: Bearer EAAdBvRlQt5kBRGZCSmc1ifffrVq8QgX2q2hfirAZAPzIlA0pO9de5ZCO0qdrEuC3N8F6N7m3jqGGaahqLRSzvMLTwtMgzByO09LOBxaEcaa2WBf2xuZBuEFNoQuZAzB1NAFyZBRwdKBXxMYMTbDZCZAwWGZCNZCbm4AT6Nv5WmLWUJqIyZC1IByGOyPJ9hJVS7UF4pP7QZDZD' -H 'Content-Type: application/json' -d @send-edwin.json)"
     ]
   }
 }

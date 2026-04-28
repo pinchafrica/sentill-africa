@@ -1067,24 +1067,15 @@ async function callGemini(prompt: string, maxTokens = 4000, useSearch = false, l
 function getSmartFallback(question: string): string {
   const q = question.toLowerCase();
 
-  // MMF questions
+  // MMF questions — now uses the static data as baseline (DB rates are injected via buildProviderRatesOverride)
   if (q.includes("mmf") || q.includes("money market") || q.includes("best fund") || q.includes("liquid") || q.includes("chart") || q.includes("graph")) {
     return (
-      `🏆 *Best MMFs in Kenya — April 2026*\n` +
+      `🏆 *Best MMFs in Kenya — Live Snapshot*\n` +
       `▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰\n\n` +
       `_Gross yields before 15% WHT • Verify with provider_\n\n` +
-      `1️⃣ *Etica Capital MMF (Zidi)* — *18.20%* gross (*15.47%* net)\n` +
-      `   Min: KES 1,000 · Paybill 511116 · T+1\n\n` +
-      `2️⃣ *Lofty-Corpin MMF* — *17.50%* gross (*14.88%* net)\n` +
-      `   Min: KES 1,000 · Paybill 512600 · Instant\n\n` +
-      `3️⃣ *Cytonn Money Market* — *16.90%* gross (*14.37%* net)\n` +
-      `   Min: KES 1,000 · Paybill 525200 · T+2\n\n` +
-      `4️⃣ *NCBA Money Market* — *16.20%* gross (*13.77%* net)\n` +
-      `   Min: KES 1,000 · Paybill 880100 · Instant\n\n` +
-      `5️⃣ *KCB Money Market* — *15.80%* gross (*13.43%* net)\n` +
-      `   Min: KES 1,000 · Paybill 522522 · T+1\n\n` +
-      `💡 April 2026: MMF yields 13–18% — strong market driven by high CBK T-Bill rates\n` +
-      `💰 All MMFs: 2–5 day withdrawal · CMA regulated · WHT 15%\n` +
+      `Send *MARKETS* for the full live rate table with exact yields from our DB.\n\n` +
+      `💡 Kenya MMF yields are currently in the 13–18% range — strong environment.\n` +
+      `💰 All MMFs: 1–5 day withdrawal · CMA regulated · WHT 15%\n` +
       `📊 Send *CHART MMFS* for a visual bar chart!\n` +
       `🧮 Send *CALC 100000* for your personal projection.\n\n` +
       `_S-Tier Institutional Wealth Intelligence_ 🇰🇪\n` +
