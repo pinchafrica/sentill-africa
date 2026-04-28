@@ -2261,17 +2261,17 @@ async function handleMarkets(waId: string) {
         min: p.minimumInvest ?? "KES 1,000",
       }))
     : [
-        { name: "Etica Capital MMF (Zidi)", yield: 18.20, min: "KES 1,000" },
-        { name: "Lofty-Corpin MMF",         yield: 17.50, min: "KES 1,000" },
-        { name: "Cytonn Money Market",      yield: 16.90, min: "KES 1,000" },
-        { name: "NCBA Money Market",        yield: 16.20, min: "KES 1,000" },
-        { name: "KCB Money Market",         yield: 15.80, min: "KES 1,000" },
-        { name: "Britam Money Market",      yield: 15.50, min: "KES 1,000" },
-        { name: "Sanlam Investments MMF",   yield: 15.10, min: "KES 5,000" },
-        { name: "ICEA Lion MMF",            yield: 14.50, min: "KES 5,000" },
-        { name: "CIC Money Market",         yield: 13.60, min: "KES 5,000" },
-        { name: "Old Mutual MMF",           yield: 13.40, min: "KES 1,000" },
-        { name: "Absa MMF",                 yield: 13.20, min: "KES 1,000" },
+        { name: "Etica Capital MMF (Zidi)", yield: 12.84, min: "KES 1,000" },
+        { name: "Lofty-Corpin MMF",         yield: 12.20, min: "KES 1,000" },
+        { name: "ICEA Lion MMF",            yield: 11.80, min: "KES 5,000" },
+        { name: "Cytonn Money Market",      yield: 11.60, min: "KES 1,000" },
+        { name: "NCBA Money Market",        yield: 11.50, min: "KES 1,000" },
+        { name: "Sanlam Investments MMF",   yield: 11.10, min: "KES 5,000" },
+        { name: "Equity Money Market Fund", yield: 10.58, min: "KES 1,000" },
+        { name: "Old Mutual MMF",           yield: 10.20, min: "KES 1,000" },
+        { name: "KCB Money Market",         yield: 10.10, min: "KES 1,000" },
+        { name: "Britam Money Market",      yield:  9.80, min: "KES 1,000" },
+        { name: "CIC Money Market",         yield:  9.50, min: "KES 5,000" },
       ];
 
   const USD_MMF_TABLE = [
@@ -2361,17 +2361,7 @@ async function handleMarkets(waId: string) {
 
   await sendWhatsAppMessage(waId, msg);
 
-  try {
-    await sendInteractiveButtons(
-      waId,
-      `What would you like to explore?`,
-      [
-        { id: "INVEST",    title: "💰 Browse Funds" },
-        { id: "MMF RATES", title: "📋 MMF Detail" },
-        { id: "MARKETS",   title: "🔄 Refresh Rates" },
-      ]
-    );
-  } catch { /* buttons optional */ }
+  // No interactive buttons — clean text-only flow
 }
 
 async function handleMMFRates(waId: string) {

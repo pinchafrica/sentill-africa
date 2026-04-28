@@ -78,30 +78,33 @@ const KENYA_MARKET_KNOWLEDGE = `
 All MMFs are CMA-regulated, T+1 liquidity (withdraw in 1 business day), ideal for liquid savings.
 
 ⚠️ IMPORTANT: Rates below are VERIFIED April 2026 actuals from CMA fund publications.
+MMF rates have DECLINED from 2024 peaks (17-18%) to current levels (10-13%).
 Always show GROSS yield and NET yield (gross × 0.85) when answering.
+ALWAYS check the live DB rates first — these are FALLBACKS only.
 
 | Fund                         | Yield (p.a.) | Net (after 15% WHT) | Min      | Manager         | Paybill  | Liquidity |
 |------------------------------|--------------|---------------------|----------|-----------------|----------|-----------|
-| Etica Capital MMF (Zidi)     | 18.20%       | 15.47%              | KES 1000 | Etica Capital   | 511116   | T+1       |
-| Lofty-Corpin MMF             | 17.50%       | 14.88%              | KES 1000 | Lofty-Corpin    | 512600   | Instant   |
-| Cytonn Money Market          | 16.90%       | 14.37%              | KES 1000 | Cytonn          | 525200   | T+2       |
-| NCBA Money Market            | 16.20%       | 13.77%              | KES 1000 | NCBA            | 880100   | Instant   |
-| KCB Money Market             | 15.80%       | 13.43%              | KES 1000 | KCB             | 522522   | T+1       |
-| Britam Money Market          | 15.50%       | 13.18%              | KES 1000 | Britam          | 602600   | T+1       |
-| Sanlam Investments MMF       | 15.10%       | 12.84%              | KES 5000 | Sanlam          | 880100   | T+2       |
-| ICEA Lion MMF                | 14.50%       | 12.33%              | KES 5000 | ICEA Lion       | 402402   | T+1       |
-| CIC Money Market             | 13.60%       | 11.56%              | KES 5000 | CIC             | 174174   | T+1       |
-| Old Mutual MMF               | 13.40%       | 11.39%              | KES 1000 | Old Mutual      | 542542   | T+2       |
-| Absa MMF                     | 13.20%       | 11.22%              | KES 1000 | Absa            | 303030   | T+1       |
+| Etica Capital MMF (Zidi)     | 12.84%       | 10.91%              | KES 1000 | Etica Capital   | 511116   | T+1       |
+| Lofty-Corpin MMF             | 12.20%       | 10.37%              | KES 1000 | Lofty-Corpin    | 512600   | Instant   |
+| ICEA Lion MMF                | 11.80%       | 10.03%              | KES 5000 | ICEA Lion       | 402402   | T+1       |
+| Cytonn Money Market          | 11.60%       | 9.86%               | KES 1000 | Cytonn          | 525200   | T+2       |
+| NCBA Money Market            | 11.50%       | 9.78%               | KES 1000 | NCBA            | 880100   | Instant   |
+| Sanlam Investments MMF       | 11.10%       | 9.44%               | KES 5000 | Sanlam          | 880100   | T+2       |
+| Equity Money Market Fund     | 10.58%       | 8.99%               | KES 1000 | Equity Group    | 247247   | T+1       |
+| Old Mutual MMF               | 10.20%       | 8.67%               | KES 1000 | Old Mutual      | 542542   | T+2       |
+| KCB Money Market             | 10.10%       | 8.59%               | KES 1000 | KCB             | 522522   | T+1       |
+| Britam Money Market          | 9.80%        | 8.33%               | KES 1000 | Britam          | 602600   | T+1       |
+| CIC Money Market             | 9.50%        | 8.08%               | KES 5000 | CIC             | 174174   | T+1       |
+| Absa MMF                     | 9.20%        | 7.82%               | KES 1000 | Absa            | 303030   | T+1       |
 
 Etica Capital Zidi — DETAILED PROFILE (most asked about fund):
 - Fund Manager: Etica Capital Limited — CMA-licensed fund manager, Nairobi Kenya
 - Regulation: Fully regulated by Capital Markets Authority (CMA) of Kenya
 - Safety: Funds held by an independent custodian bank (not by Etica) — protected by law
 - Minimum: KES 1,000
-- Yield: 18.20% p.a. gross (April 2026). Accrues DAILY, credited MONTHLY.
+- Yield: 12.84% p.a. gross (April 2026). Accrues DAILY, credited MONTHLY.
 - WHT: 15% withheld on interest (standard for Kenyan MMFs)
-- Net yield estimate: 15.47% net after WHT (18.20% × 0.85)
+- Net yield estimate: 10.91% net after WHT (12.84% × 0.85)
 - Management fee: ~2% p.a. (deducted before yield is shown to you)
 - Withdrawal: T+1 — processed within 24 hours to M-Pesa or bank account
 - How to invest: Download the ZIDI APP (Search "Zidi" on Play Store or App Store)
