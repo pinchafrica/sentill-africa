@@ -22,6 +22,7 @@ import {
   formatKES,
   normalizePhone,
 } from "./whatsapp";
+import { handleAdminCommand } from "./whatsapp-admin";
 import { askGeminiBot, generateInvestmentSummary, ADVISOR_ROSTER } from "./whatsapp-gemini";
 import {
   mmfYieldChartUrl,
@@ -492,6 +493,17 @@ export async function processIncomingMessage(
       await updateSession(waId, "IDLE", {}, session.userId ?? undefined);
       return sendWhatsAppMessage(waId, "✅ Cancelled. You're back at the main menu.\n\nSend *MENU* to see all options or just ask a question.");
     }
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // ADMIN COMMAND CENTER — Edwin's WhatsApp Ops Dashboard
+  // Only accessible to admin numbers
+  // ═══════════════════════════════════════════════════════════════════════════
+  const ADMIN_NUMBERS = ["254726260884", "254703469525"];
+  const isAdmin = ADMIN_NUMBERS.includes(waId);
+
+  if (isAdmin && (input.startsWith("ADMIN") || input.startsWith("OPS") || input === "SYS")) {
+    return handleAdminCommand(waId, input, rawInput, session);
   }
 
   // ── Button payloads: route directly regardless of state ─────────────────
