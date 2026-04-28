@@ -193,11 +193,11 @@ export async function GET(req: NextRequest) {
   // 6. PORTFOLIO & ASSETS
   // ═══════════════════════════════════════════════════════════════════════════
   const [totalAssets, totalAUM] = await Promise.all([
-    prisma.investmentAsset.count(),
-    prisma.investmentAsset.aggregate({ _sum: { amount: true } }),
+    prisma.portfolioAsset.count(),
+    prisma.portfolioAsset.aggregate({ _sum: { principal: true } }),
   ]);
 
-  const aumKES = totalAUM._sum.amount ?? 0;
+  const aumKES = totalAUM._sum.principal ?? 0;
 
   // ═══════════════════════════════════════════════════════════════════════════
   // 7. TOP PERFORMING USERS (most active today)
