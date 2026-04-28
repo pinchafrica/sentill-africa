@@ -1,18 +1,22 @@
 const { PrismaClient } = require('@prisma/client');
 const p = new PrismaClient();
 (async () => {
-  // Update remaining MMF rates to April 2026 actuals
-  const updates = [
-    { slug: 'icea',        yield: 11.80, name: 'ICEA Lion Money Market Fund' },
-    { slug: 'oldmutual',   yield: 10.20, name: 'Old Mutual Money Market Fund' },
-    { slug: 'equity-mmf',  yield: 10.58, name: 'Equity Money Market Fund' },
+  const missing = [
+    { slug: 'cytonn-mmf', name: 'Cytonn Money Market Fund', type: 'MONEY_MARKET', currentYield: 12.00, minimumInvest: 'KES 1,000', aum: 'KES 5B+', riskLevel: 'Low', description: 'Cytonn Investments managed MMF with competitive returns' },
+    { slug: 'kcb-mmf',    name: 'KCB Money Market Fund',    type: 'MONEY_MARKET', currentYield: 15.40, minimumInvest: 'KES 1,000', aum: 'KES 20B+', riskLevel: 'Low', description: 'KCB Group managed money market fund' },
+    { slug: 'britam-mmf', name: 'Britam Money Market Fund', type: 'MONEY_MARKET', currentYield: 13.00, minimumInvest: 'KES 1,000', aum: 'KES 15B+', riskLevel: 'Low', description: 'Britam Asset Managers money market fund' },
   ];
-  for (const u of updates) {
-    const r = await p.provider.updateMany({ where: { slug: u.slug }, data: { currentYield: u.yield, name: u.name } });
-    if (r.count > 0) console.log(`✅ ${u.name}: ${u.yield}%`);
+  for (const m of missing) {
+    const exists = await p.provider.findFirst({ where: { slug: m.slug } });
+    if (!exists) {
+      await p.provider.create({ data: m });
+      console.log(`🆕 Created: ${m.name}: ${m.currentYield}%`);
+    } else {
+      await p.provider.update({ where: { id: exists.id }, data: { currentYield: m.currentYield, name: m.name } });
+      console.log(`✅ Updated: ${m.name}: ${m.currentYield}%`);
+    }
   }
-
-  console.log('\n=== FINAL MMF TABLE ===');
+  console.log('\n=== FINAL VERIFIED TABLE ===');
   const mmfs = await p.provider.findMany({ where: { type: 'MONEY_MARKET' }, orderBy: { currentYield: 'desc' }, select: { name: true, currentYield: true } });
   mmfs.forEach((m, i) => console.log(`${i+1}. ${m.name} — ${m.currentYield}%`));
   await p.$disconnect();

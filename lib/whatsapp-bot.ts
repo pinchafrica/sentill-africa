@@ -2261,17 +2261,16 @@ async function handleMarkets(waId: string) {
         min: p.minimumInvest ?? "KES 1,000",
       }))
     : [
-        { name: "Etica Capital MMF (Zidi)", yield: 12.84, min: "KES 1,000" },
-        { name: "Lofty-Corpin MMF",         yield: 12.20, min: "KES 1,000" },
-        { name: "ICEA Lion MMF",            yield: 11.80, min: "KES 5,000" },
-        { name: "Cytonn Money Market",      yield: 11.60, min: "KES 1,000" },
-        { name: "NCBA Money Market",        yield: 11.50, min: "KES 1,000" },
-        { name: "Sanlam Investments MMF",   yield: 11.10, min: "KES 5,000" },
-        { name: "Equity Money Market Fund", yield: 10.58, min: "KES 1,000" },
-        { name: "Old Mutual MMF",           yield: 10.20, min: "KES 1,000" },
-        { name: "KCB Money Market",         yield: 10.10, min: "KES 1,000" },
-        { name: "Britam Money Market",      yield:  9.80, min: "KES 1,000" },
-        { name: "CIC Money Market",         yield:  9.50, min: "KES 5,000" },
+        { name: "KCB Money Market Fund",    yield: 15.40, min: "KES 1,000" },
+        { name: "ICEA Lion MMF",            yield: 14.80, min: "KES 5,000" },
+        { name: "Britam Money Market Fund", yield: 13.00, min: "KES 1,000" },
+        { name: "Etica Capital MMF (Zidi)", yield: 12.01, min: "KES 1,000" },
+        { name: "Cytonn Money Market",      yield: 12.00, min: "KES 1,000" },
+        { name: "Equity Money Market Fund", yield: 10.50, min: "KES 1,000" },
+        { name: "Lofty-Corpin MMF",         yield: 10.14, min: "KES 1,000" },
+        { name: "Old Mutual MMF",           yield: 10.08, min: "KES 1,000" },
+        { name: "Sanlam Money Market Fund", yield:  8.84, min: "KES 5,000" },
+        { name: "NCBA Fixed Income Fund",   yield:  6.96, min: "KES 1,000" },
       ];
 
   const USD_MMF_TABLE = [
