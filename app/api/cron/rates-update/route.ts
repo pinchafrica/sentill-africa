@@ -28,11 +28,11 @@ const CRON_SECRET   = (process.env.CRON_SECRET ?? "sentil-cron-2026").trim();
 const BOUNDS: Record<string, [number, number]> = {
   // CBK
   CBK_RATE:    [8.0,  14.0],
-  // T-Bills (April 2026: ~15.78%, 15.97%, 16.42%)
-  "91-TBILL":  [13.0, 18.0],
-  "182-TBILL": [13.0, 18.5],
-  "364-TBILL": [14.0, 19.0],
-  "2YR-BOND":  [14.0, 20.0],
+  // T-Bills (April 2026: CBK has lowered rates — now ~7.78%, 7.89%, 8.27%)
+  "91-TBILL":  [5.0, 12.0],
+  "182-TBILL": [5.0, 13.0],
+  "364-TBILL": [5.0, 14.0],
+  "2YR-BOND":  [6.0, 16.0],
   // IFBs — fixed auction results, hardcoded below
   "IFB1-2024": [18.46, 18.46],
   "IFB2-2023": [17.93, 17.93],
@@ -41,7 +41,7 @@ const BOUNDS: Record<string, [number, number]> = {
   ETCA:        [10.0, 22.0],
   "LOFTY-MMF": [10.0, 22.0],
   "CYTONN-MMF":[10.0, 22.0],
-  "NCBA-MMF":  [8.0,  22.0],
+  "NCBA-MMF":  [4.0,  22.0],
   "KCB-MMF":   [8.0,  22.0],
   "BRITAM-MMF":[8.0,  22.0],
   "SANLAM-MMF":[8.0,  20.0],
@@ -79,27 +79,27 @@ const FALLBACK_RATES: Record<string, number> = {
   "USD-KES":   129.50,
   "EUR-KES":   141.00,
   "GBP-KES":   165.00,
-  // T-Bills (CBK auction week of 14 April 2026)
-  "91-TBILL":  15.78,
-  "182-TBILL": 15.97,
-  "364-TBILL": 16.42,
-  "2YR-BOND":  16.80,
+  // T-Bills (CBK auction 27 April 2026 — Google verified)
+  "91-TBILL":   7.78,
+  "182-TBILL":  7.89,
+  "364-TBILL":  8.27,
+  "2YR-BOND":  10.50,
   // IFBs (fixed)
   "IFB1-2024": 18.46,
   "IFB2-2023": 17.93,
-  // MMFs (CMA published gross yields, April 2026)
-  ZIDI:         18.20,
-  ETCA:         18.20,
-  "LOFTY-MMF":  17.50,
-  "CYTONN-MMF": 16.90,
-  "NCBA-MMF":   16.20,
-  "KCB-MMF":    15.80,
-  "BRITAM-MMF": 15.50,
-  "SANLAM-MMF": 15.10,
-  "CIC-MMF":    13.60,
-  "OLDMUT-MMF": 13.40,
-  "ABSA-MMF":   13.20,
-  "ICEA-MMF":   14.50,
+  // MMFs (Google-verified gross yields, April 2026)
+  ZIDI:         12.01,
+  ETCA:         12.01,
+  "LOFTY-MMF":  10.14,
+  "CYTONN-MMF": 12.00,
+  "NCBA-MMF":    6.96,
+  "KCB-MMF":    15.40,
+  "BRITAM-MMF": 13.00,
+  "SANLAM-MMF":  8.84,
+  "CIC-MMF":     9.50,
+  "OLDMUT-MMF": 10.08,
+  "ABSA-MMF":    9.20,
+  "ICEA-MMF":   14.80,
   // NSE equities (April 2026 benchmarked prices)
   SCOM:    19.35,
   EQTY:    48.05,
