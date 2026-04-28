@@ -20,7 +20,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendWhatsAppMessage } from "@/lib/whatsapp";
 
-const APP_VERSION = "2.0.0";
+const APP_VERSION = "2.1.0 — Oracle";
 const ADMIN_WA_ID = "254726260884"; // Edwin
 const CRON_SECRET = process.env.CRON_SECRET ?? "";
 

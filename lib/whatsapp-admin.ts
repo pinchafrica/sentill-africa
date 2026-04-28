@@ -5,7 +5,7 @@
 import { prisma } from "@/lib/prisma";
 import { sendWhatsAppMessage } from "@/lib/whatsapp";
 
-const APP_VERSION = "2.0.0";
+const APP_VERSION = "2.1.0 — Oracle";
 
 export async function handleAdminCommand(waId: string, input: string, rawInput: string, session: any) {
   const cmd = input.replace(/^(ADMIN|OPS)\s*/, "").trim();
