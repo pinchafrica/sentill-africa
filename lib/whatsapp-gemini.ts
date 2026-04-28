@@ -23,28 +23,35 @@ const GEMINI_API_BASE = "https://generativelanguage.googleapis.com/v1beta/models
 type QueryIntent = "PRICE" | "CALC" | "COMPARE" | "HOW_TO" | "PRODUCT" | "SACCO" | "GENERAL";
 
 function classifyIntent(q: string): QueryIntent {
-  const t = q.toLowerCase();
+  const t = q.toLowerCase().replace(/['']/g, "'");
   // PRICE — user wants a live/current price or rate
-  if (/\b(today|current|live|now|latest|price of|rate of|how much is|what is .* price|how is .* trading)\b/.test(t) ||
-      /\b(bitcoin|btc|ethereum|eth|safaricom price|scom price|equity price|usd\/kes|eur\/kes|forex rate)\b/.test(t))
+  if (/\b(today|current|live|now|latest|price of|rate of|how much is|what is .* price|how is .* trading|bei ya|bei gani)\b/.test(t) ||
+      /\b(bitcoin|btc|ethereum|eth|safaricom|scom|safcom|equity bank|kcb price|usd\/kes|eur\/kes|forex rate|dollar|shilling|exchange rate)\b/.test(t))
     return "PRICE";
   // CALC — investment projection / amount question  
-  if (/\b(calc|calculate|invest|if i put|grow|return on|how much will|projection|ksh|kes [0-9])\b/.test(t) ||
+  if (/\b(calc|calculate|invest|if i put|grow|return on|how much will|projection|ksh|kes [0-9]|ksh [0-9]|per month|per year|annually|monthly return)\b/.test(t) ||
       /^calc\s+\d+/.test(t))
     return "CALC";
   // COMPARE — comparing two or more products
   if (/\b(vs|versus|compare|better|difference between|which is|which one|or )\b/.test(t) && 
-      /\b(mmf|tbill|t-bill|bond|sacco|pension|nse|stock|fund|etica|lofty|cytonn|cic|britam)\b/.test(t))
+      /\b(mmf|tbill|t-bill|bond|sacco|pension|nse|stock|fund|etica|lofty|cytonn|cic|britam|ncba|kcb|equity|ndovu|mali|stawi)\b/.test(t))
     return "COMPARE";
   // HOW_TO — step-by-step guide
-  if (/\b(how (do|to|can)|step|guide|process|open account|register|buy|start investing|get started|apply)\b/.test(t))
+  if (/\b(how (do|to|can)|step|guide|process|open account|register|buy|start investing|get started|apply|sign up|open|join|enroll)\b/.test(t))
     return "HOW_TO";
-  // PRODUCT — specific known Kenyan investment product
-  if (/\b(mansa.?x|zidi|ziidi|ndovu|lofty.?corpin|etica|cytonn|dhowcsd|stawi|mali|fuliza|nssf|m-shwari|mshwari|ifb|fahari|acorn)\b/.test(t))
+  // PRODUCT — specific known Kenyan investment product (MASSIVELY expanded with fuzzy matching)
+  if (/\b(mansa.?x|manas.?x|manas|mansax|zid[il]|ziidi|ndovu|lofty.?corpin|lofty|corpin|etica|cytonn|dhowcsd|stawi|mali|fuliza|nssf|m.?shwari|mshwari|ifb|fahari|acorn|hisa|kiwi|vuka|genghis|old.?mutual|sanlam|britam|cic|icea|aal|alpha.?africa|nabo|madison|jubilee|amana|standard.?investment|stanbic|co.?op.?trust|dry.?associates|kuza|orient|apollo|enwealth|genz|aim|tower|amara|xtra|my.?mma|zimele|mansa|hela|pochi|pesalink)\b/.test(t))
     return "PRODUCT";
+  // NSE stocks — match common tickers and company names
+  if (/\b(safaricom|scom|safcom|safricom|equity|eqty|kcb|co.?op|kengen|bamburi|bat|eabl|dtb|total|jubilee|centum|brit.?am|icdc|limuru|kakuzi|olympia|williamson|nse)\b/.test(t) && 
+      /\b(stock|share|buy|sell|price|dividend|pe|eps|ipo|listing)\b/.test(t))
+    return "PRICE";
   // SACCO — cooperative questions
-  if (/\b(sacco|chama|co.?op|cooperative|shares|dividend|loan)\b/.test(t))
+  if (/\b(sacco|chama|co.?op|cooperative|shares|dividend|loan|fosa|bosa|deposit|contribution|interest rate|members?)\b/.test(t))
     return "SACCO";
+  // Trending Kenya investment search queries — catch the long-tail
+  if (/\b(best (mmf|investment|fund|sacco|bond|place to invest|rate)|where to invest|highest yield|highest return|top fund|safest investment|low risk|passive income|money market|fixed deposit|treasury bill|government bond|infrastructure bond|green bond|pension fund|retirement|tax free|withholding tax|wht|cma regulated|regulated fund|unit trust)\b/.test(t))
+    return "GENERAL";
   return "GENERAL";
 }
 

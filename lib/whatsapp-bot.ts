@@ -1160,15 +1160,7 @@ async function handleGeminiQuestion(waId: string, question: string, userId: stri
       ]},
     ];
 
-    try {
-      const matched = suggestionsMap.find(s => s.pattern.test(question));
-      const suggestions = matched?.suggestions ?? [
-        { id: "MARKETS", title: "📊 Live Rates" },
-        { id: "INVEST", title: "💰 Browse Funds" },
-        { id: "MENU", title: "📋 Main Menu" },
-      ];
-      await sendInteractiveButtons(waId, "💡 *Quick actions:*", suggestions);
-    } catch { /* buttons optional — WhatsApp may throttle */ }
+    // No interactive buttons — keep it clean and text-only
 
     return;
   } catch (err) {
@@ -1288,13 +1280,7 @@ async function handleGeminiQuestionGuest(waId: string, question: string, session
       `🧠 *Sentill Africa Says:*\n\n${answer}${nudge}${fomoNudge}`
     );
 
-    // Smart quick-reply suggestions for guest users (always include REGISTER option)
-    try {
-      await sendInteractiveButtons(waId, "💡 *Next steps:*", [
-        { id: "MARKETS",  title: "📊 Live Rates" },
-        { id: "REGISTER", title: "🚀 Free Account" },
-      ]);
-    } catch { /* buttons optional */ }
+    // No interactive buttons — keep it clean and text-only for guests too
 
     return;
   } catch (err) {
