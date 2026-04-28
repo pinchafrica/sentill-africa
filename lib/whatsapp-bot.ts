@@ -1330,16 +1330,8 @@ async function sendPremiumConversionMessage(waId: string, name: string, queriesU
     `👉 *Reply SUBSCRIBE to upgrade now!*`
   );
 
-  // Send interactive button for quick action
-  try {
-    await sendInteractiveButtons(
-      waId,
-      `⚡ *Activate Sentill Pro:*`,
-      [
-        { id: "PRO_30_DAYS", title: "⚡ Pro — KES 490/mo" },
-      ]
-    );
-  } catch { /* buttons optional */ }
+  // No button — text hint instead
+  await sendWhatsAppMessage(waId, `⚡ Reply *SUBSCRIBE* to activate Pro now.`);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1609,18 +1601,7 @@ async function handleBrowseProviderAction(waId: string, input: string, ctx: Sess
       // Send detail text first
       await sendWhatsAppMessage(waId, detail);
 
-      // Then action buttons
-      try {
-        await sendInteractiveButtons(
-          waId,
-          `What would you like to do with *${selected.name}*?`,
-          [
-            { id: "LOG",    title: "📝 Log Investment" },
-            { id: "WATCH",  title: "👁 Add to Watchlist" },
-            { id: "INVEST", title: "🔙 Browse More" },
-          ]
-        );
-      } catch { /* buttons optional */ }
+      // Text hints — no buttons
       return;
     }
   }
@@ -2448,17 +2429,10 @@ async function handleMMFRates(waId: string) {
 
   await sendWhatsAppMessage(waId, msg);
 
-  try {
-    await sendInteractiveButtons(
-      waId,
-      "What would you like to do next?",
-      [
-        { id: "CALC 100000",  title: "🧮 Project Returns" },
-        { id: "IFB",          title: "🏛️ IFB Bond Guide" },
-        { id: "LIST",         title: "📋 Pick a Fund" },
-      ]
-    );
-  } catch { /* buttons optional */ }
+  // Text hints — no buttons
+  await sendWhatsAppMessage(waId, `• *CALC 100000* — project returns
+• *IFB* — Infrastructure Bond guide
+• *LIST* — pick a fund`);
 }
 
 async function handleSpecialFunds(waId: string) {
@@ -2516,14 +2490,8 @@ async function handleGoals(waId: string, userId: string) {
   });
 
   if (!user?.isPremium) {
-    return sendInteractiveButtons(
-      waId,
-      `🎯 *Financial Goals*\n\nGoal planning is a *Pro feature*.\nUpgrade to set goals, track progress, and get AI-powered savings plans.`,
-      [
-        { id: "SUBSCRIBE", title: "⚡ Upgrade to Pro" },
-        { id: "MARKETS",   title: "📈 Live Rates" },
-        { id: "INVEST",    title: "🏦 Browse Funds" },
-      ]
+    return sendWhatsAppMessage(waId,
+      `🎯 *Financial Goals*\n\nGoal planning is a *Pro feature*.\nUpgrade to set goals, track progress, and get AI-powered savings plans.\n\n• *SUBSCRIBE* — upgrade to Pro\n• *MARKETS* — live rates\n• *INVEST* — browse funds`
     );
   }
 
@@ -2661,15 +2629,11 @@ async function sendSubscriptionPlans(waId: string, userId?: string) {
     `Tap a plan below to activate:`
   );
 
-  await sendInteractiveButtons(
-    waId,
-    `Select your plan:`,
-    [
-      { id: "ANNUAL_365_DAYS",   title: "🔶 Annual — KES 4,900" },
-      { id: "QUARTERLY_90_DAYS", title: "🔸 3 Months — KES 1,299" },
-      { id: "PRO_30_DAYS",       title: "🔹 Monthly — KES 490" },
-    ],
-    userId
+  await sendWhatsAppMessage(waId,
+    `👉 *Reply with your plan choice:*\n\n` +
+    `*ANNUAL* — 🔶 Annual KES 4,900 _(save 17%)_\n` +
+    `*QUARTERLY* — 🔸 3 Months KES 1,299 _(save 12%)_\n` +
+    `*MONTHLY* — 🔹 Monthly KES 490`
   );
 }
 
@@ -2891,13 +2855,7 @@ async function sendGuestGreeting(waId: string) {
     `_Or type *MARKETS* for instant live rates_ ⚡`
   );
 
-  // Interactive buttons for higher engagement
-  try {
-    await sendInteractiveButtons(waId, "👇 *Quick start:*", [
-      { id: "MARKETS",  title: "📊 Live Rates" },
-      { id: "REGISTER", title: "🚀 Free Account" },
-    ]);
-  } catch { /* buttons optional */ }
+  // Text hints — no buttons
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -3171,13 +3129,7 @@ async function handleCompare(waId: string, query: string, userId: string) {
 
   await sendWhatsAppMessage(waId, msg);
 
-  try {
-    await sendInteractiveButtons(waId, `What would you like to do?`, [
-      { id: `CAT_${p1.type.toUpperCase().replace(/[^A-Z0-9]/g, "_")}`, title: "🏦 Browse More Funds" },
-      { id: "LOG",       title: "📝 Log Investment" },
-      { id: "SUBSCRIBE", title: "⚡ Go Pro" },
-    ]);
-  } catch { /* optional */ }
+  // Text hints — no buttons
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -3224,14 +3176,8 @@ async function handleSetGoal(waId: string, rawInput: string, userId: string) {
   const user = await prisma.user.findUnique({ where: { id: userId }, select: { isPremium: true, name: true } });
 
   if (!user?.isPremium) {
-    return sendInteractiveButtons(
-      waId,
-      `🎯 *Set a Goal*\n\nGoal setting is a *Pro feature*.\nUpgrade to plan your financial future with AI.`,
-      [
-        { id: "SUBSCRIBE", title: "⚡ Upgrade to Pro" },
-        { id: "INVEST",    title: "🏦 Browse Funds" },
-        { id: "MARKETS",   title: "📈 Live Rates" },
-      ]
+    return sendWhatsAppMessage(waId,
+      `🎯 *Set a Goal*\n\nGoal setting is a *Pro feature*.\nUpgrade to plan your financial future with AI.\n\n• *SUBSCRIBE* — upgrade to Pro\n• *INVEST* — browse funds\n• *MARKETS* — live rates`
     );
   }
 
@@ -3361,13 +3307,6 @@ async function handleAssetsDashboard(waId: string, userId: string) {
   msg += `*EXPORT* — statement  |  *SNAPSHOT* — quick card`;
 
   await sendWhatsAppMessage(waId, msg);
-  try {
-    await sendInteractiveButtons(waId, `Asset Tracker Pro Actions:`, [
-      { id: "LOG",   title: "📝 Log Investment" },
-      { id: "INVEST", title: "🏦 Browse Funds" },
-      { id: "MARKETS", title: "📈 Live Rates" },
-    ]);
-  } catch { /* optional */ }
 }
 
 // ── Remove Asset ─────────────────────────────────────────────────────────────
@@ -3817,15 +3756,7 @@ async function handleChartCommand(waId: string, input: string, userId?: string) 
       "🏆 Top MMF Yields in Kenya — April 2026 | Source: CMA Kenya",
       userId
     );
-    return sendInteractiveButtons(waId,
-      "What would you like to explore next?",
-      [
-        { id: "MARKETS", title: "📈 Live Rates" },
-        { id: "LIST",    title: "📋 Fund Picker" },
-        { id: "INVEST",  title: "💰 Browse Funds" },
-      ],
-      userId
-    );
+    return sendWhatsAppMessage(waId, `• *MARKETS* — live rates\n• *LIST* — fund picker\n• *INVEST* — browse funds`, userId);
   }
 
   if (sub === "TBILLS" || sub === "TBILL" || sub === "YIELD CURVE" || sub === "BONDS" || sub === "CURVE") {
@@ -3876,15 +3807,7 @@ async function handleChartCommand(waId: string, input: string, userId?: string) 
       "📈 All asset class yields compared — Apr 2026 | Sentill Africa",
       userId
     );
-    return sendInteractiveButtons(waId,
-      "Pick any to explore further:",
-      [
-        { id: "MARKETS", title: "📊 Full Rates" },
-        { id: "INVEST",  title: "💰 Browse & Invest" },
-        { id: "SUBSCRIBE", title: "⚡ Go Pro" },
-      ],
-      userId
-    );
+    return sendWhatsAppMessage(waId, `• *MARKETS* — full rates\n• *INVEST* — browse & invest\n• *SUBSCRIBE* — go Pro`, userId);
   }
 
   // Default: show chart menu
@@ -4111,18 +4034,9 @@ async function handleFreqAfterRegister(waId: string, input: string, ctx: Session
   const freq = freqFromPayload(input);
 
   if (!freq || !userId) {
-    // If unrecognised, ask again with buttons
-    try {
-      return sendInteractiveButtons(waId, `🔔 Pick your alert frequency:`, [
-        { id: "FREQ_DAILY",  title: "🌅 Daily (7AM Mon–Fri)" },
-        { id: "FREQ_WEEKLY", title: "📅 Weekly (Mon mornings)" },
-        { id: "FREQ_MOVERS", title: "📊 Market Alerts Only" },
-      ]);
-    } catch {
-      return sendWhatsAppMessage(waId,
-        `Reply: *1* Daily · *2* Weekly · *3* Alerts only · *4* Off`
-      );
-    }
+    return sendWhatsAppMessage(waId,
+      `🔔 *Pick your alert frequency:*\n\n*1* — 🌅 Daily (7AM Mon–Fri)\n*2* — 📅 Weekly (Mon mornings)\n*3* — 📊 Market Alerts Only\n*4* — 🔕 Off`
+    );
   }
 
   await prisma.alertPreference.upsert({
@@ -4181,16 +4095,10 @@ async function handleAlertSettings(waId: string, userId: string) {
     `━━━━━━━━━━━━━━━━━━\n` +
     `_Alerts help you never miss a market move._`;
 
-  try {
-    await sendWhatsAppMessage(waId, msg);
-    return sendInteractiveButtons(waId, `Quick frequency change:`, [
-      { id: "FREQ_DAILY",  title: "🌅 Daily" },
-      { id: "FREQ_WEEKLY", title: "📅 Weekly" },
-      { id: "FREQ_MOVERS", title: "📊 Alerts Only" },
-    ]);
-  } catch {
-    return sendWhatsAppMessage(waId, msg);
-  }
+  await sendWhatsAppMessage(waId, msg);
+  return sendWhatsAppMessage(waId,
+    `👉 *Change frequency:*\n*FREQ DAILY* · *FREQ WEEKLY* · *FREQ MOVERS* · *FREQ OFF*`
+  );
 }
 
 // ── Handle frequency change from ALERTS menu ─────────────────────────────────
