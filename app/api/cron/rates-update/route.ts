@@ -490,6 +490,27 @@ export async function GET(req: NextRequest) {
   console.log("[RatesUpdate] Stage 6: Writing market_data.json...");
   buildMarketDataJson(validRates, syncedAt);
 
+  // ── Stage 7: Self-ping for 12h sync (Hobby plan workaround) ───────────────
+  // Vercel Hobby only allows once-daily crons. We fire-and-forget a background
+  // HTTP call to ourselves after a 12-hour delay so rates refresh twice daily.
+  // The setTimeout is non-blocking — response is returned immediately below.
+  const isFromCron    = req.headers.get("x-vercel-cron") === "1";
+  const isSelfPing    = req.nextUrl.searchParams.get("ping") === "1";
+  const SELF_URL      = process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}/api/cron/rates-update?secret=${CRON_SECRET}&ping=1`
+    : `https://www.sentill.africa/api/cron/rates-update?secret=${CRON_SECRET}&ping=1`;
+
+  // Only the real Vercel cron triggers the self-ping (not the self-ping itself)
+  if (isFromCron && !isSelfPing) {
+    const TWELVE_HOURS = 12 * 60 * 60 * 1000;
+    setTimeout(() => {
+      fetch(SELF_URL, { method: "GET" })
+        .then(() => console.log("[RatesUpdate] ✅ 12h self-ping dispatched"))
+        .catch((e) => console.warn("[RatesUpdate] ⚠️ 12h self-ping failed:", e));
+    }, TWELVE_HOURS);
+    console.log(`[RatesUpdate] ⏰ 12h self-ping scheduled for ~${new Date(Date.now() + TWELVE_HOURS).toISOString()}`);
+  }
+
   const elapsed = Date.now() - startTime;
   console.log(`[RatesUpdate] ✅ Complete in ${elapsed}ms | ${dbUpdates} rates | source: ${geminiResult ? "gemini-search" : "fallback"}`);
 
@@ -500,6 +521,7 @@ export async function GET(req: NextRequest) {
     confidence: geminiResult?.confidence ?? "fallback",
     ratesStored: dbUpdates,
     providerUpdates: audit.providerUpdates,
+    selfPingScheduled: isFromCron && !isSelfPing,
     rates: validRates,
     audit,
   });
