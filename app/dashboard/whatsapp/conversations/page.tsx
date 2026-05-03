@@ -42,6 +42,15 @@ interface ThreadData {
     firstMessage: string | null;
     lastMessage: string | null;
     topTopics: [string, number][];
+    aiScore?: {
+      total: number;
+      coverage: number;
+      speed: number;
+      depth: number;
+      engagement: number;
+      diversity: number;
+      grade: string;
+    };
   };
 }
 
@@ -362,12 +371,25 @@ export default function ConversationsDashboard() {
                     <p className="text-sm font-black text-slate-900">{thread.user?.name || formatPhone(thread.waId)}</p>
                     <p className="text-[10px] text-slate-500 font-mono">{formatPhone(thread.waId)} · {thread.analytics.totalMessages} messages</p>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3">
                     {thread.user?.isPremium && <span className="text-[9px] font-black px-2 py-1 rounded-full bg-amber-100 text-amber-700">⚡ PRO</span>}
                     <div className="text-right">
                       <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">Avg Response</p>
                       <p className="text-xs font-black text-emerald-600">{thread.analytics.avgResponseFormatted}</p>
                     </div>
+                    {thread.analytics.aiScore && (() => {
+                      const s = thread.analytics.aiScore;
+                      const bg = s.total >= 70 ? "#ecfdf5" : s.total >= 45 ? "#fffbeb" : "#fff1f2";
+                      const border = s.total >= 70 ? "#a7f3d0" : s.total >= 45 ? "#fde68a" : "#fecdd3";
+                      const text = s.total >= 70 ? "#059669" : s.total >= 45 ? "#d97706" : "#e11d48";
+                      return (
+                        <div className="flex flex-col items-center justify-center w-14 h-14 rounded-xl border-2"
+                          style={{ background: bg, borderColor: border }}>
+                          <span className="text-lg font-black leading-none" style={{ color: text }}>{s.total}</span>
+                          <span className="text-[8px] font-black uppercase" style={{ color: text }}>{s.grade}</span>
+                        </div>
+                      );
+                    })()}
                   </div>
                 </div>
 
@@ -390,6 +412,37 @@ export default function ConversationsDashboard() {
                     </div>
                   )}
                 </div>
+
+                {/* AI Score Breakdown */}
+                {thread.analytics.aiScore && (
+                  <div className="mt-3 pt-3 border-t border-slate-100">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Zap className="w-3 h-3 text-amber-500" />
+                      <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">AI Intelligence Score</span>
+                    </div>
+                    <div className="grid grid-cols-5 gap-2">
+                      {[
+                        { label: "Coverage", val: thread.analytics.aiScore.coverage, max: 20 },
+                        { label: "Speed", val: thread.analytics.aiScore.speed, max: 20 },
+                        { label: "Depth", val: thread.analytics.aiScore.depth, max: 25 },
+                        { label: "Engage", val: thread.analytics.aiScore.engagement, max: 20 },
+                        { label: "Diverse", val: thread.analytics.aiScore.diversity, max: 15 },
+                      ].map((d) => {
+                        const pct = Math.round((d.val / d.max) * 100);
+                        const barColor = pct >= 70 ? "bg-emerald-500" : pct >= 40 ? "bg-amber-500" : "bg-rose-500";
+                        return (
+                          <div key={d.label} className="text-center">
+                            <p className="text-[8px] font-black uppercase tracking-widest text-slate-400 mb-1">{d.label}</p>
+                            <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                              <div className={`h-full rounded-full ${barColor}`} style={{ width: `${pct}%` }} />
+                            </div>
+                            <p className="text-[9px] font-black text-slate-600 mt-0.5">{d.val}/{d.max}</p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Messages */}

@@ -115,6 +115,66 @@ export async function GET(
       .sort((a, b) => b[1] - a[1])
       .slice(0, 8);
 
+    // ── AI Intelligence Score (0-100) ────────────────────────────────
+    // Scores the AI's performance across 5 dimensions
+    const outboundTexts = messages
+      .filter((m) => m.direction === "OUTBOUND")
+      .map((m) => m.message.toLowerCase());
+
+    // 1. Response Coverage (0-20): Did the bot answer every user message?
+    const coverageRatio = inboundCount > 0 ? Math.min(outboundCount / inboundCount, 1) : 0;
+    const coverageScore = Math.round(coverageRatio * 20);
+
+    // 2. Speed Score (0-20): How fast were responses?
+    let speedScore = 10; // default
+    if (avgResponseMs !== null) {
+      if (avgResponseMs < 2000) speedScore = 20;
+      else if (avgResponseMs < 5000) speedScore = 16;
+      else if (avgResponseMs < 10000) speedScore = 12;
+      else if (avgResponseMs < 30000) speedScore = 8;
+      else speedScore = 4;
+    }
+
+    // 3. Content Depth (0-25): Does the response contain rates, data, numbers?
+    const dataSignals = ["kes", "%", "yield", "rate", "return", "ksh", "invest",
+      "portfolio", "mmf", "t-bill", "bond", "sacco", "nse", "dividend",
+      "safaricom", "equity", "kcb", "compare", "chart", "analysis"];
+    let dataHits = 0;
+    outboundTexts.forEach((t) => {
+      dataSignals.forEach((sig) => { if (t.includes(sig)) dataHits++; });
+    });
+    const depthRatio = outboundTexts.length > 0
+      ? Math.min(dataHits / (outboundTexts.length * 3), 1)
+      : 0;
+    const depthScore = Math.round(depthRatio * 25);
+
+    // 4. Engagement (0-20): Multi-turn conversations = better
+    let engagementScore = 4;
+    const totalMsgs = messages.length;
+    if (totalMsgs >= 20) engagementScore = 20;
+    else if (totalMsgs >= 12) engagementScore = 16;
+    else if (totalMsgs >= 6) engagementScore = 12;
+    else if (totalMsgs >= 3) engagementScore = 8;
+
+    // 5. Topic Diversity (0-15): More topics covered = smarter
+    const topicsCovered = Object.keys(topicCounts).length;
+    let diversityScore = 3;
+    if (topicsCovered >= 6) diversityScore = 15;
+    else if (topicsCovered >= 4) diversityScore = 12;
+    else if (topicsCovered >= 2) diversityScore = 8;
+
+    const aiScore = Math.min(100, coverageScore + speedScore + depthScore + engagementScore + diversityScore);
+
+    const aiScoreBreakdown = {
+      total: aiScore,
+      coverage: coverageScore,
+      speed: speedScore,
+      depth: depthScore,
+      engagement: engagementScore,
+      diversity: diversityScore,
+      grade: aiScore >= 85 ? "A+" : aiScore >= 70 ? "A" : aiScore >= 55 ? "B" : aiScore >= 40 ? "C" : "D",
+    };
+
     return NextResponse.json({
       waId,
       messages,
@@ -133,6 +193,7 @@ export async function GET(
         firstMessage,
         lastMessage,
         topTopics,
+        aiScore: aiScoreBreakdown,
       },
     });
   } catch (err) {
