@@ -69,6 +69,29 @@ export default function WhatsAppAgentsPage() {
     avgResponseTime: "45ms",
     systemHealth: 100,
   });
+  const [pipeline, setPipeline] = useState<any>(null);
+
+  // --- Fetch real pipeline metrics ---
+  useEffect(() => {
+    const fetchPipeline = async () => {
+      try {
+        const res = await fetch("/api/whatsapp/agents");
+        if (res.ok) {
+          const data = await res.json();
+          setPipeline(data.pipeline);
+          setStats((prev) => ({
+            ...prev,
+            errorsRectified: data.pipeline.totalProcessed,
+            avgResponseTime: data.pipeline.avgResponseFormatted,
+            systemHealth: data.pipeline.systemHealth,
+          }));
+        }
+      } catch { /* silent */ }
+    };
+    fetchPipeline();
+    const interval = setInterval(fetchPipeline, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   // --- Simulation Logic ---
   useEffect(() => {
@@ -212,7 +235,7 @@ export default function WhatsAppAgentsPage() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {[
           { label: "Active Agents", value: `${stats.activeAgents} / 10`, icon: Server, color: "text-blue-600", bg: "bg-blue-100" },
-          { label: "Errors Rectified", value: stats.errorsRectified.toLocaleString(), icon: ShieldCheck, color: "text-emerald-600", bg: "bg-emerald-100" },
+          { label: "Msgs Processed", value: pipeline ? pipeline.totalProcessed.toLocaleString() : stats.errorsRectified.toLocaleString(), icon: ShieldCheck, color: "text-emerald-600", bg: "bg-emerald-100" },
           { label: "Sys Health", value: `${stats.systemHealth.toFixed(1)}%`, icon: Activity, color: stats.systemHealth > 90 ? "text-emerald-600" : "text-amber-600", bg: stats.systemHealth > 90 ? "bg-emerald-100" : "bg-amber-100" },
           { label: "Avg Response", value: stats.avgResponseTime, icon: Zap, color: "text-purple-600", bg: "bg-purple-100" },
         ].map((stat, i) => (

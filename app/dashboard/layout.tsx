@@ -83,6 +83,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         { name: "Notifications", href: "/dashboard/notifications", icon: Bell, badge: "NEW" },
         { name: "Alert Hub", href: "/dashboard/alerts", icon: Bell },
         { name: "WhatsApp Hub", href: "/dashboard/whatsapp", icon: Smartphone },
+        { name: "Conversations", href: "/dashboard/whatsapp/conversations", icon: MessageSquare, badge: "AI" },
         { name: "Chama Hub", href: "/resources/chamas", icon: Users, external: true },
         { name: "Sentill Academy", href: "/academy", icon: GraduationCap, badge: "FREE" },
       ]
