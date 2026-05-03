@@ -7,7 +7,7 @@
 import crypto from "crypto";
 import { prisma } from "./prisma";
 
-const WA_API_BASE = "https://graph.facebook.com/v19.0";
+const WA_API_BASE = "https://graph.facebook.com/v22.0";
 const WA_TIMEOUT_MS = 10000;
 
 function waFetch(url: string, init: RequestInit): Promise<Response> {
