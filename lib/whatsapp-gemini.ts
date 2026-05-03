@@ -66,6 +66,99 @@ const INTENT_FORMAT: Record<QueryIntent, string> = {
   GENERAL:   "Lead with the most important insight. Use the standard structured format with emoji headers.",
 };
 
+// ─── Targeted Knowledge Extractor ────────────────────────────────────────────
+// Extracts the SPECIFIC relevant knowledge section based on user query keywords.
+// This prevents the AI from getting lost in the 89KB knowledge base.
+
+function extractTargetedKnowledge(q: string): string {
+  const t = q.toLowerCase();
+  const sections: string[] = [];
+
+  // Mansa-X / SIB
+  if (/mansa|mansax|mansa.?x|standard investment bank|sib fund/.test(t)) {
+    sections.push(`*MANSA-X MULTI-ASSET STRATEGY FUND* — ANSWER WITH THIS DATA:
+• Manager: Standard Investment Bank (SIB), CMA-licensed since 1995
+• Strategy: Global long/short multi-asset (NYSE, LSE, HKG, commodities, forex, precious metals)
+• Min Investment: KES 250,000 (KES fund) or USD 2,500 (USD fund)
+• Min Top-up: KES 100,000 / USD 1,000
+• Lock-in: 6-month lock-in period
+• Fees: 0% entry/exit + 5% p.a. financial services charge + 10% performance fee above hurdle (25% KES / 15% USD)
+• Sharia Option: Yes — Mansa-X Sharia-compliant version available
+• Liquidity: T+3 to T+5 after lock-in period
+• Advantages: CMA-regulated, global diversification, profits in rising AND falling markets, USD hedge
+• Disadvantages: High KES 250K minimum, variable performance, higher fees than passive, not KDIC insured
+• Best alternative for smaller investors: Ndovu (from KES 500 for S&P 500 ETFs)
+• Contact: Standard Investment Bank — sib.co.ke
+THIS IS A REAL KENYAN INVESTMENT PRODUCT. Always explain what it is in detail.`);
+  }
+
+  // Zidi / Etica
+  if (/\bzid[il]\b|etica|etica capital/.test(t) && !/ziidi/.test(t)) {
+    sections.push(`*ZIDI by Etica Capital* — CMA-licensed MMF app. Min KES 1,000. ~12.84% gross (10.91% net). Daily accrual, monthly credit. T+1 withdrawal via M-Pesa. Download: Search "Zidi" on Play Store/App Store. Contact: +254 706 101 113. Paybill: 511116.`);
+  }
+
+  // Ziidi / Safaricom
+  if (/ziidi|safaricom.*invest|m.?pesa.*invest|m.?pesa.*stock/.test(t)) {
+    sections.push(`*ZIIDI by Safaricom* — M-Pesa investing platform. Access: M-Pesa → Financial Services → Ziidi. Buy MMFs + NSE stocks from KES 100. NOT the same as Zidi (Etica). Ziidi is a PLATFORM giving access to multiple funds.`);
+  }
+
+  // Ndovu
+  if (/ndovu|global.*etf|s.?p.*500|us.*stock.*kenya/.test(t)) {
+    sections.push(`*NDOVU* — Global ETF platform for Kenyan investors. From KES 500. Access S&P 500, emerging markets, bonds, gold ETFs. Returns: 8-15% USD p.a. + KES depreciation benefit. CMA-regulated. App: Download Ndovu.`);
+  }
+
+  // Lofty Corpin
+  if (/lofty|corpin/.test(t)) {
+    sections.push(`*LOFTY-CORPIN MMF* — Boutique Kenya MMF. ~12.20% gross (10.37% net). Min KES 1,000. Instant liquidity. Paybill: 512600.`);
+  }
+
+  // DhowCSD / T-Bills / Bonds
+  if (/dhow|csd|t.?bill|treasury|bond|ifb|government.*bond/.test(t)) {
+    sections.push(`*DhowCSD* — CBK's direct T-Bill/Bond purchase platform. Register: dhowcsd.cma.or.ke. Fund CDS account. Bid on Monday auctions. Min KES 100,000. 364-day T-Bill: 16.42% gross (13.96% net). IFB1/2024: 18.46% WHT-FREE (best risk-adjusted return in Kenya).`);
+  }
+
+  // M-Shwari
+  if (/m.?shwari|mshwari/.test(t)) {
+    sections.push(`*M-SHWARI* — Safaricom micro-savings. Only 2-5% returns. MUCH lower than MMFs (10-13%). Recommendation: Use M-Shwari ONLY for emergency float. Move serious savings to Ziidi MMF or Etica Zidi for 3-5x better returns.`);
+  }
+
+  // SACCO
+  if (/sacco|cooperative|dividend|fosa|bosa/.test(t)) {
+    sections.push(`*SACCOs* — Top by dividend: Stima 14.5%, Kenya Police 13.8%, Wanandege 13.5%, Safaricom 13%. Must join common bond. Deposit interest: 6-8%. Loans: 12-14% (vs banks 16-20%). WARNING: 30-90 day withdrawal notice. Not KDIC insured.`);
+  }
+
+  // Pension
+  if (/pension|retire|nssf|nbci/.test(t)) {
+    sections.push(`*PENSION* — Max tax deduction: KES 30,000/month. At 30% bracket = KES 9,000/month SAVED = KES 108,000/year in tax savings. Employer matching (50-100% common). Withdrawal: age 50+. First KES 600K tax-free. Best for every salaried Kenyan.`);
+  }
+
+  // Crypto
+  if (/bitcoin|btc|crypto|ethereum|binance|luno/.test(t)) {
+    sections.push(`*CRYPTO in Kenya* — Not CBK/CMA regulated. BTC ~$95K, ETH ~$3.8K. Buy via Binance P2P (M-Pesa) or Luno. Max 5-10% of portfolio. No investor protection. Stick to BTC, ETH, stablecoins. KRA may tax gains.`);
+  }
+
+  // Gold
+  if (/gold|precious.*metal/.test(t)) {
+    sections.push(`*GOLD* — Traditional inflation hedge. Buy via Ndovu (gold ETFs from KES 500), or physical at Nairobi Gold Centre. 1oz ≈ $2,300. 5-year CAGR: ~8% USD. Best as 5-10% portfolio hedge.`);
+  }
+
+  // Real estate / REIT
+  if (/real.*estate|reit|fahari|property|land|plot/.test(t)) {
+    sections.push(`*REAL ESTATE* — ILAM Fahari REIT: ~6.5% div yield, listed on NSE. Cytonn RE: 8-12% target. Acorn D-REIT: student housing growth. Land: Nairobi suburbs KES 15-50M, Kiambu KES 5-15M. Always do title search at Lands office.`);
+  }
+
+  // Beginner / how to start
+  if (/beginner|start|new.*invest|first.*time|how.*start|where.*start/.test(t)) {
+    sections.push(`*BEGINNER GUIDE:* Step 1: Open MMF (Ziidi or Etica, from KES 100). Step 2: Build 3-month emergency fund. Step 3: Start T-Bill/IFB allocation (KES 100K min). Step 4: Begin NSE stocks via Ziidi (KES 100). Step 5: Consider SACCO for loan access.`);
+  }
+
+  // Tax
+  if (/\btax\b|wht|withholding|capital.*gain|cgt|kra/.test(t)) {
+    sections.push(`*KENYA INVESTMENT TAX:* MMF/T-Bill: 15% WHT auto-deducted. IFB bonds: 0% WHT (tax-free!). NSE dividends: 5% WHT. Capital gains: 5% CGT. Pension: KES 30K/month tax-deductible. Rental income: 7.5% residential, 30% commercial.`);
+  }
+
+  return sections.join("\n\n");
+}
 
 
 // ─── Authoritative Kenya Market Data (April 2026) ────────────────────────────
@@ -1332,6 +1425,11 @@ export async function askGeminiBot(question: string, user: UserContext, waId?: s
 
   console.log(`[Sentill AI] Intent: ${intent} | Search: ${useSearch} | userId: ${user.userId}`);
 
+  // ── Targeted knowledge extraction ──────────────────────────────────────────
+  // The full knowledge base is 89KB. To prevent the AI from getting lost,
+  // we extract the most relevant section and inject it PROMINENTLY at the top.
+  const targetedKnowledge = extractTargetedKnowledge(question);
+
   // Portfolio comparison hint — shown when user has a tracked portfolio
   const portfolioCompareHint = portfolioCtx && portfolioCtx !== "No portfolio tracked yet — user hasn't logged any investments."
     ? `\n\n🎯 *PORTFOLIO COMPARISON MANDATE:* This user has a real portfolio (shown above). When recommending ANY fund, explicitly compare it to what they already hold. Say e.g. "You're currently in Etica MMF (Zidi) at 18.20% gross (15.47% net) — the IFB Bond gives 18.46% with zero WHT, meaning net return is nearly 3% higher for long-term money."`
@@ -1346,12 +1444,77 @@ IMPORTANT: Remember clients, their contexts, and be highly informative.
 CRITICAL MANDATE: HEAVILY rely on live information via Google Search (which you have access to) rather than just the hardcoded site data. Prioritize real-time data from the web.
 ${advisorPersona}
 
+${targetedKnowledge ? `\n━━ TARGETED KNOWLEDGE FOR THIS QUERY (HIGHEST PRIORITY — USE THIS DATA) ━━\n${targetedKnowledge}\n━━ END TARGETED KNOWLEDGE ━━\n` : ""}
+
 ${KENYA_MARKET_KNOWLEDGE}
 ${providerOverride}
 ${liveRates}
 ${portfolioCtx ? `\n${portfolioCtx}` : ""}
 ${conversationHistory ? `\n${conversationHistory}` : ""}
 ${portfolioCompareHint}
+
+━━ TOP 20 KENYA INVESTMENT FAQs (Google Search Intelligence) ━━
+When users ask these common questions, give EXPERT answers with specific data:
+
+Q1: "What is the best MMF in Kenya right now?"
+→ Rank top 3 by LIVE DB yield. Show gross AND net. Include how to access each (app name, paybill).
+
+Q2: "How do I invest with KES 1000/5000/10000/50000/100000?"
+→ Give a specific allocation plan with KES math. Include MMF + IFB + stocks split.
+
+Q3: "T-Bills vs MMF — which is better?"
+→ MMF = liquid (T+1), lower yield. T-Bill = higher yield, locked 91-364 days. IFB = WHT-free king.
+
+Q4: "How do I buy Treasury Bills in Kenya?"
+→ DhowCSD (CBK platform). Steps: 1. Register at dhowcsd.cma.or.ke 2. Fund CDS account 3. Bid on Monday auction.
+
+Q5: "Is Mansa-X a good investment?"
+→ Use the MANSA-X section. KES 250K min. Global multi-asset. Compare to Ndovu (KES 500 min) for cheaper global exposure.
+
+Q6: "What is Zidi vs Ziidi?"
+→ Zidi = Etica MMF app. Ziidi = Safaricom M-Pesa platform. DIFFERENT products. Explain both clearly.
+
+Q7: "Best SACCO to join in Kenya?"
+→ Stima (14.5% div), Wanandege (13.5%), Safaricom (13%). Must be in common bond. Illiquid (30-90 day notice).
+
+Q8: "How do I start investing as a beginner?"
+→ Step 1: Emergency fund (MMF). Step 2: T-Bill/IFB. Step 3: NSE stocks. Start with KES 100 via Ziidi.
+
+Q9: "Is M-Shwari good for saving?"
+→ NO — 2-5% returns vs MMFs at 10-13%. M-Shwari loses you money to inflation. Switch to Ziidi/Etica.
+
+Q10: "How do I buy shares/stocks in Kenya?"
+→ Ziidi (Safaricom), Genghis Capital, NCBA Securities. From KES 100. NSE hours: Mon-Fri 9am-3pm.
+
+Q11: "What is an Infrastructure Bond (IFB)?"
+→ Government bond with 0% WHT. IFB1/2024 = 18.46% tax-free. Best risk-adjusted return in Kenya.
+
+Q12: "How much tax do I pay on investments?"
+→ MMF/T-Bill: 15% WHT. IFB: 0% WHT. Stocks: 5% CGT + 5% div WHT. Pension: KES 30K/month tax-free.
+
+Q13: "Can I invest in US stocks from Kenya?"
+→ Ndovu app (from KES 500). S&P 500, emerging markets. Also Ziidi stocks (NSE only).
+
+Q14: "What is the safest investment in Kenya?"
+→ Government T-Bills/Bonds (zero credit risk). IFB1/2024 at 18.46% WHT-free is the gold standard.
+
+Q15: "How do I invest via M-Pesa?"
+→ M-Pesa → Financial Services → Ziidi. Buy MMFs or NSE stocks. From KES 100.
+
+Q16: "Bitcoin/crypto in Kenya — safe?"
+→ Not regulated. High risk. Use Binance P2P or Luno. Max 5-10% of portfolio. Stick to BTC/ETH.
+
+Q17: "What is a money market fund?"
+→ Pooled fund investing in T-Bills, bank deposits. CMA regulated. KES 100 min. T+1 withdrawal. 10-13% gross.
+
+Q18: "Pension vs MMF — where should I put money?"
+→ BOTH. Pension for tax savings (KES 108K/year). MMF for liquidity/emergency. Not either/or.
+
+Q19: "How much can I earn from KES 100,000 in a year?"
+→ MMF (12%): KES 10,200 net. IFB (18.46%): KES 18,460 tax-free. Stocks: variable. Show the math.
+
+Q20: "Is Cytonn safe?"
+→ CMA-regulated. Higher yields (18-20%) but higher risk. Check latest CMA compliance status.
 
 USER: ${user.name} | Plan: ${user.isPremium ? "Pro ⚡" : "Free (10 questions/day)"} | Query Type: ${intent}
 
@@ -1403,10 +1566,10 @@ CONTENT RULES:
 12. *BRAND & PRODUCT RECOGNITION (CRITICAL):*
     These are KENYAN INVESTMENT PRODUCTS — always recognize them immediately:
     • *Mansa-X* = Global multi-asset investment fund managed by *Standard Investment Bank (SIB)*, Kenya. Min KES 250,000. CMA-licensed. NOT related to Mansa Musa the emperor.
-    • *Zidi* = Etica Capital money market fund app. 18.20% p.a. (Apr 2026). Download Zidi app.
+    • *Zidi* = Etica Capital money market fund app. Download Zidi app.
     • *Ziidi* = Safaricom M-Pesa investing platform. Access stocks + MMFs via M-Pesa.
     • *Ndovu* = Global ETF platform. S&P 500, emerging markets. From KES 500.
-    • *Lofty Corpin* = Kenya boutique MMF. 17.5% p.a.
+    • *Lofty Corpin* = Kenya boutique MMF.
     • *DhowCSD* = CBK's platform to buy T-Bills and bonds directly.
     • *Stawi* = CBK's low-interest SME lending platform.
     • *Mali* = M-Pesa term deposit savings product.
