@@ -270,6 +270,8 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
+import { useMarketRates } from "@/lib/useMarketRates";
+
 export default function BondsPage() {
   const [isAssetModalOpen, setIsAssetModalOpen] = useState(false);
   const [prefilledAsset, setPrefilledAsset] = useState<string | undefined>(undefined);
@@ -285,15 +287,32 @@ export default function BondsPage() {
   const [filter, setFilter] = useState<"All" | "IFB" | "FXD">("All");
   const [sortBy, setSortBy] = useState<"netYield" | "coupon" | "maturity">("netYield");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
-  const [selectedBond, setSelectedBond] = useState(BONDS[0]);
+  
+  const { bonds: liveBondsData } = useMarketRates();
+
+  const LIVE_BONDS = useMemo(() => {
+    return BONDS.map(b => {
+      const live = liveBondsData.find(lb => lb.name.includes(b.name.split("/")[0]));
+      if (live) {
+        return {
+          ...b,
+          coupon: live.yield,
+          netYield: Number((live.yield * (1 - (b.taxRate / 100))).toFixed(2))
+        };
+      }
+      return b;
+    });
+  }, [liveBondsData]);
+
+  const [selectedBond, setSelectedBond] = useState(LIVE_BONDS[0]);
 
   useEffect(() => {
-    const live = BONDS.find(b => b.id === selectedBond.id);
+    const live = LIVE_BONDS.find(b => b.id === selectedBond?.id);
     if (live) setSelectedBond(live);
-  }, [selectedBond.id]); 
+  }, [selectedBond?.id, LIVE_BONDS]); 
 
   const filtered = useMemo(() => {
-    let list = filter === "All" ? BONDS : BONDS.filter((b) => b.type === filter);
+    let list = filter === "All" ? LIVE_BONDS : LIVE_BONDS.filter((b) => b.type === filter);
     list = [...list].sort((a, b) => {
       if (sortBy === "netYield") return sortDir === "desc" ? b.netYield - a.netYield : a.netYield - b.netYield;
       if (sortBy === "coupon") return sortDir === "desc" ? b.coupon - a.coupon : a.coupon - b.coupon;
@@ -307,7 +326,7 @@ export default function BondsPage() {
     return list;
   }, [filter, sortBy, sortDir]);
 
-  const yieldCompare = BONDS.map((b) => ({
+  const yieldCompare = LIVE_BONDS.map((b) => ({
     name: b.name,
     gross: b.coupon,
     net: b.netYield,

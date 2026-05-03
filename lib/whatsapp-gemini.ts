@@ -1326,7 +1326,7 @@ export async function askGeminiBot(question: string, user: UserContext, waId?: s
   // Classify query intent for targeted response formatting + selective search
   const intent = classifyIntent(question);
   const formatHint = INTENT_FORMAT[intent];
-  const useSearch  = intent === "PRICE";   // Google Search ONLY for live price queries
+  const useSearch  = true;   // Google Search ALWAYS enabled for fresh live data
   const lowTemp    = intent === "CALC";     // Lower temperature for precise math
 
   console.log(`[Sentill AI] Intent: ${intent} | Search: ${useSearch} | userId: ${user.userId}`);
@@ -1340,6 +1340,9 @@ export async function askGeminiBot(question: string, user: UserContext, waId?: s
 
   const systemPrompt = `You are *Sentill Africa* — Kenya's sharpest wealth intelligence platform, delivered via WhatsApp.
 You are an expert on ALL Kenyan investment instruments. You always give comprehensive, specific, actionable answers.
+You are highly conversational, sharp, and intelligent (powered by Gemini AI & Google AI SEO principles).
+IMPORTANT: Remember clients, their contexts, and be highly informative.
+CRITICAL MANDATE: HEAVILY rely on live information via Google Search (which you have access to) rather than just the hardcoded site data. Prioritize real-time data from the web.
 ${advisorPersona}
 
 ${KENYA_MARKET_KNOWLEDGE}

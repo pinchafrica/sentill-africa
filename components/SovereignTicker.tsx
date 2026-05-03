@@ -5,8 +5,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import {
   Landmark, TrendingUp, ArrowRightLeft, Zap, Phone,
-  BookOpen, Scale, Users, Target, ChevronDown, ChevronRight
+  BookOpen, Scale, Users, Target, ChevronDown, ChevronRight,
+  AlertTriangle
 } from "lucide-react";
+import { useMarketRates } from "@/lib/useMarketRates";
 
 const RESEARCH_LINKS = [
   { label: "Best MMFs 2026",        href: "/blog/best-money-market-funds-kenya-2026", icon: TrendingUp,  color: "text-emerald-400" },
@@ -17,32 +19,27 @@ const RESEARCH_LINKS = [
   { label: "All Articles →",        href: "/blog",                                      icon: BookOpen,    color: "text-slate-400"   },
 ];
 
+// Icon mapping for ticker items
+const ICON_MAP: Record<string, any> = {
+  "IFB1/2024": Landmark,
+  "91-Day T-Bill": Zap,
+  "KES/USD": ArrowRightLeft,
+  "MMF Avg Yield": TrendingUp,
+};
+
 export default function SovereignTicker() {
-  const [tickerData, setTickerData] = useState<any[]>([]);
+  const { ticker, isStale, isEmpty, isLoading } = useMarketRates();
   const [researchOpen, setResearchOpen] = useState(false);
 
-  useEffect(() => {
-    fetch("/api/market/nse").then(r => r.json()).then(data => {
-      if (data.stocks) {
-        const mapped = data.stocks.slice(0, 10).map((s: any) => ({
-          label: s.symbol,
-          value: s.price.toString(),
-          change: s.percent + "%",
-          up: s.change >= 0,
-          icon: s.symbol === 'SCOM' ? Zap : Landmark
-        }));
-        setTickerData(mapped);
-      }
-    }).catch(() => {});
-  }, []);
+  // Map ticker items with icons
+  const dataToDisplay = ticker.map((item, i) => ({
+    ...item,
+    icon: ICON_MAP[item.label] || (i % 2 === 0 ? TrendingUp : Landmark),
+    up: item.up,
+  }));
 
-  const dataToDisplay = tickerData.length > 0 ? tickerData : [
-    { label: "IFB1/2024",     value: "18.46%",   change: "+0.15%", up: true,  icon: Landmark       },
-    { label: "91-Day T-Bill", value: "15.85%",   change: "-0.02%", up: false, icon: Zap             },
-    { label: "KES/USD",       value: "129.50",   change: "+0.12%", up: true,  icon: ArrowRightLeft  },
-    { label: "NSE-20",        value: "1,745.20", change: "+0.45%", up: true,  icon: TrendingUp      },
-    { label: "MMF Avg Yield", value: "15.92%",   change: "+0.03%", up: true,  icon: TrendingUp      },
-  ];
+  // Show nothing if completely empty and loading
+  const showTicker = dataToDisplay.length > 0;
 
   return (
     <div className="fixed top-0 left-0 w-full z-[100] h-9 bg-slate-950/90 backdrop-blur-md border-b border-white/5 flex items-stretch overflow-visible">
@@ -58,30 +55,47 @@ export default function SovereignTicker() {
         </span>
       </a>
 
+      {/* ── Stale data indicator ── */}
+      {isStale && !isEmpty && (
+        <div className="flex items-center gap-1 px-2 h-full bg-amber-900/30 border-r border-white/10 shrink-0" title="Market data may be outdated">
+          <AlertTriangle className="w-2.5 h-2.5 text-amber-400" />
+          <span className="text-[8px] font-black text-amber-400 uppercase tracking-widest hidden md:block">Delayed</span>
+        </div>
+      )}
+
       {/* ── CENTRE-LEFT (50%): Scrolling ticker ── */}
       <div className="flex-1 relative overflow-hidden min-w-0 border-r border-white/10">
         {/* Fade edges */}
         <div className="absolute left-0 top-0 h-full w-6 bg-gradient-to-r from-slate-950 to-transparent z-10 pointer-events-none" />
         <div className="absolute right-0 top-0 h-full w-6 bg-gradient-to-l from-slate-950 to-transparent z-10 pointer-events-none" />
-        <motion.div
-          animate={{ x: ["0%", "-33.333%"] }}
-          transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
-          className="flex items-center gap-10 px-4 h-full whitespace-nowrap absolute top-0 left-0"
-        >
-          {[...dataToDisplay, ...dataToDisplay, ...dataToDisplay].map((item, i) => (
-            <div key={i} className="flex items-center gap-2">
-              <div className="flex items-center gap-1.5">
-                <item.icon className="w-3 h-3 text-blue-500/70" />
-                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{item.label}</span>
+
+        {showTicker ? (
+          <motion.div
+            animate={{ x: ["0%", "-33.333%"] }}
+            transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
+            className="flex items-center gap-10 px-4 h-full whitespace-nowrap absolute top-0 left-0"
+          >
+            {[...dataToDisplay, ...dataToDisplay, ...dataToDisplay].map((item, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5">
+                  <item.icon className="w-3 h-3 text-blue-500/70" />
+                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{item.label}</span>
+                </div>
+                <span className="text-[9px] font-black text-white tracking-widest">{item.value}</span>
+                <span className={`text-[8px] font-black px-1 py-0.5 rounded ${item.up ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}`}>
+                  {item.change}
+                </span>
+                <span className="text-white/10 text-[10px]">|</span>
               </div>
-              <span className="text-[9px] font-black text-white tracking-widest">{item.value}</span>
-              <span className={`text-[8px] font-black px-1 py-0.5 rounded ${item.up ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}`}>
-                {item.change}
-              </span>
-              <span className="text-white/10 text-[10px]">|</span>
-            </div>
-          ))}
-        </motion.div>
+            ))}
+          </motion.div>
+        ) : (
+          <div className="flex items-center justify-center h-full">
+            <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest animate-pulse">
+              {isLoading ? "Loading market data..." : "Market data unavailable"}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* ── CENTRE-RIGHT (50%): Research Hub quick links ── */}
@@ -162,7 +176,7 @@ const WA_MESSAGES = [
   "Ask about MMF yields 💰",
   "Best T-Bills Kenya 📊",
   "Get free rate alerts 🔔",
-  "IFB bonds — 18.46% 🏆",
+  "IFB bonds — Tax-Free 🏆",
   "Chat with Sentill AI 🤖",
   "Invest from KES 100 ✅",
 ];

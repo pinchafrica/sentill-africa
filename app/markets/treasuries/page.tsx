@@ -156,8 +156,26 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
+import { useMarketRates } from "@/lib/useMarketRates";
+
 export default function TreasuriesPage() {
-  const [selectedBill, setSelectedBill] = useState(TBILLS[2]);
+  const { bonds, funds } = useMarketRates();
+
+  const LIVE_TBILLS = useMemo(() => {
+    return TBILLS.map(b => {
+      const live = bonds.find(lb => lb.name.includes(b.tenor.split(" ")[0]));
+      if (live) {
+        return {
+          ...b,
+          auctionYield: live.yield,
+          netYield: Number((live.yield * (1 - (b.wht / 100))).toFixed(2))
+        };
+      }
+      return b;
+    });
+  }, [bonds]);
+
+  const [selectedBill, setSelectedBill] = useState(LIVE_TBILLS[2]);
   const [principal, setPrincipal] = useState(500000);
   const [activeTab, setActiveTab] = useState<"overview" | "calculator" | "auctions" | "compare">("calculator");
   const [openFaq, setOpenFaq] = useState<number | null>(null);
@@ -238,7 +256,7 @@ export default function TreasuriesPage() {
 
         {/* ── BILL SELECTOR ── */}
         <div className="grid sm:grid-cols-3 gap-5">
-          {TBILLS.map(bill => (
+          {LIVE_TBILLS.map(bill => (
             <motion.div
               key={bill.id}
               whileHover={{ y: -3 }}
@@ -396,7 +414,17 @@ export default function TreasuriesPage() {
                 </div>
               </div>
               <ResponsiveContainer width="100%" height={280}>
-                <LineChart data={YIELD_CURVE}>
+                <LineChart data={YIELD_CURVE.map(item => {
+                  let liveYield = item.yield;
+                  if (item.tenor.includes("d")) {
+                     const live = bonds.find(b => b.name.includes(item.tenor.replace("d", "")));
+                     if (live) liveYield = live.yield;
+                  } else if (item.tenor.includes("IFB")) {
+                     const live = bonds.find(b => b.name.includes("IFB"));
+                     if (live) liveYield = live.yield;
+                  }
+                  return { ...item, yield: Number(liveYield.toFixed(2)), net: Number((liveYield * (item.tenor.includes("IFB") ? 1 : 0.85)).toFixed(2)) };
+                })}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
                   <XAxis dataKey="tenor" tick={{ fill: "#94a3b8", fontSize: 10, fontWeight: 700 }} />
                   <YAxis domain={[12, 20]} tickFormatter={v => `${v}%`} tick={{ fill: "#94a3b8", fontSize: 10 }} />
@@ -640,11 +668,11 @@ export default function TreasuriesPage() {
               <ResponsiveContainer width="100%" height={320}>
                 <BarChart data={[
                   { name: "CBR Rate", rate: 10.00 },
-                  { name: "91-Day T-Bill", rate: 15.82, net: 13.44 },
-                  { name: "182-Day T-Bill", rate: 16.10, net: 13.69 },
-                  { name: "364-Day T-Bill", rate: 16.45, net: 13.98 },
-                  { name: "Best MMF (Etica)", rate: 17.5, net: 14.88 },
-                  { name: "IFB (10yr)", rate: 18.46, net: 18.46 },
+                  { name: "91-Day T-Bill", rate: LIVE_TBILLS[0].auctionYield, net: LIVE_TBILLS[0].netYield },
+                  { name: "182-Day T-Bill", rate: LIVE_TBILLS[1].auctionYield, net: LIVE_TBILLS[1].netYield },
+                  { name: "364-Day T-Bill", rate: LIVE_TBILLS[2].auctionYield, net: LIVE_TBILLS[2].netYield },
+                  { name: "Best MMF (Etica)", rate: funds.find(f => f.code === "ETCA")?.yield7d || 17.5, net: Number(((funds.find(f => f.code === "ETCA")?.yield7d || 17.5) * 0.85).toFixed(2)) },
+                  { name: "IFB (10yr)", rate: bonds.find(b => b.name.includes("IFB"))?.yield || 18.46, net: bonds.find(b => b.name.includes("IFB"))?.yield || 18.46 },
                 ]}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
                   <XAxis dataKey="name" tick={{ fill: "#94a3b8", fontSize: 10, fontWeight: 700 }} />
@@ -672,8 +700,8 @@ export default function TreasuriesPage() {
                   </thead>
                   <tbody className="divide-y divide-slate-50">
                     {[
-                      ["Gross Yield", "15.82%", "16.10%", "16.45%"],
-                      ["Net Yield (WHT 15%)", "13.44%", "13.69%", "13.98%"],
+                      ["Gross Yield", `${LIVE_TBILLS[0].auctionYield}%`, `${LIVE_TBILLS[1].auctionYield}%`, `${LIVE_TBILLS[2].auctionYield}%`],
+                      ["Net Yield (WHT 15%)", `${LIVE_TBILLS[0].netYield}%`, `${LIVE_TBILLS[1].netYield}%`, `${LIVE_TBILLS[2].netYield}%`],
                       ["Tenor", "91 Days", "182 Days", "364 Days"],
                       ["Min. Investment", "KES 100,000", "KES 100,000", "KES 100,000"],
                       ["WHT Rate", "15%", "15%", "15%"],

@@ -189,14 +189,16 @@ const EXTRA_FUNDS: Record<string, any> = {
   "african-alliance": { name: "African Alliance MMF", manager: "African Alliance", yield7d: 13.0 }
 };
 
+import { useMarketRates } from "@/lib/useMarketRates";
+
 export default function MMFFundPage() {
   const params = useParams();
   const idParam = (params?.id as string)?.toLowerCase() || "etca";
   
-  let fund = FUNDS[idParam];
-  if (!fund && EXTRA_FUNDS[idParam]) {
+  let baseFund = FUNDS[idParam];
+  if (!baseFund && EXTRA_FUNDS[idParam]) {
     const extra = EXTRA_FUNDS[idParam];
-    fund = {
+    baseFund = {
       ...DEFAULT_FUND,
       id: idParam,
       code: idParam.toUpperCase().slice(0,4),
@@ -209,8 +211,32 @@ export default function MMFFundPage() {
       color: "#64748b",
       description: `${extra.name} is a premier money market fund managed by ${extra.manager}, offering competitive yields and capital preservation for Kenyan investors.`,
     };
-  } else if (!fund) {
-    fund = DEFAULT_FUND;
+  } else if (!baseFund) {
+    baseFund = DEFAULT_FUND;
+  }
+
+  // Deep clone to avoid mutating the static object
+  let fund = JSON.parse(JSON.stringify(baseFund));
+
+  // ── LIVE RATES OVERRIDE ──
+  const { funds: liveFunds } = useMarketRates();
+  const liveMatch = liveFunds.find(f => f.id === fund.id || f.code.toLowerCase() === fund.code.toLowerCase());
+  
+  if (liveMatch) {
+    fund.yield7d = liveMatch.yield7d;
+    fund.yield30d = liveMatch.yield30d;
+    fund.yield90d = liveMatch.yield90d;
+    fund.yield1y = liveMatch.yield1y;
+    fund.aum = liveMatch.aum || fund.aum;
+    fund.netYield = Number((liveMatch.yield7d * (1 - (fund.taxRate || 15) / 100)).toFixed(2));
+    
+    // Also override peer yields if they are in the live db
+    if (fund.peers) {
+      fund.peers = fund.peers.map((p: any) => {
+        const pMatch = liveFunds.find(lf => lf.id === p.id || lf.code.toLowerCase() === p.id.toLowerCase());
+        return pMatch ? { ...p, yield: pMatch.yield7d } : p;
+      });
+    }
   }
 
   const { watchlist, toggleWatchlist } = useAIStore();

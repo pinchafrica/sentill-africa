@@ -82,6 +82,8 @@ const DarkTooltip = ({ active, payload, label }: any) => {
 
 // ─── MAIN ─────────────────────────────────────────────────────────────────────
 
+import { useMarketRates } from "@/lib/useMarketRates";
+
 export default function MatrixPage() {
   const [sortBy, setSortBy] = useState<SortKey>("yield");
   const [sortDir, setSortDir] = useState<"desc" | "asc">("desc");
@@ -92,16 +94,42 @@ export default function MatrixPage() {
   const [watchlist, setWatchlist] = useState<string[]>(["etca", "ifb10"]);
   const [hoveredRow, setHoveredRow] = useState<string | null>(null);
 
-  const types = Array.from(new Set(PRODUCTS.map(p => p.type)));
-  const risks = Array.from(new Set(PRODUCTS.map(p => p.risk)));
+  const { funds, bonds } = useMarketRates();
+
+  // Merge live yields into the static PRODUCTS list
+  const LIVE_PRODUCTS = useMemo(() => {
+    return PRODUCTS.map(p => {
+      const liveObj = { ...p };
+      
+      if (p.type === "MMF") {
+        const liveFund = funds.find(f => f.id.toString() === p.id || f.code.toLowerCase() === p.id.toLowerCase());
+        if (liveFund) {
+          liveObj.yield = liveFund.yield7d;
+          liveObj.aum = liveFund.aum || liveObj.aum;
+          liveObj.netYield = Number((liveFund.yield7d * (1 - (liveObj.taxRate / 100))).toFixed(2));
+        }
+      } else if (p.type.includes("Bond")) {
+        // e.g. "ifb5" -> match logic if available
+        const liveBond = bonds.find(b => b.name.toLowerCase().includes(p.name.toLowerCase()));
+        if (liveBond) {
+          liveObj.yield = liveBond.yield;
+          liveObj.netYield = Number((liveBond.yield * (1 - (liveObj.taxRate / 100))).toFixed(2));
+        }
+      }
+      return liveObj;
+    });
+  }, [funds, bonds]);
+
+  const types = Array.from(new Set(LIVE_PRODUCTS.map(p => p.type)));
+  const risks = Array.from(new Set(LIVE_PRODUCTS.map(p => p.risk)));
 
   const filtered = useMemo(() =>
-    PRODUCTS
+    LIVE_PRODUCTS
       .filter(p => typeFilter === "all" || p.type === typeFilter)
       .filter(p => riskFilter === "all" || p.risk === riskFilter)
       .filter(p => p.name.toLowerCase().includes(search.toLowerCase()) || p.manager.toLowerCase().includes(search.toLowerCase()))
       .sort((a, b) => sortDir === "desc" ? b[sortBy] - a[sortBy] : a[sortBy] - b[sortBy]),
-    [sortBy, sortDir, typeFilter, riskFilter, search]
+    [sortBy, sortDir, typeFilter, riskFilter, search, LIVE_PRODUCTS]
   );
 
   const toggleSort = (col: SortKey) => {
@@ -115,7 +143,7 @@ export default function MatrixPage() {
       : <ChevronDown className="w-3 h-3 text-slate-500" />;
 
   // Top 10 by net yield for bar chart
-  const topChart = [...PRODUCTS].sort((a, b) => b.netYield - a.netYield).slice(0, 10);
+  const topChart = [...LIVE_PRODUCTS].sort((a, b) => b.netYield - a.netYield).slice(0, 10);
   const COLORS = ["#10b981", "#22c55e", "#4ade80", "#6ee7b7", "#a7f3d0", "#6366f1", "#8b5cf6", "#a855f7", "#f59e0b", "#ef4444"];
 
   return (
@@ -124,13 +152,13 @@ export default function MatrixPage() {
       {/* ── HERO ── */}
       <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 px-6 md:px-10 pt-10 pb-16">
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-500/20 border border-indigo-500/30 text-indigo-400 text-[9px] font-black uppercase tracking-[0.3em] mb-6">
-          <Activity className="w-3 h-3" /> Provider Matrix · {PRODUCTS.length} Instruments
+          <Activity className="w-3 h-3" /> Provider Matrix · {LIVE_PRODUCTS.length} Instruments
         </div>
         <h1 className="text-5xl font-black text-white tracking-tighter uppercase leading-none mb-3">
           Investment<br />Matrix
         </h1>
         <p className="text-slate-400 text-[11px] font-bold uppercase tracking-[0.2em] max-w-lg">
-          Sortable, filterable universe of {PRODUCTS.length} Kenyan investment instruments · Heatmap yields · Live rank by net return
+          Sortable, filterable universe of {LIVE_PRODUCTS.length} Kenyan investment instruments · Heatmap yields · Live rank by net return
         </p>
 
         {/* Top 10 net yield bar */}
@@ -349,17 +377,17 @@ export default function MatrixPage() {
           {[
             {
               icon: Award, color: "bg-amber-50 border-amber-100 text-amber-700",
-              title: "Best Net Yield", product: [...PRODUCTS].sort((a, b) => b.netYield - a.netYield)[0],
+              title: "Best Net Yield", product: [...LIVE_PRODUCTS].sort((a, b) => b.netYield - a.netYield)[0],
               stat: (p: Product) => p.netYield.toFixed(2) + "% net",
             },
             {
               icon: Shield, color: "bg-emerald-50 border-emerald-100 text-emerald-700",
-              title: "Best Risk-Adjusted", product: [...PRODUCTS].sort((a, b) => b.sharpe - a.sharpe)[0],
+              title: "Best Risk-Adjusted", product: [...LIVE_PRODUCTS].sort((a, b) => b.sharpe - a.sharpe)[0],
               stat: (p: Product) => "Sharpe " + p.sharpe,
             },
             {
               icon: Zap, color: "bg-indigo-50 border-indigo-100 text-indigo-700",
-              title: "Tax Alpha Pick", product: [...PRODUCTS].filter(p => p.taxRate === 0).sort((a, b) => b.yield - a.yield)[0],
+              title: "Tax Alpha Pick", product: [...LIVE_PRODUCTS].filter(p => p.taxRate === 0).sort((a, b) => b.yield - a.yield)[0],
               stat: (p: Product) => p.yield + "% WHT-exempt",
             },
           ].map(card => (

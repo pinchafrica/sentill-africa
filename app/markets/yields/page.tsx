@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { 
   TrendingUp, Activity, Globe, Zap, ArrowRight, Shield, Award, 
   BarChart as BarIcon, LineChart as LineIcon, ChevronUp, ChevronDown
@@ -10,15 +10,16 @@ import {
   Tooltip, ResponsiveContainer, Cell, Legend, LineChart, Line
 } from "recharts";
 import Link from "next/link";
+import { useMarketRates } from "@/lib/useMarketRates";
 
 const YIELD_DATA = [
-  { provider: "Etica Capital (Zidi)", gross: 18.20, net: 15.47, category: "MMF" },
-  { provider: "Lofty-Corpin MMF", gross: 17.50, net: 14.88, category: "MMF" },
-  { provider: "Cytonn MMF", gross: 16.90, net: 14.37, category: "MMF" },
-  { provider: "NCBA MMF", gross: 16.20, net: 13.77, category: "MMF" },
-  { provider: "IFB1/2024", gross: 18.46, net: 18.46, category: "Bond" },
-  { provider: "IFB2/2023", gross: 17.93, net: 17.93, category: "Bond" },
-  { provider: "91-Day T-Bill", gross: 15.78, net: 13.41, category: "Treasury" },
+  { provider: "Etica Capital (Zidi)", gross: 18.20, net: 15.47, category: "MMF", id: "etca", tax: 15 },
+  { provider: "Lofty-Corpin MMF", gross: 17.50, net: 14.88, category: "MMF", id: "lofty", tax: 15 },
+  { provider: "Cytonn MMF", gross: 16.90, net: 14.37, category: "MMF", id: "cytonn", tax: 15 },
+  { provider: "NCBA MMF", gross: 16.20, net: 13.77, category: "MMF", id: "ncba", tax: 15 },
+  { provider: "IFB1/2024", gross: 18.46, net: 18.46, category: "Bond", search: "IFB1", tax: 0 },
+  { provider: "IFB2/2023", gross: 17.93, net: 17.93, category: "Bond", search: "IFB2", tax: 0 },
+  { provider: "91-Day T-Bill", gross: 15.78, net: 13.41, category: "Treasury", search: "91", tax: 15 },
 ];
 
 const HISTORICAL_YIELDS = [
@@ -40,6 +41,26 @@ const DarkTooltip = ({ active, payload, label }: any) => {
 };
 
 export default function YieldsDashboardPage() {
+  const { funds, bonds } = useMarketRates();
+  
+  const liveYieldData = useMemo(() => {
+    return YIELD_DATA.map(item => {
+      let liveGross = item.gross;
+      if (item.category === "MMF" && item.id) {
+        const liveFund = funds.find(f => f.id.toString() === item.id || f.code.toLowerCase() === item.id.toLowerCase());
+        if (liveFund) liveGross = liveFund.yield7d;
+      } else if (item.search) {
+        const liveBond = bonds.find(b => b.name.includes(item.search!));
+        if (liveBond) liveGross = liveBond.yield;
+      }
+      return {
+        ...item,
+        gross: Number(liveGross.toFixed(2)),
+        net: Number((liveGross * (1 - (item.tax / 100))).toFixed(2))
+      };
+    });
+  }, [funds, bonds]);
+
   return (
     <div className="min-h-screen bg-slate-50 py-24 px-4 md:px-8">
       <div className="max-w-7xl mx-auto space-y-8">
@@ -64,7 +85,7 @@ export default function YieldsDashboardPage() {
              </div>
              <div className="h-72">
                 <ResponsiveContainer width="100%" height="100%">
-                   <BarChart data={YIELD_DATA} layout="vertical">
+                   <BarChart data={liveYieldData} layout="vertical">
                       <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
                       <XAxis type="number" hide domain={[0, 22]} />
                       <YAxis dataKey="provider" type="category" axisLine={false} tickLine={false} tick={{ fontSize: 9, fill: '#64748b', fontWeight: 800 }} width={100} />
@@ -120,7 +141,7 @@ export default function YieldsDashboardPage() {
                  </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                 {YIELD_DATA.map((y, i) => (
+                 {liveYieldData.map((y, i) => (
                     <tr key={i} className="hover:bg-slate-50 transition-all">
                        <td className="pl-8 py-5">
                           <div>

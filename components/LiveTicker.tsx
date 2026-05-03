@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { TrendingUp, TrendingDown, Activity, Sparkles, Zap } from "lucide-react";
+import { useMarketRates } from "@/lib/useMarketRates";
 
 export default function LiveTicker() {
   const [rates, setRates] = useState<any[]>([]);
+  const { funds, bonds } = useMarketRates();
 
   useEffect(() => {
     fetch("/api/market/nse").then(r => r.json()).then(data => {
@@ -21,15 +23,26 @@ export default function LiveTicker() {
     }).catch(() => {});
   }, []);
 
-  const tickerItems = rates.length > 0 ? rates : [
-    { symbol: "SCOM", price: 19.35, change: 0.15, percent: 0.78, isUp: true },
-    { symbol: "EQTY", price: 48.05, change: -0.45, percent: -0.93, isUp: false },
-    { symbol: "KCB",  price: 37.20, change: 0.70, percent: 1.92, isUp: true },
-    { symbol: "EABL", price: 125.50, change: -2.50, percent: -1.95, isUp: false },
-    { symbol: "TBILL-91", price: "15.78%", change: 0.00, percent: 0.00, isUp: true },
-    { symbol: "ZIDI", price: "18.20%", change: 0.00, percent: 0.00, isUp: true },
-    { symbol: "IFB1", price: "18.46%", change: 0.00, percent: 0.00, isUp: true },
-  ];
+  const tickerItems = useMemo(() => {
+    const eticaRate = funds.find(f => f.code === "ETCA")?.yield7d || 18.20;
+    const ifbRate = bonds.find(b => b.name.includes("IFB"))?.yield || 18.46;
+    const tbillRate = bonds.find(b => b.name.includes("91"))?.yield || 15.78;
+
+    const baseItems = rates.length > 0 ? rates : [
+      { symbol: "SCOM", price: 19.35, change: 0.15, percent: 0.78, isUp: true },
+      { symbol: "EQTY", price: 48.05, change: -0.45, percent: -0.93, isUp: false },
+      { symbol: "KCB",  price: 37.20, change: 0.70, percent: 1.92, isUp: true },
+      { symbol: "EABL", price: 125.50, change: -2.50, percent: -1.95, isUp: false },
+    ];
+
+    // Always append fixed income rates
+    return [
+      ...baseItems,
+      { symbol: "TBILL-91", price: `${tbillRate.toFixed(2)}%`, change: 0.00, percent: 0.00, isUp: true },
+      { symbol: "ZIDI", price: `${eticaRate.toFixed(2)}%`, change: 0.00, percent: 0.00, isUp: true },
+      { symbol: "IFB1", price: `${ifbRate.toFixed(2)}%`, change: 0.00, percent: 0.00, isUp: true },
+    ];
+  }, [rates, funds, bonds]);
 
   return (
     <div className="fixed top-0 left-0 right-0 h-[40px] bg-slate-950 z-[100] flex items-center overflow-hidden border-b border-slate-800">

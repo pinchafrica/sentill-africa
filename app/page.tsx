@@ -23,6 +23,7 @@ import MMFCompareCalculator from "@/components/MMFCompareCalculator";
 import LoanVsInvestCalculator from "@/components/LoanVsInvestCalculator";
 import { useAIStore } from "@/lib/store";
 import useSWR from "swr";
+import { useMarketRates } from "@/lib/useMarketRates";
 import { CheckCircle } from "lucide-react";
 import WhatsAppQR from "@/components/WhatsAppQR";
 
@@ -175,12 +176,13 @@ export default function HomePage() {
   const { isPremiumModalOpen, setPremiumModalOpen } = useAIStore();
 
   const { data: nseData } = useSWR("/api/market/nse", fetcher);
-  const { data: aiRatesData } = useSWR("/api/market/ai-rates", fetcher);
+  const { funds, bonds } = useMarketRates();
 
   const getLiveRate = (symbol: string) => {
      if (symbol === "ETICA") {
-        const rate = aiRatesData?.rates?.["ETCA"] || 18.20;
-        return { display: `${rate}%`, verified: true };
+        const fund = funds.find(f => f.code === "ETCA");
+        if (fund) return { display: `${fund.yield7d.toFixed(2)}%`, verified: true };
+        return { display: "Gathering...", verified: false };
      }
 
      const stockSym = symbol === "ABS" ? "ABSA" : symbol;
@@ -203,10 +205,15 @@ export default function HomePage() {
         }
         return { primary: asset.yield, isLive: false };
      }
-     const rate = aiRatesData?.rates?.[asset.apiKey];
-     if (typeof rate === "number" && rate > 0) {
-        return { primary: `${rate.toFixed(2)}%`, isLive: true };
+     
+     if (asset.type === "MMF") {
+        const fund = funds.find(f => f.code.toUpperCase() === asset.apiKey.replace("-MMF", "") || f.id.toString() === asset.id);
+        if (fund) return { primary: `${fund.yield7d.toFixed(2)}%`, isLive: true };
+     } else if (asset.type === "Bond") {
+        const bond = bonds.find(b => b.name.includes(asset.apiKey));
+        if (bond) return { primary: `${bond.yield.toFixed(2)}%`, isLive: true };
      }
+     
      return { primary: asset.yield, isLive: false };
   };
 

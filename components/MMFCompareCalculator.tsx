@@ -2,28 +2,38 @@
 
 import { useState, useMemo } from "react";
 import { ArrowRight, TrendingUp, ShieldCheck } from "lucide-react";
-
-const MMF_FUNDS = [
-  { name: "IFB1/2024 (Tax-Free)", gross: 18.50, wht: false },
-  { name: "CIC Money Market", gross: 15.90, wht: true },
-  { name: "Zidi High Yield MMF", gross: 18.20, wht: true },
-  { name: "Etica Capital MMF (Zidi)", gross: 18.20, wht: true },
-  { name: "Lofty-Corpin MMF", gross: 17.50, wht: true },
-  { name: "Cytonn Money Market", gross: 16.90, wht: true },
-  { name: "NCBA Money Market", gross: 16.20, wht: true },
-  { name: "KCB Money Market", gross: 15.80, wht: true },
-  { name: "Britam Money Market", gross: 15.50, wht: true },
-  { name: "Sanlam Investments MMF", gross: 15.10, wht: true },
-  { name: "ICEA Lion MMF", gross: 14.50, wht: true },
-  { name: "CIC Money Market", gross: 13.60, wht: true },
-  { name: "FXD1/2024/10 Bond", gross: 16.40, wht: true },
-];
+import { useMarketRates } from "@/lib/useMarketRates";
 
 export default function MMFCompareCalculator() {
+  const { funds: liveFunds, bonds } = useMarketRates();
+
+  // Build fund list dynamically from live DB data + IFB bonds
+  const MMF_FUNDS = useMemo(() => {
+    const list: Array<{ name: string; gross: number; wht: boolean }> = [];
+    // Add IFB bonds (tax-free) first
+    if (bonds.length > 0) {
+      for (const b of bonds.filter(b => b.wht === 0)) {
+        list.push({ name: `${b.name} (Tax-Free)`, gross: b.yield, wht: false });
+      }
+    }
+    // Add MMFs from live data
+    for (const f of liveFunds) {
+      list.push({ name: f.name, gross: f.yield7d, wht: true });
+    }
+    // Fallback if DB is empty
+    if (list.length === 0) {
+      list.push(
+        { name: "IFB1/2024 (Tax-Free)", gross: 18.46, wht: false },
+        { name: "Loading live rates...", gross: 0, wht: true },
+      );
+    }
+    return list;
+  }, [liveFunds, bonds]);
+
   const [amount, setAmount] = useState(500000);
   const [months, setMonths] = useState(12);
   const [fundA, setFundA] = useState(0);
-  const [fundB, setFundB] = useState(1);
+  const [fundB, setFundB] = useState(Math.min(1, MMF_FUNDS.length - 1));
 
   const calculate = (fund: typeof MMF_FUNDS[0]) => {
     const taxRate = fund.wht ? 0.15 : 0;
@@ -43,8 +53,10 @@ export default function MMFCompareCalculator() {
     };
   };
 
-  const resultA = useMemo(() => calculate(MMF_FUNDS[fundA]), [fundA, amount, months]);
-  const resultB = useMemo(() => calculate(MMF_FUNDS[fundB]), [fundB, amount, months]);
+  const safeA = Math.min(fundA, MMF_FUNDS.length - 1);
+  const safeB = Math.min(fundB, MMF_FUNDS.length - 1);
+  const resultA = useMemo(() => calculate(MMF_FUNDS[safeA]), [safeA, amount, months, MMF_FUNDS]);
+  const resultB = useMemo(() => calculate(MMF_FUNDS[safeB]), [safeB, amount, months, MMF_FUNDS]);
 
   const winner = resultA.finalBalance >= resultB.finalBalance ? "A" : "B";
   const diff = Math.abs(resultA.returns - resultB.returns);

@@ -2,19 +2,29 @@
 
 import { useState, useMemo } from "react";
 import { Calculator, TrendingUp, ArrowRight } from "lucide-react";
-
-const PRESETS = [
-  { label: "IFB Tax-Free", rate: 18.46 },
-  { label: "Etica (Zidi) MMF", rate: 18.20 },
-  { label: "91-Day T-Bill", rate: 15.78 },
-  { label: "CIC MMF", rate: 13.60 },
-];
+import { useMarketRates } from "@/lib/useMarketRates";
 
 export default function InvestmentGrowthCalculator() {
   const [principal, setPrincipal] = useState(100000);
   const [monthly, setMonthly] = useState(5000);
   const [rate, setRate] = useState(18.46);
   const [years, setYears] = useState(5);
+
+  const { funds, bonds } = useMarketRates();
+  
+  const presets = useMemo(() => {
+    const eticaRate = funds.find(f => f.code === "ETCA")?.yield7d || 18.20;
+    const cicRate = funds.find(f => f.code === "CIC")?.yield7d || 13.60;
+    const ifbRate = bonds.find(b => b.name.includes("IFB"))?.yield || 18.46;
+    const tbillRate = bonds.find(b => b.name.includes("91"))?.yield || 15.78;
+    
+    return [
+      { label: "IFB Tax-Free", rate: ifbRate },
+      { label: "Etica (Zidi) MMF", rate: eticaRate },
+      { label: "91-Day T-Bill", rate: tbillRate },
+      { label: "CIC MMF", rate: cicRate },
+    ];
+  }, [funds, bonds]);
 
   const results = useMemo(() => {
     const r = rate / 100 / 12;
@@ -45,7 +55,7 @@ export default function InvestmentGrowthCalculator() {
     <div className="space-y-8">
       {/* Preset Rates */}
       <div className="flex flex-wrap gap-2">
-        {PRESETS.map((p) => (
+        {presets.map((p) => (
           <button
             key={p.label}
             onClick={() => setRate(p.rate)}

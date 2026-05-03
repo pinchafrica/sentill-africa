@@ -14,7 +14,15 @@
       "Bash(openssl rand *)",
       "Bash(vercel --prod)",
       "Bash(curl -s \"https://sentill.africa/api/cron/rates-sync?secret=0a6b219990d7c425ce3901d10050d505b859178dfb0380e495e96f3a33c6e923\")",
-      "Bash(curl -sL \"https://sentill.africa/api/cron/rates-sync?secret=0a6b219990d7c425ce3901d10050d505b859178dfb0380e495e96f3a33c6e923\")"
+      "Bash(curl -sL \"https://sentill.africa/api/cron/rates-sync?secret=0a6b219990d7c425ce3901d10050d505b859178dfb0380e495e96f3a33c6e923\")",
+      "Read(//c/Users/USER/.claude/projects/c--Users-USER-Downloads-Sentil/memory/**)",
+      "Bash(node -e ' *)",
+      "Bash(tee /tmp/sentil-dev.log)",
+      "Bash(grep -q \"Ready in\" \"C:\\\\\\\\Users\\\\\\\\USER\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\claude\\\\\\\\c--Users-USER-Downloads-Sentil\\\\\\\\ba07f1f2-f978-4f6d-a571-98adb27ab2bc\\\\\\\\tasks\\\\\\\\b9u9xo5wk.output\")",
+      "Bash(tail -40 \"C:\\\\\\\\Users\\\\\\\\USER\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\claude\\\\\\\\c--Users-USER-Downloads-Sentil\\\\\\\\ba07f1f2-f978-4f6d-a571-98adb27ab2bc\\\\\\\\tasks\\\\\\\\b9u9xo5wk.output\")",
+      "Bash(grep -E \"Ready|Local:|http://localhost\" \"C:\\\\\\\\Users\\\\\\\\USER\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\claude\\\\\\\\c--Users-USER-Downloads-Sentil\\\\\\\\ba07f1f2-f978-4f6d-a571-98adb27ab2bc\\\\\\\\tasks\\\\\\\\b9u9xo5wk.output\")",
+      "mcp__playwright__browser_navigate",
+      "Bash(tail -100 \"C:\\\\\\\\Users\\\\\\\\USER\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\claude\\\\\\\\c--Users-USER-Downloads-Sentil\\\\\\\\ba07f1f2-f978-4f6d-a571-98adb27ab2bc\\\\\\\\tasks\\\\\\\\b9u9xo5wk.output\")"
     ]
   }
 }

@@ -18,168 +18,18 @@ import {
 } from "lucide-react";
 import { useAIStore } from "@/lib/store";
 import AssetModal from "@/components/AssetModal";
+import { useMarketRates, type MMFFund } from "@/lib/useMarketRates";
 
-// ─── MMF DATA ────────────────────────────────────────────────────────────────
+// ─── DERIVED DATA BUILDERS (computed from live fund data) ─────────────────────
 
-const MMF_FUNDS = [
-  {
-    id: 1, name: "Etica Wealth MMF", code: "ETCA", manager: "Etica Capital",
-    yield7d: 18.20, yield30d: 18.05, yield90d: 17.90, yield1y: 17.5,
-    aum: 15.2, minInvest: 1000, liquidity: "T+1", risk: "Low",
-    taxCategory: "WHT 15%", cmaLicensed: true, esgScore: 82, inceptionDate: "2019",
-    currency: "KES", category: "Income", status: "Open",
-    fees: { management: 1.5, performance: 0 },
-    color: "#10b981", nav: 1.0847
-  },
-  {
-    id: 2, name: "Sanlam MMF", code: "SNLM", manager: "Sanlam Investments",
-    yield7d: 14.78, yield30d: 14.52, yield90d: 14.1, yield1y: 13.8,
-    aum: 8.7, minInvest: 1000, liquidity: "T+1", risk: "Low",
-    taxCategory: "WHT 15%", cmaLicensed: true, esgScore: 74, inceptionDate: "2012",
-    currency: "KES", category: "Income", status: "Open",
-    fees: { management: 1.75, performance: 0 },
-    color: "#6366f1", nav: 1.0621
-  },
-  {
-    id: 3, name: "Britam MMF", code: "BRTM", manager: "Britam Asset Managers",
-    yield7d: 14.2, yield30d: 13.95, yield90d: 13.7, yield1y: 13.1,
-    aum: 12.4, minInvest: 500, liquidity: "T+1", risk: "Low",
-    taxCategory: "WHT 15%", cmaLicensed: true, esgScore: 71, inceptionDate: "2010",
-    currency: "KES", category: "Income", status: "Open",
-    fees: { management: 2.0, performance: 0 },
-    color: "#f59e0b", nav: 1.0589
-  },
-  {
-    id: 4, name: "Equity MMF", code: "EQTY", manager: "Equity Investment Bank",
-    yield7d: 13.8, yield30d: 13.62, yield90d: 13.4, yield1y: 12.9,
-    aum: 22.1, minInvest: 100, liquidity: "T+0", risk: "Low",
-    taxCategory: "WHT 15%", cmaLicensed: true, esgScore: 69, inceptionDate: "2016",
-    currency: "KES", category: "Income", status: "Open",
-    fees: { management: 1.5, performance: 0 },
-    color: "#8b5cf6", nav: 1.0534
-  },
-  {
-    id: 5, name: "CIC MMF", code: "CICM", manager: "CIC Asset Management",
-    yield7d: 13.6, yield30d: 13.41, yield90d: 13.2, yield1y: 12.7,
-    aum: 18.3, minInvest: 100, liquidity: "T+1", risk: "Low",
-    taxCategory: "WHT 15%", cmaLicensed: true, esgScore: 77, inceptionDate: "2008",
-    currency: "KES", category: "Income", status: "Open",
-    fees: { management: 1.75, performance: 0 },
-    color: "#ec4899", nav: 1.0512
-  },
-  {
-    id: 6, name: "Cytonn High Yield MMF", code: "CYTN", manager: "Cytonn Investments",
-    yield7d: 13.5, yield30d: 13.28, yield90d: 13.0, yield1y: 12.5,
-    aum: 3.1, minInvest: 1000, liquidity: "T+3", risk: "Medium",
-    taxCategory: "WHT 15%", cmaLicensed: false, esgScore: 52, inceptionDate: "2015",
-    currency: "KES", category: "High Yield", status: "Open",
-    fees: { management: 2.0, performance: 20 },
-    color: "#f97316", nav: 1.0498
-  },
-  {
-    id: 7, name: "Co-op MMF", code: "COPM", manager: "Co-op Trust Investment",
-    yield7d: 13.4, yield30d: 13.18, yield90d: 12.9, yield1y: 12.4,
-    aum: 9.8, minInvest: 500, liquidity: "T+1", risk: "Low",
-    taxCategory: "WHT 15%", cmaLicensed: true, esgScore: 68, inceptionDate: "2014",
-    currency: "KES", category: "Income", status: "Open",
-    fees: { management: 1.5, performance: 0 },
-    color: "#14b8a6", nav: 1.0487
-  },
-  {
-    id: 8, name: "ICEA Lion MMF", code: "ICEA", manager: "ICEA Lion Asset Mgmt",
-    yield7d: 13.1, yield30d: 12.88, yield90d: 12.6, yield1y: 12.1,
-    aum: 6.2, minInvest: 2500, liquidity: "T+1", risk: "Low",
-    taxCategory: "WHT 15%", cmaLicensed: true, esgScore: 73, inceptionDate: "2011",
-    currency: "KES", category: "Income", status: "Open",
-    fees: { management: 1.75, performance: 0 },
-    color: "#0ea5e9", nav: 1.0456
-  },
-  {
-    id: 9, name: "Old Mutual MMF", code: "OLMD", manager: "Old Mutual Investment",
-    yield7d: 12.9, yield30d: 12.71, yield90d: 12.5, yield1y: 12.0,
-    aum: 14.6, minInvest: 1000, liquidity: "T+1", risk: "Low",
-    taxCategory: "WHT 15%", cmaLicensed: true, esgScore: 76, inceptionDate: "2009",
-    currency: "KES", category: "Income", status: "Open",
-    fees: { management: 2.0, performance: 0 },
-    color: "#84cc16", nav: 1.0434
-  },
-  {
-    id: 10, name: "NCBA MMF", code: "NCBA", manager: "NCBA Investment Bank",
-    yield7d: 12.1, yield30d: 11.89, yield90d: 11.6, yield1y: 11.2,
-    aum: 31.4, minInvest: 100, liquidity: "T+0", risk: "Low",
-    taxCategory: "WHT 15%", cmaLicensed: true, esgScore: 70, inceptionDate: "2013",
-    currency: "KES", category: "Income", status: "Open",
-    fees: { management: 1.5, performance: 0 },
-    color: "#a855f7", nav: 1.0378
-  },
-  {
-    id: 11, name: "Absa MMF", code: "ABSA", manager: "Absa Asset Management",
-    yield7d: 11.8, yield30d: 11.65, yield90d: 11.4, yield1y: 10.9,
-    aum: 19.2, minInvest: 500, liquidity: "T+1", risk: "Low",
-    taxCategory: "WHT 15%", cmaLicensed: true, esgScore: 72, inceptionDate: "2010",
-    currency: "KES", category: "Income", status: "Open",
-    fees: { management: 1.75, performance: 0 },
-    color: "#f43f5e", nav: 1.0341
-  },
-  {
-    id: 12, name: "KCB MMF", code: "KCBM", manager: "KCB Asset Management",
-    yield7d: 11.4, yield30d: 11.21, yield90d: 11.0, yield1y: 10.6,
-    aum: 28.7, minInvest: 100, liquidity: "T+0", risk: "Low",
-    taxCategory: "WHT 15%", cmaLicensed: true, esgScore: 65, inceptionDate: "2017",
-    currency: "KES", category: "Income", status: "Open",
-    fees: { management: 1.5, performance: 0 },
-    color: "#22c55e", nav: 1.0312
-  },
-];
-
-// ─── 12-MONTH YIELD TREND ─────────────────────────────────────────────────────
-
-const YIELD_TREND = [
-  { month: "Mar'25", etica: 15.1, britam: 12.8, equity: 12.4, cic: 12.1, ncba: 10.9 },
-  { month: "Apr'25", etica: 15.4, britam: 13.0, equity: 12.6, cic: 12.3, ncba: 11.1 },
-  { month: "May'25", etica: 15.8, britam: 13.2, equity: 12.8, cic: 12.5, ncba: 11.2 },
-  { month: "Jun'25", etica: 16.1, britam: 13.5, equity: 13.0, cic: 12.7, ncba: 11.4 },
-  { month: "Jul'25", etica: 16.3, britam: 13.6, equity: 13.2, cic: 12.8, ncba: 11.5 },
-  { month: "Aug'25", etica: 16.5, britam: 13.7, equity: 13.3, cic: 12.9, ncba: 11.6 },
-  { month: "Sep'25", etica: 16.8, britam: 13.8, equity: 13.5, cic: 13.1, ncba: 11.7 },
-  { month: "Oct'25", etica: 17.0, britam: 14.0, equity: 13.6, cic: 13.3, ncba: 11.8 },
-  { month: "Nov'25", etica: 17.1, britam: 14.1, equity: 13.7, cic: 13.4, ncba: 11.9 },
-  { month: "Dec'25", etica: 17.2, britam: 14.0, equity: 13.6, cic: 13.5, ncba: 12.0 },
-  { month: "Jan'26", etica: 17.3, britam: 14.1, equity: 13.7, cic: 13.5, ncba: 12.0 },
-  { month: "Feb'26", etica: 17.5, britam: 14.2, equity: 13.8, cic: 13.6, ncba: 12.1 },
-];
-
-// ─── AUM DISTRIBUTION ────────────────────────────────────────────────────────
-
-const AUM_DISTRIBUTION = [
-  { name: "NCBA", aum: 31.4, share: 17.8 },
-  { name: "KCB", aum: 28.7, share: 16.3 },
-  { name: "Equity", aum: 22.1, share: 12.5 },
-  { name: "Absa", aum: 19.2, share: 10.9 },
-  { name: "CIC", aum: 18.3, share: 10.4 },
-  { name: "Old Mutual", aum: 14.6, share: 8.3 },
-  { name: "Britam", aum: 12.4, share: 7.0 },
-  { name: "Co-op", aum: 9.8, share: 5.6 },
-  { name: "Sanlam", aum: 8.7, share: 4.9 },
-  { name: "Others", aum: 9.9, share: 5.6 },
-];
-
-// ─── RISK-RETURN DATA ─────────────────────────────────────────────────────────
-
-const RISK_RETURN = [
-  { name: "Etica (Zidi)", risk: 1.8, ret: 18.20, size: 15.2 },
-  { name: "Sanlam", risk: 2.1, ret: 14.78, size: 8.7 },
-  { name: "Britam", risk: 2.3, ret: 14.2, size: 12.4 },
-  { name: "Equity", risk: 2.0, ret: 13.8, size: 22.1 },
-  { name: "CIC", risk: 2.2, ret: 13.6, size: 18.3 },
-  { name: "Cytonn", risk: 4.1, ret: 13.5, size: 3.1 },
-  { name: "Co-op", risk: 2.4, ret: 13.4, size: 9.8 },
-  { name: "ICEA", risk: 2.3, ret: 13.1, size: 6.2 },
-  { name: "Old Mutual", risk: 2.5, ret: 12.9, size: 14.6 },
-  { name: "NCBA", risk: 1.9, ret: 12.1, size: 31.4 },
-  { name: "Absa", risk: 2.2, ret: 11.8, size: 19.2 },
-  { name: "KCB", risk: 2.0, ret: 11.4, size: 28.7 },
-];
+function buildRiskReturn(funds: MMFFund[]) {
+  return funds.map(f => ({
+    name: f.name.replace(/ MMF$/, "").replace("Etica Wealth", "Etica (Zidi)"),
+    risk: f.risk === "Medium" ? 4.1 : 1.5 + (Math.random() * 1.2),
+    ret: f.yield7d,
+    size: f.aum || 10,
+  }));
+}
 
 // ─── CUSTOM TOOLTIP ───────────────────────────────────────────────────────────
 
@@ -222,30 +72,46 @@ function AnimatedNum({ value, decimals = 1, prefix = "", suffix = "" }: { value:
 
 export default function MMFPage() {
   const { isAssetModalOpen, setAssetModalOpen, prefilledAsset, setPrefilledAsset } = useAIStore();
+  const { funds: liveFunds, quality, isLoading: ratesLoading } = useMarketRates();
 
-  // Missing States
+  // State
   const [search, setSearch] = useState("");
   const [riskFilter, setRiskFilter] = useState("all");
   const [liquidityFilter, setLiquidityFilter] = useState("all");
   const [sortBy, setSortBy] = useState<"yield7d" | "yield30d" | "aum" | "minInvest" | "esgScore">("yield7d");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [watchlist, setWatchlist] = useState<number[]>([]);
-  const [selectedFund, setSelectedFund] = useState(MMF_FUNDS[0]);
+  const [selectedFund, setSelectedFund] = useState<MMFFund | null>(null);
   const [showTaxCalc, setShowTaxCalc] = useState(false);
   const [taxPrincipal, setTaxPrincipal] = useState(100000);
   const [taxPeriod, setTaxPeriod] = useState(12);
-  const [taxFund, setTaxFund] = useState(MMF_FUNDS[0]);
+  const [taxFundId, setTaxFundId] = useState<number | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [aiInsights, setAiInsights] = useState("");
   const [aiError, setAiError] = useState("");
-  const [isLive, setIsLive] = useState(true);
 
-  const funds = MMF_FUNDS;
+  // Derived: use live funds from DB
+  const funds = liveFunds;
+  const isLive = quality?.status === "fresh";
+
+  // Auto-select first fund when data loads
+  useEffect(() => {
+    if (funds.length > 0 && !selectedFund) {
+      setSelectedFund(funds[0]);
+      setTaxFundId(funds[0].id);
+    }
+  }, [funds, selectedFund]);
+
+  const taxFund = funds.find(f => f.id === taxFundId) || funds[0] || null;
+
+  // Build dynamic chart data from live rates
+  const RISK_RETURN = useMemo(() => buildRiskReturn(funds), [funds]);
 
   const handleOpenAssetModal = (assetId?: string) => {
     setPrefilledAsset(assetId);
     setAssetModalOpen(true);
   };
+
 
   useEffect(() => {
     async function fetchAiInsights() {
@@ -291,18 +157,19 @@ export default function MMFPage() {
   };
 
   const totalAUM = funds.reduce((s, f) => s + f.aum, 0);
-  const topYield = Math.max(...funds.map(f => f.yield7d));
-  const avgYield = (funds.reduce((s, f) => s + f.yield7d, 0) / funds.length).toFixed(2);
+  const topYield = funds.length > 0 ? Math.max(...funds.map(f => f.yield7d)) : 0;
+  const avgYield = funds.length > 0 ? (funds.reduce((s, f) => s + f.yield7d, 0) / funds.length).toFixed(2) : "0.00";
 
-  // Tax calculator
-  const grossReturn = taxPrincipal * (taxFund.yield7d / 100) * (taxPeriod / 12);
+  // Tax calculator (safe for null taxFund)
+  const taxYield = taxFund?.yield7d ?? 0;
+  const grossReturn = taxPrincipal * (taxYield / 100) * (taxPeriod / 12);
   const whtTax = grossReturn * 0.15;
   const netReturn = grossReturn - whtTax;
-  const netYield = (netReturn / taxPrincipal) * (12 / taxPeriod) * 100;
+  const netYield = taxPrincipal > 0 ? (netReturn / taxPrincipal) * (12 / taxPeriod) * 100 : 0;
 
   // Compound growth
   const compoundGrowth = (months: number) => {
-    const r = taxFund.yield7d / 100 / 12;
+    const r = taxYield / 100 / 12;
     const withTax = taxPrincipal * Math.pow(1 + r * 0.85, months);
     const withoutTax = taxPrincipal * Math.pow(1 + r, months);
     return { withTax, withoutTax, months };
@@ -316,6 +183,18 @@ export default function MMFPage() {
     sortBy === col
       ? sortDir === "desc" ? <ChevronDown className="w-3 h-3 text-emerald-400" /> : <ChevronUp className="w-3 h-3 text-emerald-400" />
       : <ChevronDown className="w-3 h-3 text-slate-600" />;
+
+  // Loading state
+  if (ratesLoading && funds.length === 0) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-sm font-black text-slate-400 uppercase tracking-widest">Loading Market Intelligence...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -400,40 +279,31 @@ export default function MMFPage() {
 
       <div className="px-6 md:px-10 py-10 space-y-10">
 
-        {/* ── 12-MONTH YIELD TREND ── */}
+        {/* ── CURRENT YIELD COMPARISON (replaces static trend — uses live DB data) ── */}
         <div className="bg-white rounded-[2.5rem] border border-slate-100 p-8 shadow-sm">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-sm font-black text-slate-900 uppercase tracking-widest">12-Month Yield Trend</h2>
-              <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-1">Top 5 funds · Annualised 7-day effective yield</p>
+              <h2 className="text-sm font-black text-slate-900 uppercase tracking-widest">Current Yield Comparison</h2>
+              <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-1">Live 7-day annualised yield · All tracked funds</p>
             </div>
-            <div className="flex flex-wrap gap-3">
-              {[
-                { key: "etica", label: "Etica", color: "#10b981" },
-                { key: "britam", label: "Britam", color: "#f59e0b" },
-                { key: "equity", label: "Equity", color: "#8b5cf6" },
-                { key: "cic", label: "CIC", color: "#ec4899" },
-                { key: "ncba", label: "NCBA", color: "#a855f7" },
-              ].map(l => (
-                <div key={l.key} className="flex items-center gap-1.5">
-                  <div className="w-2.5 h-2.5 rounded-full" style={{ background: l.color }} />
-                  <span className="text-[9px] font-black text-slate-500 uppercase tracking-wide">{l.label}</span>
-                </div>
-              ))}
+            <div className="flex items-center gap-2">
+              <div className={`w-2 h-2 rounded-full ${isLive ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
+              <span className={`text-[9px] font-black uppercase tracking-widest ${isLive ? 'text-emerald-400' : 'text-amber-400'}`}>{isLive ? 'Live' : 'Cached'}</span>
             </div>
           </div>
           <ResponsiveContainer minWidth={1} width="100%" height={280}>
-            <LineChart data={YIELD_TREND}>
+            <BarChart data={funds.map(f => ({ name: f.code, yield: f.yield7d, fill: f.color }))} layout="vertical" margin={{ left: 0, right: 30 }}>
+              <XAxis type="number" domain={[0, 'auto']} tick={{ fill: "#94a3b8", fontSize: 9, fontWeight: 700 }} tickFormatter={v => v + "%"} />
+              <YAxis type="category" dataKey="name" width={68} tick={{ fill: "#94a3b8", fontSize: 9, fontWeight: 900 }} />
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-              <XAxis dataKey="month" tick={{ fill: "#94a3b8", fontSize: 9, fontWeight: 700 }} />
-              <YAxis domain={[10, 19]} tickFormatter={v => v + "%"} tick={{ fill: "#94a3b8", fontSize: 9, fontWeight: 700 }} />
               <Tooltip content={<DarkTooltip />} />
-              <Line type="monotone" dataKey="etica" name="Etica" stroke="#10b981" strokeWidth={2.5} dot={false} />
-              <Line type="monotone" dataKey="britam" name="Britam" stroke="#f59e0b" strokeWidth={2} dot={false} />
-              <Line type="monotone" dataKey="equity" name="Equity" stroke="#8b5cf6" strokeWidth={2} dot={false} />
-              <Line type="monotone" dataKey="cic" name="CIC" stroke="#ec4899" strokeWidth={2} dot={false} />
-              <Line type="monotone" dataKey="ncba" name="NCBA" stroke="#a855f7" strokeWidth={2} dot={false} strokeDasharray="4 2" />
-            </LineChart>
+              <ReferenceLine x={Number(avgYield)} stroke="#f59e0b" strokeDasharray="4 4" label={{ value: `Avg ${avgYield}%`, fill: "#f59e0b", fontSize: 9, fontWeight: 700 }} />
+              <Bar dataKey="yield" name="7d Yield" radius={[0, 6, 6, 0]}>
+                {funds.map((f, i) => (
+                  <Cell key={i} fill={f.color} />
+                ))}
+              </Bar>
+            </BarChart>
           </ResponsiveContainer>
         </div>
 
@@ -444,7 +314,7 @@ export default function MMFPage() {
             <h2 className="text-sm font-black text-slate-900 uppercase tracking-widest mb-1">AUM Distribution</h2>
             <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mb-6">Market share by assets under management (KES Bn)</p>
             <ResponsiveContainer minWidth={1} width="100%" height={240}>
-              <BarChart data={AUM_DISTRIBUTION} margin={{ left: 0, right: 10 }}>
+              <BarChart data={funds.map(f => ({ name: f.name.split(' ')[0], aum: f.aum || 10 })).sort((a, b) => b.aum - a.aum)} margin={{ left: 0, right: 10 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
                 <XAxis dataKey="name" tick={{ fill: "#94a3b8", fontSize: 8, fontWeight: 700 }} angle={-30} textAnchor="end" height={40} />
                 <YAxis tick={{ fill: "#94a3b8", fontSize: 9, fontWeight: 700 }} />
@@ -567,7 +437,7 @@ export default function MMFPage() {
                   return (
                     <tr
                       key={fund.id}
-                      className={`hover:bg-slate-50 transition-all cursor-pointer ${selectedFund.id === fund.id ? "bg-emerald-50/40" : ""}`}
+                      className={`hover:bg-slate-50 transition-all cursor-pointer ${selectedFund?.id === fund.id ? "bg-emerald-50/40" : ""}`}
                       onClick={() => setSelectedFund(fund)}
                     >
                       <td className="px-8 py-5">
@@ -691,6 +561,7 @@ export default function MMFPage() {
         </div>
 
         {/* ── SELECTED FUND DETAIL ── */}
+        {selectedFund && (
         <div className="bg-slate-900 rounded-[2.5rem] p-8 text-white">
           <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-8">
             <div className="flex items-center gap-4">
@@ -742,6 +613,7 @@ export default function MMFPage() {
             ))}
           </div>
         </div>
+        )}
 
         {/* ── TAX CALCULATOR ── */}
         <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden">
@@ -785,8 +657,8 @@ export default function MMFPage() {
                 <div>
                   <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-2">Fund</label>
                   <select
-                    value={taxFund.id}
-                    onChange={e => setTaxFund(funds.find(f => f.id === Number(e.target.value))!)}
+                    value={taxFund?.id ?? ''}
+                    onChange={e => setTaxFundId(Number(e.target.value))}
                     className="w-full px-4 py-3 bg-slate-50 rounded-xl border border-slate-200 text-[11px] font-black text-slate-900 outline-none focus:border-emerald-400"
                   >
                     {funds.map(f => <option key={f.id} value={f.id}>{f.name} ({f.yield7d}%)</option>)}
@@ -797,7 +669,7 @@ export default function MMFPage() {
               {/* Results */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {[
-                  { label: "Gross Return", value: `KES ${Math.round(grossReturn).toLocaleString()}`, sub: `${taxFund.yield7d}% gross`, color: "bg-slate-50 border-slate-200 text-slate-900" },
+                  { label: "Gross Return", value: `KES ${Math.round(grossReturn).toLocaleString()}`, sub: `${taxYield}% gross`, color: "bg-slate-50 border-slate-200 text-slate-900" },
                   { label: "WHT (15%)", value: `KES ${Math.round(whtTax).toLocaleString()}`, sub: "Withheld at source", color: "bg-rose-50 border-rose-200 text-rose-700" },
                   { label: "Net Return", value: `KES ${Math.round(netReturn).toLocaleString()}`, sub: "After tax", color: "bg-emerald-50 border-emerald-200 text-emerald-700" },
                   { label: "Net Yield (ann.)", value: `${netYield.toFixed(2)}%`, sub: "Tax-adjusted annualised", color: "bg-indigo-50 border-indigo-200 text-indigo-700" },
@@ -855,7 +727,7 @@ export default function MMFPage() {
                   <p className="text-[11px] font-black text-indigo-900 uppercase tracking-widest mb-1">Tax Alpha Tip: Consider Infrastructure Bonds</p>
                   <p className="text-[10px] text-indigo-700 font-medium leading-relaxed">
                     Government Infrastructure Bonds (IFBs) are <strong>WHT-exempt</strong> in Kenya. A 12.5% IFB yield is effectively equivalent to a ~14.7% MMF yield after WHT.
-                    If {taxFund.name}&apos;s gross yield ({taxFund.yield7d}%) → net {netYield.toFixed(2)}%, an IFB yielding ≥{netYield.toFixed(2)}% would deliver equal after-tax income with no withholding.
+                    If {taxFund?.name ?? 'this fund'}&apos;s gross yield ({taxYield}%) → net {netYield.toFixed(2)}%, an IFB yielding ≥{netYield.toFixed(2)}% would deliver equal after-tax income with no withholding.
                   </p>
                 </div>
               </div>

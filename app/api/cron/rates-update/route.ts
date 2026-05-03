@@ -17,8 +17,6 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { writeFileSync } from "fs";
-import { join } from "path";
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY ?? "";
 const CRON_SECRET   = (process.env.CRON_SECRET ?? "sentil-cron-2026").trim();
@@ -28,11 +26,11 @@ const CRON_SECRET   = (process.env.CRON_SECRET ?? "sentil-cron-2026").trim();
 const BOUNDS: Record<string, [number, number]> = {
   // CBK
   CBK_RATE:    [8.0,  14.0],
-  // T-Bills (April 2026: CBK has lowered rates — now ~7.78%, 7.89%, 8.27%)
-  "91-TBILL":  [5.0, 12.0],
-  "182-TBILL": [5.0, 13.0],
-  "364-TBILL": [5.0, 14.0],
-  "2YR-BOND":  [6.0, 16.0],
+  // T-Bills (wide bounds to avoid false rejection as CBK adjusts rates)
+  "91-TBILL":  [3.0, 20.0],
+  "182-TBILL": [3.0, 20.0],
+  "364-TBILL": [3.0, 20.0],
+  "2YR-BOND":  [4.0, 20.0],
   // IFBs — fixed auction results, hardcoded below
   "IFB1-2024": [18.46, 18.46],
   "IFB2-2023": [17.93, 17.93],
@@ -378,13 +376,10 @@ function buildMarketDataJson(rates: Record<string, number>, syncedAt: Date): voi
     },
   };
 
-  try {
-    const filePath = join(process.cwd(), "public", "market_data.json");
-    writeFileSync(filePath, JSON.stringify(payload, null, 2), "utf-8");
-    console.log("[RatesUpdate] ✅ market_data.json written");
-  } catch (err) {
-    console.error("[RatesUpdate] market_data.json write failed:", err);
-  }
+  // NOTE: Removed filesystem write — Vercel serverless has read-only FS.
+  // The DB (MarketRateCache) is now the single source of truth.
+  // Frontend reads via /api/market/rates which reads from DB.
+  console.log(`[RatesUpdate] ✅ Skipping market_data.json (DB is source of truth now)`);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
