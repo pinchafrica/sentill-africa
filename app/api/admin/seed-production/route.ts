@@ -14,7 +14,7 @@ export async function GET(req: Request) {
   try {
     console.log("🌱 [Remote Seed] Initializing Production Accounts...");
 
-    const hashedPassword = await bcrypt.hash("Admin@2019", 10);
+    const hashedPassword = await bcrypt.hash("Sentill@2026!", 10);
 
     // Seed Admin
     await prisma.user.upsert({
