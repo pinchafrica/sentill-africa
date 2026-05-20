@@ -67,6 +67,13 @@ export async function getGeminiApiKey(): Promise<string | null> {
 }
 
 /**
+ * Convenience: Get Anthropic (Claude) API key
+ */
+export async function getAnthropicApiKey(): Promise<string | null> {
+  return getApiKey("ANTHROPIC", process.env.ANTHROPIC_API_KEY);
+}
+
+/**
  * Clear cache for a specific service (called after key rotation)
  */
 export function clearApiKeyCache(service?: string) {

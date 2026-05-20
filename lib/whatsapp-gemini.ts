@@ -11,7 +11,7 @@
  *  - Live DB market rates with freshness indicator
  */
 
-import { getGeminiApiKey } from "./api-keys";
+import { getGeminiApiKey, getAnthropicApiKey } from "./api-keys";
 import { prisma } from "./prisma";
 
 const GEMINI_MODEL = "gemini-2.0-flash";
@@ -1166,6 +1166,42 @@ async function callGemini(prompt: string, maxTokens = 4000, useSearch = false, l
   return text;
 }
 
+// ─── Claude (Anthropic) caller — primary AI for financial services ────────────
+// Claude is used as the primary AI for its superior reasoning, compliance-aware
+// responses, and ability to be more insistent/intuitive in guiding users.
+
+async function callClaude(systemPrompt: string, userMessage: string, maxTokens = 4000): Promise<string> {
+  const apiKey = await getAnthropicApiKey();
+  if (!apiKey) throw new Error("No Anthropic API key — add ANTHROPIC via Admin Dashboard or ANTHROPIC_API_KEY env var");
+
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "x-api-key": apiKey,
+      "anthropic-version": "2023-06-01",
+      "content-type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "claude-sonnet-4-6",
+      max_tokens: maxTokens,
+      system: systemPrompt,
+      messages: [{ role: "user", content: userMessage }],
+    }),
+    signal: AbortSignal.timeout(25_000),
+  });
+
+  if (!res.ok) {
+    const err = await res.text();
+    console.error(`[Claude] HTTP ${res.status}:`, err.slice(0, 300));
+    throw new Error(`Claude HTTP ${res.status}`);
+  }
+
+  const data = await res.json();
+  const text = data?.content?.[0]?.text?.trim();
+  if (!text) throw new Error("Empty Claude response");
+  return text;
+}
+
 // ─── Smart fallback — answers from hardcoded knowledge base when Gemini is down ─
 
 function getSmartFallback(question: string): string {
@@ -1589,12 +1625,52 @@ CONTENT RULES:
 
 TONE: Sharp. Direct. Like the best fund manager at a Nairobi investment forum — confident, warm, specific. No corporate fluff.
 
+━━ FINANCIAL SERVICES INTELLIGENCE (Claude for Financial Services standards) ━━
+
+🔔 INSISTENCE MANDATE (CRITICAL — non-negotiable):
+After EVERY response, end with ONE specific, targeted follow-up CTA that nudges the user to their next step. Never answer and just stop. Pick the most relevant CTA from these templates:
+• "💡 Want the exact math for your amount? Reply *CALC [amount]* right now."
+• "📊 Want me to compare this to your portfolio? Reply *YES* and I'll run the comparison."
+• "🚀 Ready to start in 2 minutes? Reply *HOW TO START* and I'll walk you through it."
+• "📈 Want to see which fund is best for you right now? Tell me: how much are you investing?"
+• "🔢 Want a personalised projection? Just send: *CALC [your amount]*"
+• "📅 Shall I show you the dividend calendar so you know when to buy? Reply *DIVIDEND*."
+Always tailor the CTA to what the user just asked about.
+
+🧭 INTUITIVE QUESTIONING:
+If the user's message is vague (fewer than 5 words, or doesn't specify amount, goal, or timeframe), ask ONE targeted clarifying question BEFORE or ALONGSIDE your answer. Examples:
+• "Quick question to sharpen my answer: are you looking for *liquid savings* (withdraw anytime) or *long-term growth* (3+ years)?"
+• "Are you investing a lump sum or monthly? Knowing this helps me give you the right recommendation."
+• "What's your investment amount range? KES 1K–50K, 50K–500K, or 500K+? (Different instruments make sense at each level.)"
+Only ask ONE question — never interrogate the user.
+
+🏦 COMPLIANCE (financial services standards):
+• When quoting yields, always note: "Source: Sentill DB (live)" or "Source: CMA/CBK publication"
+• For amounts above KES 500,000, always add: "_For this amount, consider also speaking to a CMA-licensed advisor._"
+• For high-risk products (forex, crypto, leveraged funds), ALWAYS lead with the risk disclosure — not at the end.
+• Distinguish clearly between "market intelligence" (what Sentill provides) and "personalised financial advice" (requires a licensed advisor).
+• Never guarantee returns — use "historical yield" or "current rate" language.
+
 ⚖️ *LEGAL DISCLAIMER (append to every response that includes specific investment recommendations):*
 _This is Sentill market intelligence for informational purposes only. It is NOT licensed financial advice. Past yields do not guarantee future returns. Always verify current rates with the fund manager before investing. Sentill Africa does not hold or manage your funds._`;
 
+  const userMessage = `━━ USER QUESTION ━━\n${question}`;
+
+  // Primary: Claude (Anthropic) — superior financial reasoning + insistence
+  try {
+    const answer = await callClaude(systemPrompt, userMessage, 4000);
+    if (!answer.includes("sentill.africa") && !answer.includes("Wealth Intelligence")) {
+      return answer + "\n\n_S-Tier Institutional Wealth Intelligence_ 🇰🇪\n_sentill.africa_";
+    }
+    return answer;
+  } catch (claudeErr) {
+    console.warn("[Sentill Africa AI] Claude unavailable, falling back to Gemini:", claudeErr instanceof Error ? claudeErr.message : claudeErr);
+  }
+
+  // Fallback: Gemini (with Google Search for live data)
   try {
     const answer = await callGemini(
-      `${systemPrompt}\n\n━━ USER QUESTION ━━\n${question}`,
+      `${systemPrompt}\n\n${userMessage}`,
       4000,
       useSearch,
       lowTemp
@@ -1603,9 +1679,8 @@ _This is Sentill market intelligence for informational purposes only. It is NOT 
       return answer + "\n\n_S-Tier Institutional Wealth Intelligence_ 🇰🇪\n_sentill.africa_";
     }
     return answer;
-  } catch (err) {
-    console.error("[Sentill Africa AI] Gemini call failed:", err);
-    // Smart fallback — answer from hardcoded knowledge base
+  } catch (geminiErr) {
+    console.error("[Sentill Africa AI] Both Claude and Gemini failed:", geminiErr);
     return getSmartFallback(question);
   }
 }
