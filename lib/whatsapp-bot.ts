@@ -317,6 +317,7 @@ const PLANS = {
 
 // ── Free-tier AI prompt limit ────────────────────────────────────────────────
 const FREE_AI_LIMIT = 10; // Max AI questions per day for free users
+const ADMIN_NUMBERS = ["254726260884", "254703469525"];
 
 type PlanKey = keyof typeof PLANS;
 
@@ -499,7 +500,6 @@ export async function processIncomingMessage(
   // ADMIN COMMAND CENTER — Edwin's WhatsApp Ops Dashboard
   // Only accessible to admin numbers
   // ═══════════════════════════════════════════════════════════════════════════
-  const ADMIN_NUMBERS = ["254726260884", "254703469525"];
   const isAdmin = ADMIN_NUMBERS.includes(waId);
 
   if (isAdmin && (input.startsWith("ADMIN") || input.startsWith("OPS") || input === "SYS")) {
@@ -1060,8 +1060,8 @@ async function handleGeminiQuestion(waId: string, question: string, userId: stri
       select: { name: true, isPremium: true },
     });
 
-    // ── 3-prompt gate for free users ──────────────────────────────────
-    if (!user?.isPremium) {
+    // ── 3-prompt gate for free users (admins are exempt) ─────────────
+    if (!user?.isPremium && !ADMIN_NUMBERS.includes(waId)) {
       const todayStart = new Date();
       todayStart.setHours(0, 0, 0, 0);
       const aiQueriesCount = await prisma.whatsAppLog.count({
@@ -1219,7 +1219,7 @@ async function handleGeminiQuestionGuest(waId: string, question: string, session
       },
     });
 
-    if (aiQueriesCount >= FREE_AI_LIMIT) {
+    if (aiQueriesCount >= FREE_AI_LIMIT && !ADMIN_NUMBERS.includes(waId)) {
       return sendPremiumConversionMessage(waId, "Investor", aiQueriesCount);
     }
 

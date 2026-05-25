@@ -29,6 +29,7 @@ export async function handleAdminCommand(waId: string, input: string, rawInput: 
       `├ *ADMIN REFRESH* — force refresh rates\n` +
       `├ *ADMIN BRIEF* — send admin brief now\n` +
       `├ *ADMIN TEST* — test message delivery\n` +
+      `├ *ADMIN RESET AI <number>* — reset demo AI limit\n` +
       `└ *ADMIN BROADCAST <msg>* — blast all users\n\n` +
       `_Type any command above_ ⚡`
     );
@@ -286,6 +287,22 @@ export async function handleAdminCommand(waId: string, input: string, rawInput: 
       } catch { failed++; }
     }
     return sendWhatsAppMessage(waId, `✅ *Broadcast complete!*\n├ Sent: *${sent}*\n├ Failed: *${failed}*\n└ Total: *${users.length}*`);
+  }
+
+  // ── ADMIN RESET AI <number> — clear today's AI count for demo/testing ─
+  if (cmd.startsWith("RESET AI")) {
+    const target = cmd.replace("RESET AI", "").trim() || waId;
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const deleted = await prisma.whatsAppLog.deleteMany({
+      where: {
+        waId: target,
+        direction: "OUTBOUND",
+        message: { contains: "Sentill Africa Says" },
+        createdAt: { gte: todayStart },
+      },
+    });
+    return sendWhatsAppMessage(waId, `✅ *AI limit reset for ${target}*\n└ Cleared ${deleted.count} log entries for today.\n\nThey can now ask ${10} fresh questions.`);
   }
 
   // ── Unknown admin command ──────────────────────────────────────────────
