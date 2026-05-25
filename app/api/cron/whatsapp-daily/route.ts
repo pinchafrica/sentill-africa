@@ -220,7 +220,7 @@ export async function GET(req: Request) {
             `_(${expiryDate})_\n\n` +
             `🔐 *Don't lose Pro access:*\n` +
             `✅ Unlimited AI queries | ✅ Portfolio tracker | ✅ Daily briefs\n\n` +
-            `💎 *KES 490/month ≈ KES 16/day*\n\n` +
+            `💎 *KES 499/month ≈ KES 16/day*\n\n` +
             `Reply *RENEW* or visit: https://sentill.africa/packages`,
             user.id
           );

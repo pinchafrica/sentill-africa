@@ -108,7 +108,7 @@ export async function GET(req: NextRequest) {
   const revenueToday = paymentsToday.reduce((s, p) => s + p.amount, 0);
   const revenue7d = payments7d.reduce((s, p) => s + p.amount, 0);
   const revenue30d = payments30d.reduce((s, p) => s + p.amount, 0);
-  const avgPayment = allPayments.length > 0 ? Math.round(totalRevenue / allPayments.length) : 490;
+  const avgPayment = allPayments.length > 0 ? Math.round(totalRevenue / allPayments.length) : 499;
   const mrr = premiumUsers * avgPayment;
   const arr = mrr * 12;
 

@@ -1251,7 +1251,7 @@ export default function AdminWhatsAppPage() {
               <div className="space-y-2 mt-2">
                 <div className="flex justify-between">
                   <span className="text-xs text-slate-300">📅 Sentill Pro</span>
-                  <span className="text-xs font-bold text-emerald-400">KES 490/month</span>
+                  <span className="text-xs font-bold text-emerald-400">KES 499/month</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-xs text-slate-300">💡 Per day</span>
@@ -1340,7 +1340,7 @@ export default function AdminWhatsAppPage() {
                   <div className="flex flex-wrap gap-2">
                     {[
                       "Hi! 👋 Just checking in — how's your investment journey going?",
-                      "🎉 Upgrade to Sentill Pro for just KES 490/month — less than KES 16/day. Send SUBSCRIBE anytime.",
+                      "🎉 Upgrade to Sentill Pro for just KES 499/month — less than KES 16/day. Send SUBSCRIBE anytime.",
                       "📊 Have you checked today's market rates? Send RATES to see live NSE prices!",
                       "⏳ Your Pro subscription expires soon. Renew at sentill.africa/packages",
                     ].map((tpl, i) => (

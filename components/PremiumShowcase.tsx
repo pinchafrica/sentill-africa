@@ -104,10 +104,10 @@ const PLANS = [
   {
     id: "pro",
     label: "Sentill Pro",
-    price: "KES 490",
+    price: "KES 499",
     period: "/mo",
     description: "Full institutional-grade intelligence — all features unlocked",
-    cta: "⚡ Go Pro — KES 490/month",
+    cta: "⚡ Go Pro — KES 499/month",
     accent: "bg-slate-900 border-emerald-800",
     ctaStyle: "bg-emerald-500 text-white hover:bg-emerald-400",
     badge: "Everything Included",

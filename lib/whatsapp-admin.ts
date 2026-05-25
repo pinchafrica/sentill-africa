@@ -96,7 +96,7 @@ export async function handleAdminCommand(waId: string, input: string, rawInput: 
     ]);
     const total = allPay.reduce((s, p) => s + p.amount, 0);
     const rev30 = pay30.reduce((s, p) => s + p.amount, 0);
-    const avg = allPay.length > 0 ? Math.round(total / allPay.length) : 490;
+    const avg = allPay.length > 0 ? Math.round(total / allPay.length) : 499;
     const mrr = premium * avg;
     const progress = Math.min(100, Math.round((rev30 / 500000) * 100));
 

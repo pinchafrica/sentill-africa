@@ -10,7 +10,7 @@ import {
   TrendingUp, Star, Award, ChevronRight, PlayCircle, BarChart3, Plus,
   Layers, Briefcase, Server, Shield, Check, ChevronDown, Users, Lock,
   Smartphone, PieChart, Target, ArrowUpRight, TrendingDown, Info, Flame,
-  MessageCircle, Signal, Wallet, Calculator, Landmark
+  MessageCircle, Signal, Wallet, Calculator, Landmark, Phone, Crown, Sparkles
 } from "lucide-react";
 import Image from "next/image";
 import AssetModal from "@/components/AssetModal";
@@ -52,6 +52,27 @@ const IMG = {
 };
 
 const HERO_SLIDES = [
+  {
+    id: "mansa-x",
+    title: "Mansa-X Special Fund",
+    subtitle: "Multi-Strategy Alpha · CMA Licensed",
+    badge: "Exclusive",
+    value: "24.6% YTD Return",
+    image: IMG.creative_entrepreneur,
+    description: "Kenya's premier high-alpha multi-strategy fund. Speak directly with the fund manager, Joseph Mule, for a private allocation briefing.",
+    stats: [
+      { label: "Target Return", value: "22–28%" },
+      { label: "AUM", value: "KES 2.8B" },
+      { label: "Min. Entry", value: "KES 250k" },
+    ],
+    manager: {
+      name: "Joseph Mule",
+      role: "Lead Fund Manager · Mansa Capital",
+      phone: "0722 315 250",
+      tel: "+254722315250",
+    },
+    detailsHref: "/markets/special/mansa-x",
+  },
   {
     id: "ifb",
     title: "Tax-Free Infrastructure Bonds",
@@ -394,6 +415,63 @@ export default function HomePage() {
                   ))}
                 </div>
 
+                {/* Mansa-X — Fund Manager Direct Card */}
+                {slide.id === "mansa-x" && (slide as any).manager && (
+                  <div className="relative max-w-lg">
+                    {/* Glow */}
+                    <div className="absolute -inset-1 bg-gradient-to-r from-violet-500/40 via-fuchsia-500/30 to-amber-400/30 rounded-3xl blur-xl opacity-70" />
+                    <div className="relative bg-gradient-to-br from-slate-950 via-slate-900 to-violet-950 rounded-3xl p-6 border border-white/10 shadow-2xl overflow-hidden">
+                      {/* Decorative shimmer */}
+                      <div className="absolute -top-16 -right-16 w-48 h-48 bg-violet-500/30 rounded-full blur-3xl pointer-events-none" />
+                      <div className="absolute -bottom-12 -left-12 w-40 h-40 bg-amber-400/20 rounded-full blur-3xl pointer-events-none" />
+
+                      <div className="relative flex items-center gap-2 mb-4">
+                        <span className="flex items-center gap-1.5 px-2.5 py-1 bg-amber-400/15 border border-amber-300/30 rounded-full">
+                          <Crown className="w-3 h-3 text-amber-300" />
+                          <span className="text-[9px] font-black text-amber-200 uppercase tracking-[0.18em]">Speak To The Fund Manager</span>
+                        </span>
+                      </div>
+
+                      <div className="relative flex items-center gap-4">
+                        {/* Avatar monogram */}
+                        <div className="relative">
+                          <div className="absolute inset-0 bg-gradient-to-br from-violet-400 to-amber-300 rounded-2xl blur-md opacity-70" />
+                          <div className="relative w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500 to-fuchsia-600 flex items-center justify-center text-white font-black text-xl border border-white/20 shadow-xl">
+                            JM
+                          </div>
+                        </div>
+
+                        <div className="flex-1 min-w-0">
+                          <p className="text-white font-black text-lg leading-tight truncate">{(slide as any).manager.name}</p>
+                          <p className="text-[9px] font-black text-violet-200/80 uppercase tracking-widest mt-0.5 truncate">{(slide as any).manager.role}</p>
+
+                          <div className="flex items-center gap-2 mt-3">
+                            <a
+                              href={`tel:${(slide as any).manager.tel}`}
+                              className="inline-flex items-center gap-2 px-3.5 py-2 bg-emerald-500 hover:bg-emerald-400 rounded-xl text-[10px] font-black uppercase tracking-widest text-white transition-all shadow-lg shadow-emerald-500/30"
+                            >
+                              <Phone className="w-3.5 h-3.5" /> {(slide as any).manager.phone}
+                            </a>
+                            <Link
+                              href={(slide as any).detailsHref || "/markets/special/mansa-x"}
+                              className="inline-flex items-center gap-1.5 px-3 py-2 bg-white/10 hover:bg-white/20 border border-white/15 rounded-xl text-[10px] font-black uppercase tracking-widest text-white transition-all"
+                            >
+                              Full Details <ArrowRight className="w-3 h-3" />
+                            </Link>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Footer trust strip */}
+                      <div className="relative mt-5 pt-4 border-t border-white/10 flex items-center justify-between gap-3 text-[9px] font-black uppercase tracking-widest text-slate-400">
+                        <span className="flex items-center gap-1.5"><ShieldCheck className="w-3 h-3 text-emerald-400" /> CMA Licensed</span>
+                        <span className="flex items-center gap-1.5"><Sparkles className="w-3 h-3 text-amber-300" /> KES 2.8B AUM</span>
+                        <span className="flex items-center gap-1.5"><TrendingUp className="w-3 h-3 text-violet-300" /> 24.6% YTD</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* IFB countdown */}
                 {slide.id === "ifb" && (
                   <div className="flex items-center gap-5 p-5 bg-slate-50 border border-slate-200 rounded-2xl max-w-lg shadow-sm">
@@ -424,12 +502,24 @@ export default function HomePage() {
 
                 {/* CTAs */}
                 <div className="flex items-center gap-4 max-w-lg pt-1">
-                  <Link href="/auth/register" className="flex-1 flex items-center justify-center gap-2 bg-slate-900 text-white rounded-xl py-4 text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition-colors shadow-lg">
-                    {slide.id === "ifb" ? "Access Dashboard" : "Join Sentill"} <ArrowRight className="w-4 h-4" />
+                  <Link
+                    href={slide.id === "mansa-x" ? ((slide as any).detailsHref || "/markets/special/mansa-x") : "/auth/register"}
+                    className="flex-1 flex items-center justify-center gap-2 bg-slate-900 text-white rounded-xl py-4 text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition-colors shadow-lg"
+                  >
+                    {slide.id === "mansa-x" ? "View Mansa-X Details" : slide.id === "ifb" ? "Access Dashboard" : "Join Sentill"} <ArrowRight className="w-4 h-4" />
                   </Link>
-                  <button onClick={() => setIsAssetModalOpen(true)} className="flex-1 flex items-center justify-center gap-2 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl py-4 text-xs font-black uppercase tracking-widest hover:bg-emerald-100 transition-colors">
-                    <Plus className="w-4 h-4" /> Log Asset
-                  </button>
+                  {slide.id === "mansa-x" ? (
+                    <a
+                      href={`tel:${(slide as any).manager?.tel}`}
+                      className="flex-1 flex items-center justify-center gap-2 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl py-4 text-xs font-black uppercase tracking-widest hover:bg-emerald-100 transition-colors"
+                    >
+                      <Phone className="w-4 h-4" /> Call Manager
+                    </a>
+                  ) : (
+                    <button onClick={() => setIsAssetModalOpen(true)} className="flex-1 flex items-center justify-center gap-2 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl py-4 text-xs font-black uppercase tracking-widest hover:bg-emerald-100 transition-colors">
+                      <Plus className="w-4 h-4" /> Log Asset
+                    </button>
+                  )}
                 </div>
                 {/* WhatsApp quick access */}
                 <div className="mt-4">
@@ -1271,7 +1361,7 @@ export default function HomePage() {
               <div className="absolute top-0 right-0 px-6 py-2 bg-emerald-600 text-white text-[9px] font-black uppercase tracking-widest rounded-bl-2xl">Pro Access</div>
               <h4 className="text-[11px] font-black uppercase tracking-[0.2em] mb-6 opacity-60">Sentill Pro</h4>
               <div className="mb-2">
-                <span className="text-6xl font-black tracking-tighter">490</span>
+                <span className="text-6xl font-black tracking-tighter">499</span>
                 <span className="text-lg font-black ml-1 opacity-60">KES</span>
               </div>
               <p className="text-[10px] font-bold uppercase tracking-widest opacity-40 mb-8">/month &nbsp;·&nbsp; cancel anytime</p>
@@ -1297,7 +1387,7 @@ export default function HomePage() {
                 onClick={() => isLoggedIn ? setPremiumModalOpen(true) : router.push("/packages")}
                 className="w-full py-4 rounded-xl text-[10px] font-black uppercase tracking-widest bg-emerald-600 text-white hover:bg-emerald-500 transition-all shadow-lg"
               >
-                {isLoggedIn && user?.isPremium ? "Active — You're Pro ✓" : "Go Pro — KES 490/month"}
+                {isLoggedIn && user?.isPremium ? "Active — You're Pro ✓" : "Go Pro — KES 499/month"}
               </button>
               <p className="text-[9px] opacity-30 uppercase tracking-widest mt-4">M-Pesa · Card · Mpesa STK Push</p>
             </div>

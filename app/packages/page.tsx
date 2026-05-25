@@ -19,7 +19,7 @@ const PLAN_CATALOG: Record<BillingCycle, {
   savingsAbs: number;
   badge?: string;
 }> = {
-  MONTHLY:   { planKey: "PRO_30_DAYS",       amount: 490,  days: 30,  label: "/month",   perMonth: 490,  perDay: 16.33, savingsPct: 0,  savingsAbs: 0 },
+  MONTHLY:   { planKey: "PRO_30_DAYS",       amount: 499,  days: 30,  label: "/month",   perMonth: 499,  perDay: 16.63, savingsPct: 0,  savingsAbs: 0 },
   QUARTERLY: { planKey: "QUARTERLY_90_DAYS", amount: 1299, days: 90,  label: "/3 months", perMonth: 433, perDay: 14.43, savingsPct: 12, savingsAbs: 171, badge: "SAVE 12%" },
   ANNUAL:    { planKey: "ANNUAL_365_DAYS",   amount: 4900, days: 365, label: "/year",     perMonth: 408, perDay: 13.42, savingsPct: 17, savingsAbs: 980, badge: "BEST VALUE · 2 MONTHS FREE" },
 };

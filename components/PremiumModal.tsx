@@ -45,7 +45,7 @@ export default function PremiumModal({ isOpen, onClose }: { isOpen: boolean, onC
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           userId: realUserId,
-          amount: 490,
+          amount: 499,
           mpesaCode: "254700000000",
           plan: "PRO_30_DAYS",
           email: userEmail || "user@sentill.africa"
@@ -119,7 +119,7 @@ export default function PremiumModal({ isOpen, onClose }: { isOpen: boolean, onC
               {/* Single Plan Summary */}
               <div className="bg-gradient-to-b from-emerald-900/30 to-slate-900 border border-emerald-500/20 rounded-2xl p-6 mb-6 text-center">
                 <p className="text-[10px] font-black uppercase tracking-widest text-emerald-400 mb-2">Sentill Pro · 30 Days</p>
-                <p className="text-5xl font-black text-white tracking-tighter">KES 490</p>
+                <p className="text-5xl font-black text-white tracking-tighter">KES 499</p>
                 <p className="text-[10px] text-slate-400 mt-2 uppercase tracking-widest">≈ KES 16/day · Cancel anytime · No auto-renew</p>
               </div>
 
@@ -143,7 +143,7 @@ export default function PremiumModal({ isOpen, onClose }: { isOpen: boolean, onC
                 onClick={handleUpgrade}
                 className="w-full py-4 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] transition-all active:scale-[0.98] shadow-lg shadow-emerald-900/30 flex items-center justify-center gap-2"
               >
-                <Zap className="w-4 h-4" /> Activate Pro — KES 490
+                <Zap className="w-4 h-4" /> Activate Pro — KES 499
               </button>
 
               {/* WhatsApp help */}

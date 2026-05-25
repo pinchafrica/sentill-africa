@@ -303,16 +303,16 @@ function generateSecurePassword(): string {
 
 const PLANS = {
   // Monthly — entry tier
-  PRO_30_DAYS:      { label: "Sentill Pro — Monthly",   amount: 490,  days: 30,  description: "Full Pro access for 30 days. Cancel anytime." },
-  MONTHLY_30_DAYS:  { label: "Sentill Pro — Monthly",   amount: 490,  days: 30,  description: "Full Pro access for 30 days. Cancel anytime." },
-  // Quarterly — save 12% (3 × 490 = 1,470 → 1,299)
+  PRO_30_DAYS:      { label: "Sentill Pro — Monthly",   amount: 499,  days: 30,  description: "Full Pro access for 30 days. Cancel anytime." },
+  MONTHLY_30_DAYS:  { label: "Sentill Pro — Monthly",   amount: 499,  days: 30,  description: "Full Pro access for 30 days. Cancel anytime." },
+  // Quarterly — save 13% (3 × 499 = 1,497 → 1,299)
   QUARTERLY_90_DAYS:{ label: "Sentill Pro — Quarterly", amount: 1299, days: 90,  description: "Full Pro access for 90 days. Save KES 171 (12% off)." },
   // Annual — save 17% (2 months free vs. monthly)
   ANNUAL_365_DAYS:  { label: "Sentill Pro — Annual",    amount: 4900, days: 365, description: "Full Pro access for 365 days. Save KES 980 (2 months free)." },
   // Chama group plan — 10 seats shared
   CHAMA_MONTHLY:    { label: "Sentill Chama Group",     amount: 2500, days: 30,  description: "Up to 10 members share Pro access for 30 days." },
   // Legacy alias
-  WEEKLY_7_DAYS:    { label: "Sentill Pro — Monthly",   amount: 490,  days: 30,  description: "Full Pro access for 30 days." },
+  WEEKLY_7_DAYS:    { label: "Sentill Pro — Monthly",   amount: 499,  days: 30,  description: "Full Pro access for 30 days." },
 } as const;
 
 // ── Free-tier AI prompt limit ────────────────────────────────────────────────
@@ -750,7 +750,7 @@ export async function processIncomingMessage(
     if (input.includes("MARKET") || input.includes("MSRKET") || input === "LIVE MKT") return handleMarkets(waId);
     if (["GO PRO", "GET PRO", "BUY PRO", "PRO PLAN", "SENTILL PRO", "GO PREMIUM"].includes(input)) {
       return sendWhatsAppMessage(waId,
-        `⚡ *Sentill Pro — KES 490/month*\n\n` +
+        `⚡ *Sentill Pro — KES 499/month*\n\n` +
         `Unlock everything:\n` +
         `✅ Portfolio tracker & investment logging\n` +
         `✅ Unlimited Sentill questions (no daily cap)\n` +
@@ -762,6 +762,19 @@ export async function processIncomingMessage(
       );
     }
     if (input.includes("MANSA") || input.startsWith("MANSA")) {
+      // If already handled in this session, just acknowledge
+      if (session.state === "MANSA_HANDLED") {
+        return sendWhatsAppMessage(waId, "✅ Already gave Mansa details. Send another command or type MENU.");
+      }
+      // Mark as handled and respond
+      await updateSession(waId, "MANSA_HANDLED", ctx, session.userId ?? undefined);
+      return handleGeminiQuestionGuest(
+        waId,
+        "Give me complete details on the Mansa-X Multi-Asset Fund by Standard Investment Bank (SIB) Kenya. Include strategy, minimum KES 250,000, markets traded, fees, pros/cons, who it suits.",
+        session,
+        ctx
+      );
+    }
       return handleGeminiQuestionGuest(waId, "Give me complete details on the Mansa-X Multi-Asset Fund by Standard Investment Bank (SIB) Kenya. Include strategy, minimum KES 250,000, markets traded, fees, pros/cons, who it suits.", session, ctx);
     }
 
@@ -890,7 +903,7 @@ export async function processIncomingMessage(
   if (["SUBSCRIBE", "RENEW", "UPGRADE", "PRO", "PAY", "TRIAL"].includes(input)) {
     return sendSubscriptionPlans(waId, userId);
   }
-  if (input === "MONTHLY_30_DAYS" || input === "MONTHLY" || input === "PRO_30_DAYS" || input === "490") {
+  if (input === "MONTHLY_30_DAYS" || input === "MONTHLY" || input === "PRO_30_DAYS" || input === "499") {
     return handleSelectPlan(waId, "PRO_30_DAYS", ctx, userId);
   }
   if (input === "QUARTERLY_90_DAYS" || input === "QUARTERLY" || input === "3 MONTHS" || input === "1299") {
@@ -1067,7 +1080,7 @@ async function handleGeminiQuestion(waId: string, question: string, userId: stri
           `• UNLIMITED questions (no daily cap)\n` +
           `• Priority responses with deeper analysis\n` +
           `• Portfolio tracker + daily market alerts\n\n` +
-          `*KES 490/month \u2248 KES 16/day* \u2014 less than a chai!\n` +
+          `*KES 499/month \u2248 KES 16/day* \u2014 less than a chai!\n` +
           `Reply *SUBSCRIBE* to upgrade ⚡`
         ).catch(() => {}); // Non-blocking
       }
@@ -1322,7 +1335,7 @@ async function sendPremiumConversionMessage(waId: string, name: string, queriesU
     `✅ *Downloadable PDF Analytics*\n` +
     `✅ *Estate Vault & Beneficiary Automations*\n\n` +
     `━━━━━━━━━━━━━━━━━━\n` +
-    `💰 *SENTILL PRO — KES 490/month*\n\n` +
+    `💰 *SENTILL PRO — KES 499/month*\n\n` +
     `⚡ One plan. Every feature. ≈ KES 16/day.\n` +
     `Less than a cup of coffee per day!\n\n` +
     `━━━━━━━━━━━━━━━━━━\n` +
@@ -1655,7 +1668,7 @@ async function startLogAsset(waId: string, ctx: SessionContext, userId: string) 
       waId,
       `📊 *Log Investment*\n\n` +
       `Asset tracking is a *Pro feature*.\n\n` +
-      `⚡ Send *SUBSCRIBE* to upgrade — only *KES 490/month*.`
+      `⚡ Send *SUBSCRIBE* to upgrade — only *KES 499/month*.`
     );
   }
 
@@ -2178,7 +2191,7 @@ async function handlePortfolio(waId: string, userId: string) {
     return sendWhatsAppMessage(
       waId,
       `📊 *Portfolio Tracker*\n\nThis is a *Pro feature*.\n\n` +
-      `⚡ Send *SUBSCRIBE* to upgrade — only *KES 490/month*.`
+      `⚡ Send *SUBSCRIBE* to upgrade — only *KES 499/month*.`
     );
   }
 
@@ -2584,7 +2597,7 @@ async function handleSubscriptionStatus(waId: string, userId: string) {
     `👤 ${user.name}\n\n` +
     `❌ Portfolio tracker\n❌ Sentill Africa Oracle\n❌ Goal planning\n\n` +
     `⚡ *Upgrade to Sentill Pro:*\n` +
-    `💎 *KES 490/month* — All features unlocked\n\n` +
+    `💎 *KES 499/month* — All features unlocked\n\n` +
     `Send *SUBSCRIBE* to upgrade.`
   );
 }
@@ -2621,7 +2634,7 @@ async function sendSubscriptionPlans(waId: string, userId?: string) {
     `🔔 Daily 7AM market briefs\n\n` +
     `━━━━━━━━━━━━━━━━━━\n` +
     `💎 *Choose your plan*\n\n` +
-    `🔹 *Monthly* — KES 490\n   _≈ KES 16/day_\n\n` +
+    `🔹 *Monthly* — KES 499\n   _≈ KES 16/day_\n\n` +
     `🔸 *Quarterly* — KES 1,299 _(save 12%)_\n   _3 months · KES 14/day_\n\n` +
     `🔶 *Annual* — KES 4,900 _(save 17%)_\n   _2 months FREE · KES 13/day_\n` +
     `━━━━━━━━━━━━━━━━━━\n` +
@@ -2633,7 +2646,7 @@ async function sendSubscriptionPlans(waId: string, userId?: string) {
     `👉 *Reply with your plan choice:*\n\n` +
     `*ANNUAL* — 🔶 Annual KES 4,900 _(save 17%)_\n` +
     `*QUARTERLY* — 🔸 3 Months KES 1,299 _(save 12%)_\n` +
-    `*MONTHLY* — 🔹 Monthly KES 490`
+    `*MONTHLY* — 🔹 Monthly KES 499`
   );
 }
 
@@ -3037,7 +3050,7 @@ async function sendHelp(waId: string, userId?: string) {
       `🎯 *GOALS* — Set targets\n` +
       `👥 *REFER* — Invite friends, earn free Pro\n\n` +
       `━━━━━━━━━━━━━━━━━━\n` +
-      `*🔒 Unlock with Pro (KES 490/mo):*\n\n` +
+      `*🔒 Unlock with Pro (KES 499/mo):*\n\n` +
       `• Unlimited AI advisor\n` +
       `• Unlimited portfolio tracking\n` +
       `• Real-time yield drop alerts\n` +
@@ -3256,7 +3269,7 @@ async function handleAssetsDashboard(waId: string, userId: string) {
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user?.isPremium) {
     return sendWhatsAppMessage(waId,
-      `📊 *Asset Tracker Pro*\n\nFull asset management is a *Sentill Pro* feature.\n\n⚡ *KES 490/month* — less than KES 16/day.\nSend *SUBSCRIBE* to unlock unlimited assets + AI advisor.`
+      `📊 *Asset Tracker Pro*\n\nFull asset management is a *Sentill Pro* feature.\n\n⚡ *KES 499/month* — less than KES 16/day.\nSend *SUBSCRIBE* to unlock unlimited assets + AI advisor.`
     );
   }
 

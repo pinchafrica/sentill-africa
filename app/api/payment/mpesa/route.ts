@@ -15,14 +15,14 @@ export async function POST(req: NextRequest) {
 
     // Plan pricing — single source of truth
     const PLAN_AMOUNTS: Record<string, number> = {
-      PRO_30_DAYS: 490,
-      MONTHLY_30_DAYS: 490,
-      WEEKLY_7_DAYS: 490,
+      PRO_30_DAYS: 499,
+      MONTHLY_30_DAYS: 499,
+      WEEKLY_7_DAYS: 499,
       QUARTERLY_90_DAYS: 1299,
       ANNUAL_365_DAYS: 4900,
       CHAMA_MONTHLY: 2500,
       // Legacy aliases
-      PRO_MONTHLY: 490,
+      PRO_MONTHLY: 499,
       PRO_ANNUAL: 4900,
     };
 

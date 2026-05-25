@@ -22,7 +22,23 @@
       "Bash(tail -40 \"C:\\\\\\\\Users\\\\\\\\USER\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\claude\\\\\\\\c--Users-USER-Downloads-Sentil\\\\\\\\ba07f1f2-f978-4f6d-a571-98adb27ab2bc\\\\\\\\tasks\\\\\\\\b9u9xo5wk.output\")",
       "Bash(grep -E \"Ready|Local:|http://localhost\" \"C:\\\\\\\\Users\\\\\\\\USER\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\claude\\\\\\\\c--Users-USER-Downloads-Sentil\\\\\\\\ba07f1f2-f978-4f6d-a571-98adb27ab2bc\\\\\\\\tasks\\\\\\\\b9u9xo5wk.output\")",
       "mcp__playwright__browser_navigate",
-      "Bash(tail -100 \"C:\\\\\\\\Users\\\\\\\\USER\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\claude\\\\\\\\c--Users-USER-Downloads-Sentil\\\\\\\\ba07f1f2-f978-4f6d-a571-98adb27ab2bc\\\\\\\\tasks\\\\\\\\b9u9xo5wk.output\")"
+      "Bash(tail -100 \"C:\\\\\\\\Users\\\\\\\\USER\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\claude\\\\\\\\c--Users-USER-Downloads-Sentil\\\\\\\\ba07f1f2-f978-4f6d-a571-98adb27ab2bc\\\\\\\\tasks\\\\\\\\b9u9xo5wk.output\")",
+      "Bash(mkdir -p \"C:/Users/USER/.claude/projects/c--Users-USER-Downloads-Sentil/memory/\")",
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\USER\\\\Downloads\\\\Sentil\" -Recurse -Depth 2)",
+      "Bash(xargs grep -l \"export default\")",
+      "mcp__playwright__browser_resize",
+      "Bash(python -c \"from PIL import Image, ImageDraw, ImageFont; img = Image.open\\('c:/Users/USER/Downloads/Sentil/sentill-homepage-hd.png'\\); print\\(img.size\\)\")",
+      "Bash(python3 -c \"from PIL import Image; img = Image.open\\('c:/Users/USER/Downloads/Sentil/sentill-homepage-hd.png'\\); print\\(img.size\\)\")",
+      "PowerShell(node -e \"const {createCanvas, loadImage} = require\\('canvas'\\); console.log\\('canvas ok'\\)\" 2>&1)",
+      "PowerShell(node -e \"const jimp = require\\('jimp'\\); console.log\\('jimp ok'\\)\" 2>&1)",
+      "Bash(node generate_proposal.mjs)",
+      "Bash(Start-Sleep -Seconds 2)",
+      "Bash(Invoke-WebRequest -Uri http://localhost:7654 -UseBasicParsing)",
+      "Bash(Select-Object -ExpandProperty StatusCode)",
+      "PowerShell(Start-Sleep -Seconds 1; \\(Invoke-WebRequest -Uri http://localhost:7654 -UseBasicParsing\\).StatusCode)"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\USER\\.claude\\projects\\c--Users-USER-Downloads-Sentil"
     ]
   }
 }
