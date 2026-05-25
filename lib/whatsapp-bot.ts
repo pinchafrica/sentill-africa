@@ -775,7 +775,13 @@ export async function processIncomingMessage(
         ctx
       );
     }
-      return handleGeminiQuestionGuest(waId, "Give me complete details on the Mansa-X Multi-Asset Fund by Standard Investment Bank (SIB) Kenya. Include strategy, minimum KES 250,000, markets traded, fees, pros/cons, who it suits.", session, ctx);
+    if (input.includes("OAK") || input.includes("FAIDA") || input === "FIB") {
+      return handleGeminiQuestionGuest(
+        waId,
+        "Give me complete details on the OAK Special Fund by Faida Investment Bank (FIB) Kenya. Include: leveraged asset allocation strategy, CMA Special CIS license, inception February 2024, minimum investment KES 500,000, top-up minimum KES 50,000, 6-month lock-in, target 20% net annual return, asset classes (NSE equities, FX, commercial papers, global markets), fees, who it suits, and how it compares to SIB Mansa-X. Also mention the new OAK Multi-Asset Special USD Fund (USD-denominated, global sovereign + corporate bonds + derivatives, T+2 settlement after 6-month lock).",
+        session,
+        ctx
+      );
     }
 
     // LIVE RATE command for guests
@@ -835,6 +841,10 @@ export async function processIncomingMessage(
     return handleGeminiQuestion(waId, "Give me all CMA-licensed forex brokers in Kenya 2026 with minimum deposits, leverage, platforms, and critical risk warnings. Include FXPesa, Pepperstone, Scope Markets, EGM Securities, HF Markets.", userId);
   if (["MANSA-X", "MANSAX", "MANSA X", "SIB FUND", "SIB"].includes(input))
     return handleGeminiQuestion(waId, "Give me complete details on the Mansa-X Multi-Asset Fund by Standard Investment Bank (SIB) Kenya. Include: strategy, minimum investment (KES 250,000), markets traded (NYSE/LSE/commodities), fees, Sharia option, pros, cons, and who it is best for.", userId);
+  if (["OAK", "OAKFUND", "OAK FUND", "OAK SPECIAL", "OAK SPECIAL FUND", "FAIDA", "FIB", "FAIDA INVESTMENT BANK"].includes(input))
+    return handleGeminiQuestion(waId, "Give me complete details on the OAK Special Fund by Faida Investment Bank (FIB) Kenya. Include: leveraged asset allocation strategy, CMA Special CIS license, inception February 2024, minimum investment KES 500,000, top-up minimum KES 50,000, 6-month lock-in, target 20% net annual return, asset classes (NSE equities, FX, commercial papers, global markets), fees, who it suits, and how it compares to SIB Mansa-X. Also mention the new OAK Multi-Asset Special USD Fund (USD-denominated, global sovereign + corporate bonds + derivatives, T+2 settlement after 6-month lock).", userId);
+  if (["OAK USD", "OAK DOLLAR", "OAK MULTI ASSET", "OAK MULTIASSET", "OAK USD FUND"].includes(input))
+    return handleGeminiQuestion(waId, "Give me complete details on the OAK Multi-Asset Special USD Fund by Faida Investment Bank (FIB) Kenya. Include: USD-denominated structure, target high-yield assets (global sovereign bonds, corporate bonds, derivatives), 6-month lock-in, T+2 settlement, medium-to-high risk profile, CMA approval, minimums, fees, currency hedge benefit for Kenyan investors, and who it suits.", userId);
   if (["CORP BONDS", "CORPORATE BONDS", "CORPORATE BOND", "COMMERCIAL PAPER"].includes(input))
     return handleGeminiQuestion(waId, "Give me complete details on corporate bonds and commercial paper available in Kenya in 2026. Include current issuers (Centum, Family Bank, EABL, HF Group), coupon rates, WHT treatment, minimums, risks and how to buy on NSE.", userId);
   if (["IFB", "INFRASTRUCTURE BOND", "INFRASTRUCTURE BONDS"].includes(input))
@@ -1448,8 +1458,9 @@ async function sendInvestmentCategories(waId: string, userId: string) {
     `   \u{1F9F8} Fixed Income CIS: Cytonn FI 14\u201316% | CIC 12\u201314%\n` +
     `   \u{1F54C} Islamic/Sharia: Amana Capital MMF *13\u201315%* | Ijara Sukuk\n` +
     `   \u{1FAC0} Mansa-X (SIB): Global multi-asset \u2014 Min KES 250,000\n` +
+    `   \u{1F333} OAK Special Fund (Faida IB): Leveraged \u2014 Target 20% p.a., Min KES 500,000\n` +
     `   Min: KES 1,000 (unit trusts) | CMA-regulated\n` +
-    `   _Reply *SPECIAL* or *11* for full special funds guide_\n\n` +
+    `   _Reply *SPECIAL* or *11* for full special funds guide \u00b7 *OAK* or *MANSA-X* for deep dive_\n\n` +
 
     `*\u{1F33F} 12. CORPORATE BONDS \u0026 COMMERCIAL PAPER*\n` +
     `   Issuers: Centum RE 13%, Family Bank 13.5%, EABL 12.5%\n` +
