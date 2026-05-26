@@ -1,6 +1,6 @@
 /**
  * lib/dividend-calendar.ts
- * Authoritative NSE dividend & book-closure calendar for Kenya — April/May 2026.
+ * Authoritative NSE dividend & book-closure calendar for Kenya — May/June/July 2026.
  * Update this object each quarter as CBK/NSE data is published.
  */
 
@@ -15,35 +15,8 @@ export interface DividendEvent {
   notes?: string;
 }
 
-// ── April / May 2026 Book Closures ────────────────────────────────────────────
+// ── May / June / July 2026 Book Closures ────────────────────────────────────
 export const DIVIDEND_CALENDAR: DividendEvent[] = [
-  {
-    symbol: "SCBK",
-    name: "Standard Chartered Bank Kenya",
-    dividend: 23.00,
-    bookClosureDate: new Date("2026-04-30"),
-    dividendYield: 13.1,
-    currentPrice: 176.00,
-    notes: "Final dividend. 13.1% yield at current price — one of highest on NSE.",
-  },
-  {
-    symbol: "NCBA",
-    name: "NCBA Group",
-    dividend: 4.60,
-    bookClosureDate: new Date("2026-04-30"),
-    dividendYield: 9.2,
-    currentPrice: 49.85,
-    notes: "Final dividend. 9.2% yield at current price.",
-  },
-  {
-    symbol: "ABSA",
-    name: "Absa Bank Kenya",
-    dividend: 1.85,
-    bookClosureDate: new Date("2026-04-30"),
-    dividendYield: 12.9,
-    currentPrice: 14.30,
-    notes: "Final dividend. 12.9% yield at current price.",
-  },
   {
     symbol: "BOC",
     name: "BOC Kenya",
@@ -51,25 +24,43 @@ export const DIVIDEND_CALENDAR: DividendEvent[] = [
     bookClosureDate: new Date("2026-05-31"),
     dividendYield: 8.4,
     currentPrice: 123.00,
-    notes: "Industrial gases firm — outlier dividend this cycle.",
+    notes: "Industrial gases firm — consistent high dividend. Own before May 31 to qualify.",
   },
   {
-    symbol: "NSE",
-    name: "Nairobi Securities Exchange",
+    symbol: "KCB",
+    name: "KCB Group PLC",
+    dividend: 3.09,
+    bookClosureDate: new Date("2026-06-30"),
+    dividendYield: 8.3,
+    currentPrice: 37.20,
+    notes: "Interim FY2026 dividend expected. Highest dividend yield in banking sector.",
+  },
+  {
+    symbol: "COOP",
+    name: "Co-operative Bank of Kenya",
     dividend: 1.00,
-    bookClosureDate: new Date("2026-04-30"),
-    dividendYield: 5.6,
-    currentPrice: 17.80,
-    notes: "Trading on momentum with Hedera/Hashgraph Innovation Lab launch.",
+    bookClosureDate: new Date("2026-06-30"),
+    dividendYield: 8.1,
+    currentPrice: 12.55,
+    notes: "Interim 2026 dividend. SACCO banking network provides strong deposit base.",
   },
   {
-    symbol: "SASN",
-    name: "Sasini PLC",
-    dividend: 0.75,
-    bookClosureDate: new Date("2026-05-15"),
-    dividendYield: 3.8,
-    currentPrice: 19.75,
-    notes: "Agri sector momentum leader April 2026. Export demand peak.",
+    symbol: "EQTY",
+    name: "Equity Group Holdings",
+    dividend: 2.50,
+    bookClosureDate: new Date("2026-07-15"),
+    dividendYield: 5.2,
+    currentPrice: 48.05,
+    notes: "Interim dividend — Pan-African banking growth driving consistent payouts.",
+  },
+  {
+    symbol: "SCOM",
+    name: "Safaricom PLC",
+    dividend: 0.87,
+    bookClosureDate: new Date("2026-07-31"),
+    dividendYield: 4.5,
+    currentPrice: 19.35,
+    notes: "Interim dividend. M-Pesa and Ziidi platform driving steady income growth.",
   },
 ];
 

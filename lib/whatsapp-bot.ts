@@ -52,7 +52,7 @@ async function getRatesFreshness(): Promise<string> {
     if (hoursOld < 48) return `_🕐 Rates synced ${hoursOld}h ago (${dateStr}) • Verify with provider before investing_`;
     return `_⚠️ Rates last synced ${dateStr} • May be outdated — verify with provider_`;
   } catch {
-    return "_ℹ️ Rates as at April 2026 • Verify with provider before investing_";
+    return "_ℹ️ Rates as at May 2026 • Verify with provider before investing_";
   }
 }
 
@@ -93,14 +93,14 @@ const NSE_FALLBACK: Record<string, { price: number; change: number; pe: number; 
   EQTY: { price: 48.05, change: -0.45, pe: 6.2,  div: 5.2,  signal: "BUY",   why: "Pan-African expansion, cheap valuation, strong EPS growth." },
   KCB:  { price: 37.20, change: +0.70, pe: 4.9,  div: 8.3,  signal: "BUY",   why: "KES 3.09 div at current price = 8.3% yield. Trading below book value." },
   COOP: { price: 12.55, change: -0.20, pe: 5.1,  div: 8.1,  signal: "BUY",   why: "Consistent profits, SACCO banking network advantage." },
-  NCBA: { price: 49.85, change: +0.85, pe: 7.1,  div: 9.2,  signal: "BUY",   why: "KES 4.60/share dividend — books close Apr 30. 9.2% yield at current price." },
-  ABSA: { price: 14.30, change: -0.20, pe: 6.8,  div: 12.9, signal: "BUY",   why: "High dividend yield (~12.9%). Books close Apr 30 — KES 1.85/share." },
+  NCBA: { price: 49.85, change: +0.85, pe: 7.1,  div: 9.2,  signal: "HOLD",  why: "FY2025 div KES 4.60/share paid May 2026. Watch H1 2026 results — Pan-African digital banking growth story." },
+  ABSA: { price: 14.30, change: -0.20, pe: 6.8,  div: 12.9, signal: "BUY",   why: "Strong dividend history ~12.9% yield. FY2025 div KES 1.85/share paid. P/E 6.8x attractive — buy on weakness." },
   EABL: { price: 125.50,change: -2.50, pe: 17.2, div: 3.8,  signal: "WATCH", why: "Premium brand but expensive P/E 17x. Tax pressures on alcohol." },
-  SCBK: { price: 176.00,change: -1.00, pe: 8.4,  div: 13.1, signal: "BUY",   why: "KES 23/share final dividend — books close Apr 30. 13.1% yield at current price." },
-  SASN: { price: 19.75, change: +1.3,  pe: 11,  div: 3.8,  signal: "BUY",   why: "April momentum leader. Agricultural export demand at peak — Sasini is the top agri play right now." },
+  SCBK: { price: 176.00,change: -1.00, pe: 8.4,  div: 7.2,  signal: "BUY",   why: "FY2025 final div KES 23/share (paid May 2026). International banking quality at P/E 8.4x — buy on dips." },
+  SASN: { price: 19.75, change: +1.3,  pe: 11,  div: 3.8,  signal: "HOLD",  why: "Strong agri exports. May 2026 div paid. Watch for Q3 tea/coffee harvest cycle to drive next move." },
   KQ:   { price: 5.40,  change: +2.1,  pe: 0,   div: 0,    signal: "WATCH", why: "High retail interest. Recovery from January lows but still volatile — speculative only." },
   BOC:  { price: 123.0, change: +0.3,  pe: 12,  div: 8.4,  signal: "BUY",   why: "Industrial gases — KES 10.35/share dividend (books close May 31). Niche but consistent earner." },
-  NSE:  { price: 17.80, change: +0.9,  pe: 14,  div: 5.6,  signal: "BUY",   why: "Momentum play: Hedera/Hashgraph Innovation Lab launch + KES 1.00 dividend. Books close Apr 30." },
+  NSE:  { price: 17.80, change: +0.9,  pe: 14,  div: 5.6,  signal: "BUY",   why: "Momentum play: Hedera/Hashgraph Innovation Lab + KES 1.00 div paid May 2026. Exchange digitisation pipeline driving interest." },
 };
 
 async function fetchNSEData(): Promise<any[]> {
@@ -157,7 +157,7 @@ async function handleNSEStocks(waId: string, userId?: string) {
 async function handleDividendCalendar(waId: string) {
   const events = getAllUpcomingDividends();
 
-  let msg = `📅 *NSE DIVIDEND CALENDAR — April/May 2026*\n`;
+  let msg = `📅 *NSE DIVIDEND CALENDAR — May/June/July 2026*\n`;
   msg += `━━━━━━━━━━━━━━━━━━\n\n`;
   msg += `_Own shares BEFORE book closure date to qualify for the dividend._\n\n`;
 
@@ -464,7 +464,7 @@ export async function processIncomingMessage(
   const input = (buttonPayload ?? rawBody ?? "").trim().toUpperCase();
   const rawInput = (rawBody ?? "").trim();
   const session = await getOrCreateSession(waId);
-  const ctx: SessionContext = JSON.parse(session.context || "{}");
+  let ctx: SessionContext = JSON.parse(session.context || "{}");
 
   await logInbound(waId, rawInput || input, session.userId ?? undefined);
 
@@ -484,7 +484,7 @@ export async function processIncomingMessage(
       await sendWhatsAppMessage(waId, "⏱ Your previous session expired after 24 hours. Starting fresh.\n\nSend *MENU* to see all options.");
       // Re-fetch fresh session
       session.state = "IDLE";
-      (ctx as any) = {};
+      ctx = {};
     }
   }
 
@@ -1400,7 +1400,7 @@ async function sendInvestmentCategories(waId: string, userId: string) {
     `   Best: *${bondYield}%* \u2014 IFB1/2024 | *0% WHT \u2014 FULLY TAX-FREE*\n` +
     `   Net yield = stated yield. Zero tax, zero deduction.\n` +
     `   Min: KES 50,000 | Tenure: 6.5 years | Govt guaranteed\n` +
-    `   *Kenya\u2019s best risk-adjusted investment in April 2026*\n` +
+    `   *Kenya\u2019s best risk-adjusted investment in 2026*\n` +
     `   _Reply *BOND* or *3* for full IFB guide_\n\n` +
 
     `*\u{1F91D} 4. SACCOs (Cooperative Savings \u0026 Credit)*\n` +
@@ -1439,7 +1439,7 @@ async function sendInvestmentCategories(waId: string, userId: string) {
     `   _Reply *REITS* or *8* for full property guide_\n\n` +
 
     `*\u{1FA99} 9. CRYPTO (Bitcoin, Ethereum)*\n` +
-    `   Bitcoin: *~$95,000* | ETH: *~$3,800* (April 2026)\n` +
+    `   Bitcoin: *~$105,000* | ETH: *~$3,500* (May 2026)\n` +
     `   Buy via Binance P2P with M-Pesa from KES 500\n` +
     `   Risk: \u{1F534} EXTREME | Max 5\u201310% of portfolio only\n` +
     `   CBK advisory issued \u2014 trade responsibly\n` +
@@ -2916,7 +2916,7 @@ async function sendMainMenu(waId: string, userId?: string) {
 ` +
     `💰 *MMFs* (Money Market) — *${topYield}% p.a.* | KES 100 min | T+1
 ` +
-    `📈 *T-Bills* (Govt) — *16.42%* gross | KES 50K | 91–364 days
+    `📈 *T-Bills* (Govt) — *15.95%* gross | KES 50K | 91–364 days
 ` +
     `🆹 *IFB Bonds* — *18.46% WHT-FREE* 🔥 | KES 50K | 6.5 yrs
 ` +
@@ -3124,7 +3124,7 @@ async function handleCompare(waId: string, query: string, userId: string) {
     );
   }
 
-  const marketCtx = rates.map(r => `${r.symbol}: ${r.price.toFixed(2)}%`).join(", ") || "91-Day T-Bill: 15.78%";
+  const marketCtx = rates.map(r => `${r.symbol}: ${r.price.toFixed(2)}%`).join(", ") || "91-Day T-Bill: 15.15%";
 
   const prompt =
     `Compare these two Kenyan investments for a ${user?.isPremium ? "Pro" : "Free"} Sentil user:\n\n` +
@@ -3777,7 +3777,7 @@ async function handleChartCommand(waId: string, input: string, userId?: string) 
     await sendImageMessage(
       waId,
       mmfYieldChartUrl(),
-      "🏆 Top MMF Yields in Kenya — April 2026 | Source: CMA Kenya",
+      "🏆 Top MMF Yields in Kenya — May 2026 | Source: CMA Kenya",
       userId
     );
     return sendWhatsAppMessage(waId, `• *MARKETS* — live rates\n• *LIST* — fund picker\n• *INVEST* — browse funds`, userId);
@@ -3954,13 +3954,13 @@ async function handleMMFListMenu(waId: string, userId?: string) {
   return sendListMessage(
     waId,
     "📊 Sentill Money Market Funds",
-    "Pick a fund below to get full details — yield, minimum investment, how to invest, and a personal projection.\n\nAll rates as at April 2026 (gross, before 15% WHT):",
+    "Pick a fund below to get full details — yield, minimum investment, how to invest, and a personal projection.\n\nAll rates as at May 2026 (gross, before 15% WHT):",
     "View Funds",
     [
       {
         title: "🏆 Highest Yield Funds",
         rows: [
-          { id: "CAT_MONEY_MARKET", title: "Etica Capital MMF (Zidi)", description: "18.20% p.a. · Min KES 1,000 · Top performer" },
+          { id: "CAT_MONEY_MARKET", title: "Etica Capital MMF (Zidi)", description: "12.84% p.a. · Min KES 1,000 · Top performer" },
           { id: "CAT_MONEY_MARKET", title: "Lofty-Corpin MMF",       description: "17.50% p.a. · Min KES 1,000 · Instant" },
           { id: "CAT_MONEY_MARKET", title: "Cytonn Money Market",    description: "16.90% p.a. · Min KES 1,000" },
           { id: "CAT_MONEY_MARKET", title: "NCBA Money Market",      description: "16.20% p.a. · Min KES 1,000 · Instant" },
