@@ -95,6 +95,17 @@ export default function ConversationsDashboard() {
 
   const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(null), 3000); };
 
+  /* ── Fetch conversations ─────────────────────────────────────────── */
+  const fetchConvos = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/whatsapp/conversations?search=${search}&filter=${filter}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      setConvos(data.conversations ?? []);
+      setStats(data.stats ?? null);
+    } catch { /* silent */ } finally { setLoading(false); }
+  }, [search, filter]);
+
   /* ── Auto-refresh every 15s ──────────────────────────────────────── */
   useEffect(() => {
     const interval = setInterval(() => { fetchConvos(); }, 15000);
@@ -123,17 +134,6 @@ export default function ConversationsDashboard() {
     URL.revokeObjectURL(url);
     showToast("📥 CSV exported!");
   };
-
-  /* ── Fetch conversations ─────────────────────────────────────────── */
-  const fetchConvos = useCallback(async () => {
-    try {
-      const res = await fetch(`/api/whatsapp/conversations?search=${search}&filter=${filter}`);
-      if (!res.ok) return;
-      const data = await res.json();
-      setConvos(data.conversations ?? []);
-      setStats(data.stats ?? null);
-    } catch { /* silent */ } finally { setLoading(false); }
-  }, [search, filter]);
 
   useEffect(() => { fetchConvos(); }, [fetchConvos]);
 

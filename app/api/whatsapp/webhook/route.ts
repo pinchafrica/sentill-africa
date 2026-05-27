@@ -106,19 +106,16 @@ export async function POST(req: NextRequest) {
       // ── Deduplication: skip if we already processed this message ──────
       if (msgId) {
         try {
-          const existing = await prisma.whatsAppLog.findFirst({
-            where: {
-              waId,
-              direction: "INBOUND",
-              message: { startsWith: msgId },
-              createdAt: { gte: new Date(Date.now() - 120_000) }, // within last 2 min
-            },
+          await prisma.processedMessage.create({
+            data: { msgId }
           });
-          if (existing) {
-            console.log(`[WhatsApp][${timestamp}] ⏭️ Duplicate message ${msgId} — skipping`);
+        } catch (e: any) {
+          if (e.code === "P2002") {
+            console.log(`[WhatsApp][${timestamp}] ⏭️ Duplicate message ${msgId} (P2002) — skipping`);
             continue;
           }
-        } catch { /* dedup check failed — process anyway */ }
+          console.error(`[WhatsApp][${timestamp}] Deduplication check failed:`, e);
+        }
       }
 
       // ── Handle unsupported message types gracefully ──────────────────

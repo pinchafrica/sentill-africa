@@ -34,7 +34,7 @@
       "min": 1000,
       "wht": 15,
       "net_yield": 14.37,
-      "risk": "Low",
+      "risk": "Medium",
       "liquidity": "T+2",
       "paybill": "525200"
     },
@@ -191,15 +191,6 @@
       "net_yield": 13.94,
       "tenor": "10yr",
       "maturity": "2032-09-15"
-    },
-    {
-      "name": "FXD1/2024",
-      "type": "FXD",
-      "yield": 16.8,
-      "wht": 15,
-      "net_yield": 14.28,
-      "tenor": "2yr",
-      "maturity": "2026-03-15"
     },
     {
       "name": "FXD2/2023",

@@ -3,10 +3,10 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { 
-  PieChart, BrainCircuit, Briefcase, LineChart, LayoutGrid, AlertTriangle, 
+import {
+  PieChart, BrainCircuit, Briefcase, LineChart, LayoutGrid, AlertTriangle,
   Map, History, Users, Bell, Shield, MessageSquare, Activity, Menu, X, Compass, Landmark,
-  LogOut, ChevronRight, GraduationCap, Smartphone
+  LogOut, ChevronRight, GraduationCap, Smartphone, TreePine
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -79,6 +79,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     {
       title: "Administration",
       items: [
+        { name: "OAK Fund Leads", href: "/dashboard/oak-inquiries", icon: TreePine, badge: "CRM" },
         { name: "Log History", href: "/dashboard/history", icon: History },
         { name: "Notifications", href: "/dashboard/notifications", icon: Bell, badge: "NEW" },
         { name: "Alert Hub", href: "/dashboard/alerts", icon: Bell },

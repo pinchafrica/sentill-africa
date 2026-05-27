@@ -254,3 +254,27 @@ model ApiKey {
   updatedAt    DateTime @updatedAt
 }
 
+model ProcessedMessage {
+  msgId     String   @id
+  createdAt DateTime @default(now())
+}
+
+model OakInquiry {
+  id            String   @id @default(cuid())
+  name          String
+  phone         String
+  email         String
+  idNo          String
+  kraPin        String
+  fundClass     String
+  amount        Float
+  sourceOfFunds String
+  horizon       String
+  hearAbout     String   @default("")
+  message       String   @default("")
+  status        String   @default("NEW")  // NEW, CONTACTED, CONVERTED, DECLINED
+  notes         String   @default("")     // Admin notes
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+

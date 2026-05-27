@@ -77,10 +77,10 @@ const FALLBACK_RATES: Record<string, number> = {
   "USD-KES":   129.50,
   "EUR-KES":   141.00,
   "GBP-KES":   165.00,
-  // T-Bills (CBK auction 27 April 2026 — Google verified)
-  "91-TBILL":   7.78,
-  "182-TBILL":  7.89,
-  "364-TBILL":  8.27,
+  // T-Bills (May 2026 benchmark fallbacks — Google verified)
+  "91-TBILL":  15.78,
+  "182-TBILL": 15.97,
+  "364-TBILL": 16.42,
   "2YR-BOND":  10.50,
   // IFBs (fixed)
   "IFB1-2024": 18.46,
