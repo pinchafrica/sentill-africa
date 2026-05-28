@@ -1,5 +1,5 @@
 {
-  "scraped_at": "2026-05-27T07:07:40.874716+00:00",
+  "scraped_at": "2026-05-28T06:52:29.726303+00:00",
   "source": "sentill-scraper-v2",
   "mmfs": [
     {
@@ -34,7 +34,7 @@
       "min": 1000,
       "wht": 15,
       "net_yield": 14.37,
-      "risk": "Medium",
+      "risk": "Low",
       "liquidity": "T+2",
       "paybill": "525200"
     },
@@ -193,6 +193,15 @@
       "maturity": "2032-09-15"
     },
     {
+      "name": "FXD1/2024",
+      "type": "FXD",
+      "yield": 16.8,
+      "wht": 15,
+      "net_yield": 14.28,
+      "tenor": "2yr",
+      "maturity": "2026-03-15"
+    },
+    {
       "name": "FXD2/2023",
       "type": "FXD",
       "yield": 15.5,
@@ -246,7 +255,7 @@
   "macro": {
     "cbk_rate": 10.75,
     "inflation": 6.3,
-    "usd_kes": 129.51,
+    "usd_kes": 129.49,
     "nse20": 2198,
     "nse20_ytd": 20.8,
     "nasi": 118.4
