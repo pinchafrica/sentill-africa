@@ -30,9 +30,20 @@ def fit(d, txt, path, size, maxw):
 
 def load(src):
     if src.startswith("http"):
-        req = urllib.request.Request(src, headers={"User-Agent": "Mozilla/5.0"})
-        data = urllib.request.urlopen(req, timeout=60).read()
-        return Image.open(io.BytesIO(data)).convert("RGB")
+        hdr = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0 Safari/537.36",
+               "Accept": "image/avif,image/webp,image/apng,image/*,*/*;q=0.8",
+               "Referer": "https://deltawatches.co.ke/watches"}
+        last = None
+        for u in (src, src.replace(".webp", "-lg.webp"), src.replace(".webp", "-md.webp"), src.replace(".webp", "-sm.webp")):
+            try:
+                r = urllib.request.urlopen(urllib.request.Request(u, headers=hdr), timeout=60)
+                data = r.read()
+                print(u, r.status, r.headers.get("content-type"), len(data), data[:16])
+                return Image.open(io.BytesIO(data)).convert("RGB")
+            except Exception as e:
+                last = e
+                print("fail", u, repr(e)[:200])
+        raise last
     return Image.open(src).convert("RGB")
 
 
