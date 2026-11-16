@@ -1,7 +1,7 @@
 name: Build posters
 on:
   push:
-    paths: ["build.py", "hero.py", "products.json", ".github/workflows/build.yml"]
+    paths: ["build.py", "hero.py", "products.json", "urls.json", ".github/workflows/build.yml"]
   workflow_dispatch:
 permissions:
   contents: write
@@ -13,7 +13,10 @@ jobs:
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
       - run: pip install pillow
-      - run: python hero.py && python build.py
+      - run: |
+          python hero.py posters/00_hero_a.jpg
+          TAG="GIFTS FROM KES 1,500" L1="Gold, ladies' & everyday watches" L2="Ready in Nairobi  ·  One of each only" python hero.py posters/00_hero_b.jpg
+          python build.py
       - run: |
           git config user.name "poster-bot"
           git config user.email "poster-bot@users.noreply.github.com"

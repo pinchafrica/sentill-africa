@@ -67,14 +67,14 @@ tag = Image.new("RGBA", (760, 120), (0, 0, 0, 0))
 td = ImageDraw.Draw(tag)
 td.rounded_rectangle([0, 0, 759, 119], radius=14, fill=RED)
 tf = font(ANTON, 76)
-tt = "SAVE UP TO KES 5,200"
+tt = os.environ.get("TAG", "SAVE UP TO KES 5,200")
 td.text(((760 - td.textlength(tt, font=tf)) / 2, 8), tt, font=tf, fill=(255, 255, 255))
 tag = tag.rotate(-3, expand=True, resample=Image.BICUBIC)
 img.paste(tag, ((W - tag.width) // 2, 668), tag)
 d = ImageDraw.Draw(img)
 
-ctext(d, 815, "In-stock watches now KES 3,200 – 3,800", font(MB, 40), (255, 255, 255))
-ctext(d, 870, "Ready in Nairobi  ·  Men's & Ladies'", font(MS, 32), (200, 200, 200))
+ctext(d, 815, os.environ.get("L1", "18 watches in stock, from KES 1,500"), font(MB, 40), (255, 255, 255))
+ctext(d, 870, os.environ.get("L2", "Ready in Nairobi  ·  Men's & Ladies'"), font(MS, 32), (200, 200, 200))
 # CTA pill
 pf = font(MB, 36)
 pt = "WhatsApp us to order  ›"
